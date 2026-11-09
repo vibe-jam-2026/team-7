@@ -40,6 +40,7 @@ export const END_STATS = (s) => `
   Möten du fastnade i: ${s.meetings}<br>
   Kanelbullar ätna: 0<br>
   Slides i Henriks tal: 83<br>
+  Stress efter spat: 0 %<br>
   Omtag: ${s.retries}`;
 
 export const STORY = [
@@ -142,7 +143,15 @@ export const STORY = [
       ['H', 'Åtta idéer, sex träd, noll kanelbullar och en demo. Och en ny tradition!'],
       ['H', 'Nästa år kör vi frukost till frukost.'],
       ['D', 'Jag tar bussen tillbaka. Det känns som att jag glömt något.'],
-      ['N', '13.2!!! HUR GÅR DET MED 13.2?!'],
+      ['H', 'Vänta! Agendapunkt 47. Den är vit. Det betyder: ingenting.'],
+      ['H', 'Jag har bokat spat åt dig. Badrocken ligger framme. Stäng av mobilen.'],
+      ['D', 'Spa? Inga slides? Ingen energizer?'],
+      ['H', 'Inga slides. Ner till spat vid bryggan. Det är en order.'],
+    ],
+    play: 'spa',
+    after: [
+      ['H', '(från bastun) Nästa år: frukost till frukost. MED spa.'],
+      ['D', 'Då kanske jag kommer.'],
     ],
   },
 ];

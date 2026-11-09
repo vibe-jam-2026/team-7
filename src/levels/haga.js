@@ -72,13 +72,13 @@ function drawLake(ctx, camX, t) {
 
 // ---- Buildings and park (drawn at camera speed, so they sit in the world) ------
 
-function windows(ctx, x, y, cols, rows, gapX, gapY, w, h) {
+function windows(ctx, x, y, cols, rows, gapX, gapY, w, h, lit = false) {
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const wx = x + c * gapX, wy = y + r * gapY;
       rect(ctx, wx - 1, wy - 1, w + 2, h + 2, PALETTE.trim);
-      rect(ctx, wx, wy, w, h, PALETTE.glass);
-      rect(ctx, wx, wy, 1, Math.floor(h / 2), PALETTE.glassLight);
+      rect(ctx, wx, wy, w, h, lit ? '#ffcf6b' : PALETTE.glass);
+      rect(ctx, wx, wy, 1, Math.floor(h / 2), lit ? '#ffe7a8' : PALETTE.glassLight);
       rect(ctx, wx, wy + Math.floor(h / 2), w, 1, PALETTE.trim); // mullion
     }
   }
@@ -117,14 +117,14 @@ function flag(ctx, x, y, t) {
   }
 }
 
-// The main house with its two attached wings.
-function drawCastle(ctx, sx, t) {
+// The main house with its two attached wings. lit = warm light in every window (evening).
+export function drawCastle(ctx, sx, t, lit = false) {
   const mainW = 190, mainX = sx + 50, top = GROUND_Y - 58;
   // Attached wings, lower than the main house
   for (const wx of [sx, mainX + mainW]) {
     rect(ctx, wx, GROUND_Y - 38, 50, 38, PALETTE.plasterShade);
     hippedRoof(ctx, wx - 2, GROUND_Y - 48, 54, 10, 8);
-    windows(ctx, wx + 8, GROUND_Y - 32, 3, 2, 14, 14, 5, 9);
+    windows(ctx, wx + 8, GROUND_Y - 32, 3, 2, 14, 14, 5, 9, lit);
     rect(ctx, wx, GROUND_Y - 4, 50, 4, PALETTE.plinth);
   }
   // Main house
@@ -139,7 +139,7 @@ function drawCastle(ctx, sx, t) {
   }
   for (let b = 0; b < 5; b++) {
     const bx = Math.round(mainX + b * bay);
-    windows(ctx, bx + 8, top + 8, 2, 2, 15, 26, 6, 13);
+    windows(ctx, bx + 8, top + 8, 2, 2, 15, 26, 6, 13, lit);
   }
   // Entrance in the middle bay: double door, steps and a small pediment
   const cx = Math.round(mainX + mainW / 2);
