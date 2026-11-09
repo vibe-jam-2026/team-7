@@ -22,6 +22,7 @@ export default {
   station: { x: 300, label: 'Skylt' }, // var i Haga man går in (ta bort för att dölja)
   level: 'haga',                       // 'haga', 'kontoret' eller 'bussen'
   // lockPlayer: true,                // spelaren står still (tangenterna används till annat)
+  // music: 'slott',                 // bakgrundsmusik: 'slott' (lugn), 'stress' (standard), 'panik', 'resa'
   // cinematic: true,                 // filmsekvens: ingen styrning, mellanslag hoppar över
   // stayAfterWin: true,              // stanna kvar i minispelet efter vinst (i stället för att gå tillbaka till Haga)
   start: 300,                          // spelarens startposition

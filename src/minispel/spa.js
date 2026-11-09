@@ -155,6 +155,7 @@ export default {
   start: 160,
   henrik: null,
   cinematic: true,
+  music: 'slott', // calm at last
   stayAfterWin: true, // the story ends here, in the spa, not back in the hub
   time: 17,
   timeoutWins: true,
