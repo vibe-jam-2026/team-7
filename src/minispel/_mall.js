@@ -11,6 +11,7 @@
 //   g.walker(['repliker'], {side})       en kollega som går mot dig; hoppa över!
 //   g.prop('table' | 'projector', x)     dekor på marken
 //   g.say(text, vem), g.henrikSay(text), g.shout('STOR TEXT')
+//   g.choices({who, text, options: [{key, text, state}], bar}, onPick)  svarsalternativ (se kontrakt.js)
 //   g.sfx.ding(), g.sfx.kazoo(), g.sfx.sadTrombone() ...  ljudeffekter, se src/ljud.js
 import { GROUND_Y } from '../world.js';
 
