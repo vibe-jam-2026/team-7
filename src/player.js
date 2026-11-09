@@ -2,7 +2,7 @@
 import { keys } from './input.js';
 import { GROUND_Y } from './world.js';
 
-const WALK_SPEED = 70;   // px/s
+const WALK_SPEED = 95;   // px/s
 const ACCEL = 500;       // px/s²
 const FRICTION = 600;    // px/s²
 
@@ -12,13 +12,16 @@ const C = {
 };
 
 export function createPlayer(x) {
-  return { x, y: GROUND_Y, vx: 0, vy: 0, facing: 1, onGround: true, walkTime: 0, time: 0, dust: [] };
+  return { x, y: GROUND_Y, vx: 0, vy: 0, facing: 1, onGround: true, walkTime: 0, time: 0, stun: 0, dust: [] };
 }
 
 // `level` gives gravity, jump speed and the level width (see src/levels/).
-export function updatePlayer(p, dt, level) {
+// `frozen` ignores the keyboard (during dialogue); `p.stun` does the same for a while.
+export function updatePlayer(p, dt, level, frozen = false) {
   p.time += dt;
-  const dir = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+  p.stun = Math.max(0, p.stun - dt);
+  const control = !frozen && p.stun <= 0;
+  const dir = control ? (keys.right ? 1 : 0) - (keys.left ? 1 : 0) : 0;
 
   if (dir !== 0) {
     p.vx += dir * ACCEL * dt;
@@ -29,7 +32,7 @@ export function updatePlayer(p, dt, level) {
     p.vx -= Math.sign(p.vx) * slow;
   }
 
-  if (keys.up && p.onGround) {
+  if (control && keys.up && p.onGround) {
     p.vy = -level.jumpSpeed;
     p.onGround = false;
   }
@@ -97,6 +100,8 @@ export function drawPlayer(ctx, p, camX, dustColor = '#9a9aa8') {
   } else {
     bob = Math.sin(p.time * 3) > 0.6 ? -1 : 0;                     // idle breathing
   }
+
+  if (p.stun > 0 && Math.floor(p.time * 16) % 2) return; // blink while stuck in a meeting
 
   ctx.save();
   ctx.translate(Math.round(p.x - camX), Math.round(p.y));

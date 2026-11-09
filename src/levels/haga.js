@@ -239,7 +239,7 @@ export const haga = {
   width: LEVEL_WIDTH,
   startX: 20,
   gravity: 520,   // Earth gravity: heavier than on the Moon
-  jumpSpeed: 170,
+  jumpSpeed: 200,
   dustColor: '#b8a47a',
   exitX: null,    // last level for now
   draw(ctx, camX, t) {
