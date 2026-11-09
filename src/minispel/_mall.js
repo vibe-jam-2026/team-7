@@ -18,7 +18,9 @@ export default {
   title: 'Mitt minispel',              // visas på titelkortet
   tagline: 'Kort beskrivning av målet',
   station: { x: 300, label: 'Skylt' }, // var i Haga man går in (ta bort för att dölja)
-  level: 'haga',                       // 'haga' eller 'moon'
+  level: 'haga',                       // 'haga', 'kontoret' eller 'bussen'
+  // lockPlayer: true,                // spelaren står still (tangenterna används till annat)
+  // cinematic: true,                 // filmsekvens: ingen styrning, mellanslag hoppar över
   start: 300,                          // spelarens startposition
   henrik: 340,                         // var Henrik står (null = inte med)
   time: 20,                            // sekunder, eller ta bort för ingen tidsgräns

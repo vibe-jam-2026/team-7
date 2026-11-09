@@ -18,7 +18,7 @@ export default {
   time: 35,
   intro: [
     ['H', 'Ledningsgruppen sitter på plats. Projektorn säger... "INGEN SIGNAL".'],
-    ['A', 'Jag behöver HDMI-adaptern, USB-C-dongeln och en laddare. Jag har ingen av dem.'],
+    ['D', 'Jag behöver HDMI-adaptern, USB-C-dongeln och en laddare. Jag har ingen av dem.'],
     ['H', 'Klassiskt! Jag håller dem varma med mitt bästa skämt. Det tar ungefär tolv minuter.'],
   ],
   goal: (g) => g.count < 3 ? `Hitta sladdarna: ${g.count}/3` : 'Spring till projektorn!',
@@ -55,7 +55,7 @@ export default {
   },
   onWin(g) { g.flags.projector.working = true; g.fallers = []; },
   win: [
-    ['A', 'Bild! VI HAR BILD!'],
+    ['D', 'Bild! VI HAR BILD!'],
     ['H', 'Applåder! Och precis i tid till...'],
   ],
   fail: [['H', 'Lunchen började utan oss. Ledningsgruppen åt upp demon. Vi tar om!']],

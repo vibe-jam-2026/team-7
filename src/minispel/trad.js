@@ -15,7 +15,7 @@ const ASKERS = [
 ];
 const PRAISE = ['Ett träd!', 'Om 20 år: skugga!', 'Hållbart!', 'Henrik ser stolt ut.', 'Rötter!'];
 const HENRIK_BARKS = [
-  'Den bästa tiden var för 20 år sedan!', 'Den näst bästa är NU!', 'Gräv, Astro, gräv!',
+  'Den bästa tiden var för 20 år sedan!', 'Den näst bästa är NU!', 'Gräv, gräv, gräv!',
   'Varje träd binder koldioxid och synergier!', 'Jag har en slide om ekar.',
 ];
 
@@ -30,7 +30,7 @@ export default {
   intro: [
     ['H', 'Agendapunkt 31: hållbarhet. Vi ska plantera en lund här i parken.'],
     ['H', 'Ett kinesiskt ordspråk säger: den bästa tiden att plantera ett träd var för 20 år sedan.'],
-    ['A', 'För 20 år sedan var jag inte ens på jorden.'],
+    ['D', 'För 20 år sedan hade jag inte ens skrivit min första bugg.'],
     ['H', 'Precis! Därför: den näst bästa tiden är NU. Sex plantor. Lådan står här.'],
     ['H', 'Hämta en planta, ställ dig vid en pinne med band och tryck ↓ för att gräva. Se upp för folk som vill "förankra" först.'],
   ],
@@ -112,9 +112,9 @@ export default {
   },
   win: [
     ['H', 'Titta. En hel lund. Vi döper den till Agendalunden.'],
-    ['A', 'Vänta... de växte väldigt fort?'],
+    ['D', 'Vänta... de växte väldigt fort?'],
     ['H', 'Det är så det känns om 20 år. Då står någon här i skuggan och tänker: tur att de planterade då.'],
-    ['A', 'Den bästa tiden var för 20 år sedan. Den näst bästa var i dag. Klockan 09:30.'],
+    ['D', 'Den bästa tiden var för 20 år sedan. Den näst bästa var i dag. Klockan 09:30.'],
     ['H', 'Enligt agendan! Nu: demon.'],
   ],
   fail: [['H', 'Tiden tog slut. Men vet du vad? Den näst bästa tiden är fortfarande nu. Igen!']],

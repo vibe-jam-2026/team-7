@@ -1,10 +1,15 @@
 // The story: lunch to lunch at Haga slott, told as a list of beats.
 // Each beat has a clock, Henrik's lines before and after, and which minigame (station) comes next.
-// Edit the text here freely. Lines are ['H' | 'A', 'text'], or a function (g) => [...] for live numbers.
+// Edit the text here freely. Lines are ['H', 'text'] (see SPEAKERS for who is who),
+// or a function (g) => [...] when the line needs live numbers.
+import { HENRIK, PLAYER, NATALIE, MARKUS, GUSTAV } from './sprites.js';
 
 export const SPEAKERS = {
-  H: { name: 'Henrik Kauhanen', role: 'chefen', color: '#ffb838' },
-  A: { name: 'Astro', role: 'du', color: '#9fd0ff' },
+  H: { name: 'Henrik Kauhanen', role: 'chefen', color: '#ffb838', look: HENRIK },
+  D: { name: 'Du', role: 'utvecklare', color: '#9fd0ff', look: PLAYER },
+  N: { name: 'Natalie', role: 'projektledare', color: '#ff9fc8', look: NATALIE },
+  M: { name: 'Markus', role: 'projektledare', color: '#a8e08a', look: MARKUS },
+  G: { name: 'Gustav', role: 'projektledare', color: '#c8b0ff', look: GUSTAV },
 };
 
 export const HUB = {
@@ -39,20 +44,26 @@ export const END_STATS = (s) => `
 
 export const STORY = [
   {
-    clock: 'Dag 1 · 11:52', title: 'Någonstans på månen',
-    play: 'raketen', auto: true,
+    clock: 'Dag 1 · 10:47', title: 'Kontoret',
+    play: 'kontoret', auto: true,
     before: [
-      ['A', '*pling* Ny kalenderinbjudan.'],
-      ['A', 'Från: Henrik Kauhanen. "Lunch till lunch på Haga slott. Obligatorisk närvaro. Obligatoriskt gott humör."'],
-      ['A', 'Obligatoriskt gott humör... Okej. Jag tar raketen.'],
+      ['N', 'HUR GÅR DET MED 13.2?! Kunden har ringt sju gånger!'],
+      ['M', 'Testmiljön är nere! Eller uppe! Den blinkar!'],
+      ['G', 'Jag har flyttat deadline till igår. Hoppas det är okej!'],
+      ['D', 'Jag kodar så fort jag kan...'],
+      ['N', 'KODA FORTARE!'],
     ],
+  },
+  {
+    clock: 'Dag 1 · 11:15', title: 'Bussen till Haga',
+    play: 'bussen', auto: true,
   },
   {
     clock: 'Dag 1 · 12:00', title: 'Ankomst Haga slott',
     play: 'buffe',
     before: [
-      ['H', 'Där är du! Välkommen till Haga slott. Lunch till lunch: 24 timmar ren effektivitet.'],
-      ['A', 'Lunch till lunch. Det låter som... mest lunch?'],
+      ['H', 'Välkomna till Haga slott! Lunch till lunch: 24 timmar ren effektivitet.'],
+      ['D', 'Lunch till lunch. Det låter som... mest lunch?'],
       ['H', 'Två luncher. Däremellan: workshop, fika, middag, tal, natt och energizer klockan sju.'],
       ['H', 'Agendan har 47 punkter. Jag har färgkodat dem. Ingen vet vad färgerna betyder.'],
       ['H', 'Punkt 1: lunch. Följ pilen till buffén. Spring!'],
@@ -63,7 +74,7 @@ export const STORY = [
     play: 'workshop',
     before: [
       ['H', 'Mätta? Bra. Nu: workshop i flygeln. Vi ska ta fram framtiden.'],
-      ['A', 'Hela framtiden? Före fika?'],
+      ['D', 'Hela framtiden? Före fika?'],
       ['H', 'Vi har en timme. Jag har köpt 4 000 post-its.'],
     ],
   },
@@ -72,7 +83,7 @@ export const STORY = [
     play: 'fika',
     before: [
       ['H', 'FIKA! Nere vid bryggan. Det finns kaffe och EN kanelbulle kvar.'],
-      ['A', 'En bulle? Till hela teamet?'],
+      ['D', 'En bulle? Till hela teamet?'],
       ['H', 'Jag kallar det resursoptimering.'],
     ],
   },
@@ -81,7 +92,7 @@ export const STORY = [
     play: 'middag',
     before: [
       ['H', 'Middag i stora salen! Trerätters, och mellan varje rätt: mitt tal.'],
-      ['A', 'Hur långt är talet?'],
+      ['D', 'Hur långt är talet?'],
       ['H', 'Kort! 83 slides. Ett par av dem har video. En har en egen agenda.'],
     ],
   },
@@ -89,10 +100,10 @@ export const STORY = [
     clock: 'Dag 1 · 23:47', title: 'Natten', tint: 'rgba(10,20,70,0.35)', dark: true,
     play: 'natt',
     before: [
-      ['A', 'Talet tog slut. Jag tror jag åldrades. Nu: sängen.'],
-      ['A', '...där rumsnyckeln borde ha legat. Den är borta.'],
+      ['D', 'Talet tog slut. Jag tror jag åldrades. Nu: sängen.'],
+      ['D', '...där rumsnyckeln borde ha legat. Den är borta.'],
       ['H', '(från bastun) ALLSÅNGEN BÖRJAR OM FEM MINUTER! ALLA SKA MED!'],
-      ['A', 'Jag letar i parken. Hjälmlampan funkar i alla fall. Rymdteknik, baby.'],
+      ['D', 'Jag letar i parken. Med mobilens ficklampa. 4 % batteri.'],
     ],
   },
   {
@@ -100,7 +111,7 @@ export const STORY = [
     play: 'energizer',
     before: [
       ['H', 'GOOOOD MORGON HAGA! Har alla sovit gott?'],
-      ['A', 'Jag sov fyra timmar. Två av dem i en allsång.'],
+      ['D', 'Jag sov fyra timmar. Två av dem i en allsång.'],
       ['H', 'Perfekt! Då är du redo för ENERGIZERN. Ut på gräsmattan!'],
     ],
   },
@@ -109,7 +120,7 @@ export const STORY = [
     play: 'trad',
     before: [
       ['H', 'Agendapunkt 31! Den är grön. Det betyder hållbarhet. Eller att jag fick slut på de andra pennorna.'],
-      ['A', 'Vad ska vi göra?'],
+      ['D', 'Vad ska vi göra?'],
       ['H', 'Plantera träd! Ut i parken, vid trädplanteringen. Spaden är redan där.'],
     ],
   },
@@ -118,7 +129,7 @@ export const STORY = [
     play: 'demo',
     before: [
       ['H', 'Sista punkten före lunch: demon för ledningsgruppen.'],
-      ['A', 'Vilken demo?'],
+      ['D', 'Vilken demo?'],
       ['H', 'Din. Det stod i punkt 46. Lila. In i stora salen!'],
     ],
   },
@@ -126,11 +137,12 @@ export const STORY = [
     clock: 'Dag 2 · 12:00', title: 'Lunch. Igen.',
     before: [
       ['H', 'Och så var det lunch igen. Precis enligt agendan.'],
-      ['H', 'Bra jobbat, Astro. Du överlevde lunch till lunch.'],
-      ['A', 'Tack. Vad kom vi fram till?'],
+      ['H', 'Bra jobbat. Du överlevde lunch till lunch.'],
+      ['D', 'Tack. Vad kom vi fram till?'],
       ['H', 'Åtta idéer, sex träd, noll kanelbullar och en demo. Och en ny tradition!'],
       ['H', 'Nästa år kör vi frukost till frukost.'],
-      ['A', 'Jag tar raketen hem nu.'],
+      ['D', 'Jag tar bussen tillbaka. Det känns som att jag glömt något.'],
+      ['N', '13.2!!! HUR GÅR DET MED 13.2?!'],
     ],
   },
 ];

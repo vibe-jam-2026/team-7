@@ -14,7 +14,7 @@ export default {
   intro: [
     ['H', 'Brainstorm! Gula lappar är idéer. Fånga dem innan de landar.'],
     ['H', 'Röda lappar säger "SYNERGI". Undvik dem. Vi har redan nog med synergi.'],
-    ['A', 'Hur många idéer behöver vi?'],
+    ['D', 'Hur många idéer behöver vi?'],
     ['H', 'Åtta. Sju är för få, och nio är en ny workshop.'],
   ],
   goal: (g) => `Fånga idéer: ${g.count}/8`,
@@ -37,7 +37,7 @@ export default {
   onMiss(g, f) { if (!f.bad && Math.random() < 0.4) g.henrikSay('En idé föll på golvet! Den var säkert bra.'); },
   win: [
     ['H', 'Åtta idéer! Fantastiskt. Jag lägger in dem i ett Excelark som ingen någonsin öppnar igen.'],
-    ['A', 'Varför gör vi det här då?'],
+    ['D', 'Varför gör vi det här då?'],
     ['H', 'För att det känns bra. Det står i punkt 14.'],
   ],
   fail: [['H', 'Idéerna landade på golvet. Städpersonalen tackar för inspirationen. En gång till!']],

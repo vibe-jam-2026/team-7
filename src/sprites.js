@@ -9,6 +9,26 @@ export const HENRIK = {
   skin: '#e8b894', shoes: '#3a2a20', glasses: true, lanyard: '#c0392b', prop: 'mug',
 };
 
+// You: a developer with headphones and a hoodie.
+export const PLAYER = {
+  jacket: '#3d6fb0', pants: '#2b2f3a', shirt: '#3d6fb0', hair: '#4a3020', skin: '#f0c4a0',
+  shoes: '#e8e8e8', headphones: true,
+};
+
+// The project managers. Change colours and hair to look more like the real people.
+export const NATALIE = {
+  jacket: '#b0457a', pants: '#2a2a33', shirt: '#f6e8f0', hair: '#c9823a', skin: '#f1c9a5',
+  shoes: '#222', hairLong: true, prop: 'phone', lanyard: '#2e86de',
+};
+export const MARKUS = {
+  jacket: '#4a6a3a', pants: '#3a3a44', shirt: '#e8f0e0', hair: '#2b2b2b', skin: '#e2b08c',
+  shoes: '#222', beard: true, prop: 'laptop', lanyard: '#2e86de',
+};
+export const GUSTAV = {
+  jacket: '#5a4a8a', pants: '#2a2a33', shirt: '#fff', hair: '#d9b14a', skin: '#f3cfae',
+  shoes: '#333', glasses: true, prop: 'mug', lanyard: '#2e86de',
+};
+
 export const COLLEAGUES = [
   { jacket: '#8e3b46', pants: '#33334a', shirt: '#f0e6d2', hair: '#2b2b2b', skin: '#c68e6b', shoes: '#222', prop: 'laptop', lanyard: '#2e86de' },
   { jacket: '#3b7d6e', pants: '#4a3b2b', shirt: '#fff', hair: '#d9b14a', skin: '#f1c9a5', shoes: '#222', prop: 'laptop', lanyard: '#2e86de' },
@@ -37,8 +57,14 @@ export function drawPerson(ctx, sx, y, look, facing = 1, t = 0, walking = false)
   for (const [x, yy, w, h, c] of parts) r(ctx, x, yy, w, h, c);
 
   r(ctx, 0, -19 + bob, 3, 7, look.shirt);                    // shirt
+  if (look.hairLong) { r(ctx, -5, -27 + bob, 4, 11, OUTLINE); r(ctx, -4, -26 + bob, 3, 10, look.hair); }
   r(ctx, -3, -27 + bob, 7, 3, look.hair);                    // hair
   r(ctx, -3, -25 + bob, 2, 3, look.hair);
+  if (look.beard) { r(ctx, 0, -22 + bob, 4, 3, look.hair); r(ctx, 2, -21 + bob, 2, 1, '#a0604a'); }
+  if (look.headphones) {
+    r(ctx, -3, -29 + bob, 7, 2, '#222');                     // band over the head
+    r(ctx, -4, -26 + bob, 3, 4, '#222'); r(ctx, -3, -25 + bob, 1, 2, '#4a7fd0'); // ear cup
+  }
   r(ctx, 2, -24 + bob, 1, 1, OUTLINE);                       // eye
   r(ctx, 2, -21 + bob, 2, 1, '#a0604a');                     // mouth
   if (look.glasses) { r(ctx, 1, -25 + bob, 4, 1, OUTLINE); r(ctx, 1, -24 + bob, 1, 2, OUTLINE); r(ctx, 3, -24 + bob, 1, 2, OUTLINE); }
@@ -47,6 +73,7 @@ export function drawPerson(ctx, sx, y, look, facing = 1, t = 0, walking = false)
   // Arm and whatever they are holding
   r(ctx, -2, -18 + bob, 3, 8, OUTLINE); r(ctx, -1, -17 + bob, 1, 6, look.jacket);
   r(ctx, -1, -11 + bob, 2, 2, look.skin);
+  if (look.headphones) r(ctx, 1, -18 + bob, 1, 3, '#e8e8e8'); // hoodie string
   if (look.prop === 'mug') { r(ctx, 1, -14 + bob, 4, 4, '#fff'); r(ctx, 1, -14 + bob, 4, 1, '#6b3e1f'); r(ctx, 5, -13 + bob, 1, 2, '#fff'); }
   if (look.prop === 'laptop') { r(ctx, 0, -15 + bob, 8, 5, '#9aa0a8'); r(ctx, 1, -14 + bob, 6, 3, '#cfe3ff'); }
   if (look.prop === 'phone') { r(ctx, 1, -15 + bob, 3, 5, '#222'); r(ctx, 2, -14 + bob, 1, 3, '#7fc4ff'); }
@@ -153,6 +180,19 @@ export function drawProp(ctx, sx, prop, t) {
     r(ctx, x - 14, y - 13, 28, 2, OUTLINE); r(ctx, x - 13, y - 13, 26, 1, '#fff');
     r(ctx, x - 13, y - 12, 26, 3, '#f2efe6'); // tablecloth
     r(ctx, x - 12, y - 9, 2, 9, '#6b4a30'); r(ctx, x + 10, y - 9, 2, 9, '#6b4a30');
+  }
+  if (prop.kind === 'desk') {
+    // Standing desk with a monitor; drawn in front of the person behind it
+    r(ctx, x - 16, y - 16, 32, 3, OUTLINE); r(ctx, x - 15, y - 16, 30, 2, '#c9a77a');
+    r(ctx, x - 13, y - 13, 3, 13, '#555'); r(ctx, x + 10, y - 13, 3, 13, '#555');
+    r(ctx, x + 2, y - 32, 18, 13, OUTLINE); r(ctx, x + 3, y - 31, 16, 11, '#141a2a');
+    const lines = prop.lines ?? 0;
+    for (let i = 0; i < 5; i++) {
+      const w = 3 + Math.floor((Math.sin(i * 7 + Math.floor(lines / 2)) + 1) * 5);
+      r(ctx, x + 4 + (i % 2) * 2, y - 30 + i * 2, Math.min(13, w), 1, ['#57d27a', '#7fc4ff', '#f6c623', '#ff7aa8'][(i + Math.floor(lines)) % 4]);
+    }
+    r(ctx, x + 10, y - 19, 2, 3, '#555'); r(ctx, x + 6, y - 17, 10, 1, '#555');
+    r(ctx, x - 9, y - 18, 10, 2, '#333'); // keyboard
   }
   if (prop.kind === 'saplings') { // a crate of saplings
     for (let i = 0; i < 4; i++) drawGrowingTree(ctx, x - 6 + i * 4, 0.05, i);

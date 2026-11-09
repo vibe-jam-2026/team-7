@@ -17,8 +17,8 @@ export default {
   dark: true,
   tint: 'rgba(10,20,70,0.35)',
   intro: [
-    ['A', 'Nyckeln ligger någonstans i parken. Den blänker ibland.'],
-    ['A', 'Hitta nyckeln. Undvik allsången. Det här är min Apollo 13.'],
+    ['D', 'Nyckeln ligger någonstans i parken. Den blänker ibland.'],
+    ['D', 'Mobilens ficklampa, 4 % batteri. Hitta nyckeln. Undvik allsången.'],
   ],
   goal: () => 'Hitta rumsnyckeln',
   setup(g) {
@@ -49,9 +49,9 @@ export default {
     }
   },
   win: [
-    ['A', 'Nyckeln! Rum 214. Sängen. Äntligen.'],
+    ['D', 'Nyckeln! Rum 214. Sängen. Äntligen.'],
     ['H', '(genom dörren) Väckning 06:45! Energizern börjar 07:00 PRICK!'],
-    ['A', 'Varför låter det som ett hot?'],
+    ['D', 'Varför låter det som ett hot?'],
   ],
-  fail: [['A', 'Allsången hittade mig först. Jag kan nu alla tolv verser av "Helan går". Igen.']],
+  fail: [['D', 'Allsången hittade mig först. Jag kan nu alla tolv verser av "Helan går". Igen.']],
 };

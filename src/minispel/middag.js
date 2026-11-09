@@ -24,7 +24,7 @@ export default {
   meter: 'Vakenhet',
   intro: [
     ['H', 'Ladies and gentlemen... nu börjar talet!'],
-    ['A', 'Jag har varit vaken sedan förra månfasen...'],
+    ['D', 'Jag har varit vaken sedan 13.1-releasen...'],
     ['H', 'Drick kaffe! Somnar du börjar jag om från slide 1.'],
   ],
   goal: (g) => `Håll dig vaken! Kaffe: ${g.flags.cups}`,
@@ -61,7 +61,7 @@ export default {
   },
   win: [
     ['H', '...och slide 83: TACK! Frågor? Nej? Perfekt.'],
-    (g) => ['A', `Jag har druckit ${g.flags.cups} koppar kaffe. Jag kan höra färger.`],
+    (g) => ['D', `Jag har druckit ${g.flags.cups} koppar kaffe. Jag kan höra färger.`],
     ['H', 'Nu: bastu och allsång! Vi ses där!'],
   ],
   fail: [

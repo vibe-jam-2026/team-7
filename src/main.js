@@ -18,7 +18,7 @@ function resize() {
 addEventListener('resize', resize);
 resize();
 
-// ?kapitel=3 in the address jumps straight to that story beat (0 = the Moon). Handy when testing.
+// ?kapitel=3 in the address jumps straight to that story beat (0 = the office, 1 = the bus, 2 = arriving at Haga). Handy when testing.
 const chapter = new URLSearchParams(location.search).get('kapitel');
 if (chapter != null) startStory(parseInt(chapter, 10) || 0);
 
