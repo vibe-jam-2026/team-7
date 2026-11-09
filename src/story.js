@@ -146,3 +146,13 @@ export const STORY = [
     ],
   },
 ];
+
+// Shown when someone presses the red "TRYCK INTE" button (src/knappen.js). One is picked at random.
+export const FORBIDDEN = [
+  { title: 'Du tryckte.', sub: 'Det stod TRYCK INTE. Med versaler. På svenska.<br>Henrik har bokat in dig på en kurs i att läsa instruktioner.' },
+  { title: 'Oj.', sub: 'Du raderade precis hela 13.2-leveransen.<br>Natalie gråter. Markus gråter. Gustav har redan bytt jobb.' },
+  { title: 'Kaboom.', sub: 'Haga slott är nu Haga ruin.<br>Henrik: "Vi kallar det en teambuildingövning."' },
+  { title: 'GAME OVER', sub: 'Knappen var kopplad till brandlarmet.<br>Alla 140 kollegor står ute i regnet. I badrockar. De vet att det var du.' },
+  { title: 'Grattis!', sub: 'Du har anmält dig som frivillig att planera nästa års<br>FRUKOST TILL FRUKOST.' },
+  { title: 'Tryckt.', sub: 'Du skickade "ok" till hela bolaget. 2 000 personer.<br>Från Henriks mejl.' },
+];

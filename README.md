@@ -20,6 +20,8 @@ python3 -m http.server 8000
 ## Kontroller
 ← → gå · ↑ hoppa · mellanslag: prata vidare / gå in vid en station
 
+**TRYCK INTE:** den röda knappen överst i bilden får man inte klicka på. Gör man det förlorar man: en slumpad komisk text visas (texterna finns i `FORBIDDEN` i `src/story.js`) och sedan börjar spelet om från början.
+
 **Dev-meny:** tryck **Ö** (eller **§**, eller klicka **DEV** under spelet) när som helst för att hoppa till valfritt kapitel eller minispel. Enter går direkt in i minispelet, → spelar kapitlet från början (dialog och Haga). Spelet pausas medan menyn är öppen.
 
 ## Struktur
@@ -33,6 +35,7 @@ Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas up
 | `src/sprites.js` | Pixelgrafik: du (`PLAYER`), Henrik, Natalie, Markus, Gustav, kollegor, föremål och dekor |
 | `src/devmeny.js` | Dev-menyn (Ö) |
 | `src/ljud.js` | Ljudeffekter, skapade med Web Audio (inga ljudfiler). `g.sfx.namn()` i minispel. M stänger av. |
+| `src/knappen.js` | Den röda knappen man inte får trycka på |
 | `src/ui.js` | HUD, dialogruta, titelkort och pratbubblor (HTML) |
 | `src/player.js` | Spelarens fysik och rörelse |
 | `src/levels/` | Världarna: kontoret, bussen och Haga slott |

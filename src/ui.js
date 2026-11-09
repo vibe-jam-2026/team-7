@@ -49,15 +49,19 @@ export function dialogText(text, done) {
 }
 
 // ---- Title cards ----------------------------------------------------------------
-export function card(show, { top = '', title = '', sub = '', hint = '' } = {}) {
+export function card(show, { top = '', title = '', sub = '', hint = '', lost = false } = {}) {
   const c = $('card');
   c.hidden = !show;
+  c.classList.toggle('lost', show && lost);
   if (!show) return;
   $('cardTop').textContent = top;
   $('cardTitle').textContent = title;
   $('cardSub').innerHTML = sub;
   $('cardHint').textContent = hint;
 }
+
+// The red "TRYCK INTE" button (src/knappen.js)
+export function forbiddenButton(show) { $('forbidden').hidden = !show; }
 
 // Big centred text, used for commands like "↑ HOPPA!".
 export function shout(text) {

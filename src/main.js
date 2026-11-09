@@ -5,6 +5,7 @@ import { frame, startStory } from './game.js';
 import { setScale } from './ui.js';
 import { devMenuOpen } from './devmeny.js';
 import { toggleMute, isMuted } from './ljud.js';
+import './knappen.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
