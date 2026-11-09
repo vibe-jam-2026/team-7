@@ -65,7 +65,10 @@
     .bubble.station { background: rgba(10, 12, 30, .8); color: #fff; font-size: calc(var(--px) * 6.5); }
     .bubble.station::after { display: none; }
     .bubble.station.next { background: #ffb838; color: #1b1b2a; }
-    .bubble.station.done { opacity: .55; }
+    .bubble.station.done { background: rgba(30, 90, 50, .85); }
+    .bubble.station.locked { background: rgba(40, 40, 48, .8); color: #a8a8b4; }
+    .bubble.locked { background: #d63a3a; color: #fff; }
+    .bubble.locked::after { border-top-color: #d63a3a; }
     #devmeny { position: absolute; inset: calc(var(--px) * 8) calc(var(--px) * 30); overflow-y: auto;
                background: rgba(5, 6, 15, .95); border: calc(var(--px) * .8) solid #57d27a;
                padding: calc(var(--px) * 3) calc(var(--px) * 5); font-size: calc(var(--px) * 7.5); line-height: 1.15; }
@@ -83,6 +86,9 @@
     #forbidden:active { transform: translateX(-50%) translateY(calc(var(--px) * 1)); box-shadow: 0 calc(var(--px) * .2) 0 #6e0f0f; }
     #card.lost { background: rgba(90, 8, 8, .93); }
     #card.lost #cardTop { color: #ff8a8a; }
+    #devbtn { margin-left: 10px; font: 12px 'Press Start 2P', monospace; color: #57d27a; background: transparent;
+              border: 1px solid #57d27a; padding: 3px 6px; cursor: pointer; pointer-events: auto; }
+    #devbtn:hover { background: #57d27a; color: #05060f; }
     #help { text-align: center; color: #8890b0;
             font: 14px system-ui, sans-serif; pointer-events: none; }
   </style>
@@ -106,7 +112,7 @@
     <button id="forbidden" type="button" tabindex="-1">TRYCK INTE</button>
     <div id="card" hidden><div id="cardTop"></div><div id="cardTitle"></div><div id="cardSub"></div><div id="cardHint"></div></div>
   </div>
-  <div id="help">← → gå · ↑ hoppa · mellanslag: prata / gå in · Ö: dev-meny</div>
+  <div id="help">← → gå · ↑ hoppa · mellanslag: prata / gå in · Ö: dev-meny <button id="devbtn" type="button">DEV</button></div>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

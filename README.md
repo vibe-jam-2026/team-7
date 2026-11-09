@@ -22,7 +22,7 @@ python3 -m http.server 8000
 
 **TRYCK INTE:** den röda knappen överst i bilden får man inte klicka på. Gör man det förlorar man: en slumpad komisk text visas (texterna finns i `FORBIDDEN` i `src/story.js`) och sedan börjar spelet om från början.
 
-**Dev-meny:** tryck **Ö** när som helst för att hoppa till valfritt kapitel eller minispel. Enter går direkt in i minispelet, → spelar kapitlet från början (dialog och Haga). Spelet pausas medan menyn är öppen.
+**Dev-meny:** tryck **Ö** (eller **§**, eller klicka **DEV** under spelet) när som helst för att hoppa till valfritt kapitel eller minispel. Enter går direkt in i minispelet, → spelar kapitlet från början (dialog och Haga). Spelet pausas medan menyn är öppen.
 
 ## Struktur
 Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas upp; text och dialog är HTML ovanpå.
