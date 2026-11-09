@@ -11,6 +11,7 @@ import { MINIGAMES } from './minispel/index.js';
 import { STORY, SPEAKERS, HUB, STUCK_LINES, END_STATS, FORBIDDEN } from './story.js';
 import * as ui from './ui.js';
 import { sfx } from './ljud.js';
+import { updateDesigners, drawDesigners } from './designers.js';
 
 const LEVELS = { haga, kontoret, bussen };
 const STEP = 1 / 120;
@@ -20,7 +21,7 @@ const STEP = 1 / 120;
 const g = {
   p: createPlayer(HUB.start), level: haga, camX: 0, time: 0,
   t: 0, left: 0, count: 0, meter: 100, flags: {}, dodgedHere: 0,
-  items: [], props: [], walkers: [], fallers: [], bubbles: [], npcs: [],
+  items: [], props: [], walkers: [], fallers: [], bubbles: [], npcs: [], designers: [],
   henrik: null, done: new Set(),
   stats: newStats(),
   sfx, // sound effects for minigames: g.sfx.ding() etc. (see src/ljud.js)
@@ -50,7 +51,7 @@ const g = {
   say(text, who = g.p, style = '', ttl = 2.4) {
     g.bubbles = g.bubbles.filter((b) => b.who !== who);
     g.bubbles.push({ text, who, style, ttl });
-    sfx.chatter(style === 'henrik' ? 'H' : style === 'me' ? 'D' : 'K', 3);
+    sfx.chatter(style === 'henrik' ? 'H' : style === 'me' ? 'D' : style === 'ux' ? 'ux' : 'K', 3);
   },
   henrikSay(text, ttl = 2.6) { if (g.henrik) g.say(text, g.henrik, 'henrik', ttl); },
   shout(text) { ui.shout(text); },
@@ -64,7 +65,7 @@ const PICKUP_SOUNDS = {
   hdmi: sfx.gadget, dongle: sfx.gadget, charger: sfx.gadget, postit: sfx.paper,
 };
 
-function newStats() { return { coffee: 0, dodged: 0, meetings: 0, retries: 0, hits: 0, buttons: 0 }; }
+function newStats() { return { coffee: 0, dodged: 0, meetings: 0, retries: 0, hits: 0, buttons: 0, figma: 0, uxDodged: 0 }; }
 
 // ---- Flow: title → story beats → hub ↔ minigames → end -------------------------
 let mode = 'title';
@@ -125,7 +126,7 @@ function updateDialog(dt) {
 }
 
 function clearScene() {
-  g.items = []; g.props = []; g.walkers = []; g.fallers = []; g.bubbles = []; g.npcs = [];
+  g.items = []; g.props = []; g.walkers = []; g.fallers = []; g.bubbles = []; g.npcs = []; g.designers = [];
   ui.shout(null); ui.choices(null);
 }
 
@@ -287,6 +288,9 @@ function updateHub(dt) {
 
   barkT -= dt;
   if (barkT <= 0) { barkT = 8; g.henrikSay(pick(HUB.barks)); }
+
+  // Katarina, Jocke and Nikki chase you with Figma concepts now and then (src/designers.js)
+  updateDesigners(g, dt);
 }
 
 // ---- Minigame play -------------------------------------------------------------
@@ -425,6 +429,7 @@ function draw(ctx) {
   for (const it of g.items) drawItem(ctx, it.x - camX, it.y, it, t);
   if (g.henrik) drawPerson(ctx, g.henrik.x - camX, GROUND_Y, HENRIK, g.henrik.facing, t, g.henrik.walking);
   for (const w of g.walkers) drawPerson(ctx, w.x - camX, GROUND_Y, w.look, w.dir, w.t, true);
+  if (!mg) drawDesigners(ctx, g);
   for (const f of g.fallers) drawItem(ctx, f.x - camX, f.y, f, t);
   g.p.hidden = !!mg?.cinematic;
   drawPlayer(ctx, g.p, camX, g.level.dustColor);

@@ -21,6 +21,8 @@ python3 -m http.server 8000
 ## Kontroller
 ← → gå · ↑ hoppa · mellanslag: prata vidare / gå in vid en station
 
+**UX-designerna:** ibland, när du går runt på Haga, kommer Katarina, Jocke eller Nikki (eller alla tre: UX-RUSH!) springande bakifrån med en surfplatta full av Figma-koncept. De är snabbare än du, så hoppa över dem! Fångar de dig står du fast och får höra om användarflöden, designsystem och knappar som inte ligger i 8-punktsgriden. Repliker och tempo finns i `DESIGNERS` i `src/story.js`, logiken i `src/designers.js`.
+
 **TRYCK INTE:** den röda knappen överst i bilden får man inte klicka på. Gör man det förlorar man: en slumpad komisk text visas (texterna finns i `FORBIDDEN` i `src/story.js`) och sedan börjar spelet om från början.
 
 **Dev-meny:** tryck **Ö** (eller **§**, eller klicka **DEV** under spelet) när som helst för att hoppa till valfritt kapitel eller minispel. Enter går direkt in i minispelet, → spelar kapitlet från början (dialog och Haga). Spelet pausas medan menyn är öppen.
@@ -33,7 +35,8 @@ Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas up
 | `src/story.js` | **Berättelsen:** klockslag, Henriks repliker och ordningen på minispelen. Ändra dialog här. |
 | `src/minispel/` | **Ett minispel per fil** (t.ex. `trad.js`: plantera träd i parken, `talt.js`: bossen vid Koppartälten där Henrik gömmer samarbetet under ett tält, skyfflar och du lyfter på ett). `_mall.js` är en mall att kopiera. Registreras i `index.js`. |
 | `src/game.js` | Motorn: navvärlden, in och ut ur minispel, dialog, kollegor som vill ha "fem minuter" |
-| `src/sprites.js` | Pixelgrafik: du (`PLAYER`), Henrik, Natalie, Markus, Gustav, kollegor, föremål och dekor |
+| `src/sprites.js` | Pixelgrafik: du (`PLAYER`), Henrik, Natalie, Markus, Gustav, Katarina, Jocke, Nikki, kollegor, föremål och dekor |
+| `src/designers.js` | UX-designerna Katarina, Jocke och Nikki som jagar dig i Haga med sina Figma-koncept |
 | `src/devmeny.js` | Dev-menyn (Ö) |
 | `src/ljud.js` | Ljudeffekter, skapade med Web Audio (inga ljudfiler). `g.sfx.namn()` i minispel. M stänger av. |
 | `src/knappen.js` | Den röda knappen man inte får trycka på |
