@@ -35,6 +35,20 @@ export const KERSTIN = {
   shoes: '#222', glasses: true, hairLong: true, prop: 'binder', lanyard: '#2e86de',
 };
 
+// The UX designers. They chase you around Haga with their Figma concepts (src/designers.js).
+export const KATARINA = {
+  jacket: '#e0a43a', pants: '#2a2a33', shirt: '#fff', hair: '#3a2418', skin: '#f1c9a5',
+  shoes: '#d94f7a', glasses: true, hairLong: true, prop: 'figma', lanyard: '#a259ff',
+};
+export const JOCKE = {
+  jacket: '#1b1b22', pants: '#2a2a33', shirt: '#1b1b22', hair: '#2b2b2b', skin: '#e2b08c',
+  shoes: '#f2f2f2', beard: true, glasses: true, beanie: '#d94f3a', prop: 'figma', lanyard: '#a259ff',
+};
+export const NIKKI = {
+  jacket: '#b6a2ff', pants: '#3a3a55', shirt: '#ffe3f0', hair: '#ff7ab8', skin: '#f3cfae',
+  shoes: '#57d27a', hairLong: true, prop: 'figma', lanyard: '#a259ff',
+};
+
 export const COLLEAGUES = [
   { jacket: '#8e3b46', pants: '#33334a', shirt: '#f0e6d2', hair: '#2b2b2b', skin: '#c68e6b', shoes: '#222', prop: 'laptop', lanyard: '#2e86de' },
   { jacket: '#3b7d6e', pants: '#4a3b2b', shirt: '#fff', hair: '#d9b14a', skin: '#f1c9a5', shoes: '#222', prop: 'laptop', lanyard: '#2e86de' },
@@ -67,6 +81,7 @@ export function drawPerson(ctx, sx, y, look, facing = 1, t = 0, walking = false)
   r(ctx, -3, -27 + bob, 7, 3, look.hair);                    // hair
   r(ctx, -3, -25 + bob, 2, 3, look.hair);
   if (look.beard) { r(ctx, 0, -22 + bob, 4, 3, look.hair); r(ctx, 2, -21 + bob, 2, 1, '#a0604a'); }
+  if (look.beanie) { r(ctx, -4, -30 + bob, 9, 4, look.beanie); r(ctx, -4, -27 + bob, 9, 1, '#f2f2f2'); r(ctx, 0, -31 + bob, 2, 1, look.beanie); }
   if (look.headphones) {
     r(ctx, -3, -29 + bob, 7, 2, '#222');                     // band over the head
     r(ctx, -4, -26 + bob, 3, 4, '#222'); r(ctx, -3, -25 + bob, 1, 2, '#4a7fd0'); // ear cup
@@ -84,6 +99,11 @@ export function drawPerson(ctx, sx, y, look, facing = 1, t = 0, walking = false)
   if (look.prop === 'laptop') { r(ctx, 0, -15 + bob, 8, 5, '#9aa0a8'); r(ctx, 1, -14 + bob, 6, 3, '#cfe3ff'); }
   if (look.prop === 'phone') { r(ctx, 1, -15 + bob, 3, 5, '#222'); r(ctx, 2, -14 + bob, 1, 3, '#7fc4ff'); }
   if (look.prop === 'binder') { r(ctx, 0, -16 + bob, 6, 8, '#1f4fa8'); r(ctx, 1, -15 + bob, 1, 6, '#e8e8e8'); r(ctx, 3, -13 + bob, 2, 2, '#fff'); }
+  if (look.prop === 'figma') { // a tablet held up high, full of colourful Figma frames
+    r(ctx, 0, -21 + bob, 10, 8, OUTLINE); r(ctx, 1, -20 + bob, 8, 6, '#f4f4f8');
+    r(ctx, 2, -19 + bob, 3, 2, '#f24e1e'); r(ctx, 6, -19 + bob, 2, 2, '#a259ff');
+    r(ctx, 2, -16 + bob, 2, 1, '#1abcfe'); r(ctx, 5, -16 + bob, 3, 1, '#0acf83');
+  }
   if (look.prop === 'glass') { r(ctx, 1, -15 + bob, 3, 5, '#cfeaf7'); r(ctx, 1, -13 + bob, 3, 3, '#f6c623'); }
   ctx.restore();
 }
