@@ -3,18 +3,92 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Team 7</title>
+  <title>Lunch till lunch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <style>
     html, body { margin: 0; height: 100%; background: #05060f; overflow: hidden; }
-    body { display: grid; place-items: center; }
-    canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
-    #hint { position: fixed; bottom: 12px; left: 0; right: 0; text-align: center;
-            color: #8890b0; font: 14px system-ui, sans-serif; pointer-events: none; }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+    /* --px is the size of one game pixel on screen; set from src/main.js */
+    #stage { position: relative; --px: 4px; font-family: 'VT323', ui-monospace, monospace; color: #fff; }
+    canvas#game { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+    #stage [hidden] { display: none !important; }
+
+    #hud { position: absolute; inset: 0; pointer-events: none; }
+    #clock { position: absolute; left: calc(var(--px) * 4); top: calc(var(--px) * 4);
+             font: calc(var(--px) * 5) 'Press Start 2P', monospace; text-shadow: 0 calc(var(--px) * .7) 0 #000; }
+    #goal { position: absolute; left: calc(var(--px) * 4); top: calc(var(--px) * 12);
+            font-size: calc(var(--px) * 8); background: rgba(10, 12, 30, .65); padding: 0 calc(var(--px) * 2);
+            border-left: calc(var(--px) * 1) solid #ffb838; max-width: 60%; line-height: 1.05; }
+    #timer { position: absolute; right: calc(var(--px) * 4); top: calc(var(--px) * 4);
+             font: calc(var(--px) * 7) 'Press Start 2P', monospace; text-shadow: 0 calc(var(--px) * .7) 0 #000; }
+    #timer.urgent { color: #ff5d5d; animation: pulse .5s infinite alternate; }
+    #meter { position: absolute; right: calc(var(--px) * 4); top: calc(var(--px) * 15); width: calc(var(--px) * 70);
+             height: calc(var(--px) * 7); background: rgba(10, 12, 30, .7); border: calc(var(--px) * .7) solid #fff; }
+    #meter i { position: absolute; left: 0; top: 0; bottom: 0; background: #57d27a; }
+    #meter.urgent i { background: #ff5d5d; }
+    #meter span { position: relative; font-size: calc(var(--px) * 6.5); padding-left: calc(var(--px) * 1.5); line-height: 1; }
+    @keyframes pulse { to { transform: scale(1.12); } }
+
+    #dialog { position: absolute; left: calc(var(--px) * 6); right: calc(var(--px) * 6); bottom: calc(var(--px) * 5);
+              min-height: calc(var(--px) * 30); display: flex; gap: calc(var(--px) * 4); align-items: flex-start;
+              background: rgba(12, 14, 32, .93); border: calc(var(--px) * .8) solid #fff;
+              padding: calc(var(--px) * 3) calc(var(--px) * 4); box-shadow: 0 0 0 calc(var(--px) * .8) #000; }
+    #portrait { width: calc(var(--px) * 24); height: calc(var(--px) * 24); image-rendering: pixelated;
+                background: #2a3050; border: calc(var(--px) * .6) solid #fff; flex: none; }
+    #speaker { font: calc(var(--px) * 4.5) 'Press Start 2P', monospace; margin-bottom: calc(var(--px) * 1.5); }
+    #line { font-size: calc(var(--px) * 9); line-height: 1; }
+    #next { position: absolute; right: calc(var(--px) * 3); bottom: calc(var(--px) * 1); font-size: calc(var(--px) * 6);
+            animation: pulse .4s infinite alternate; }
+
+    #card { position: absolute; inset: 0; display: grid; place-content: center; text-align: center;
+            background: rgba(5, 6, 15, .88); gap: calc(var(--px) * 3); }
+    #cardTop { font: calc(var(--px) * 6) 'Press Start 2P', monospace; color: #ffb838; }
+    #cardTitle { font: calc(var(--px) * 11) 'Press Start 2P', monospace; line-height: 1.3; padding: 0 calc(var(--px) * 8); }
+    #cardSub { font-size: calc(var(--px) * 9); color: #c8cdf0; line-height: 1.1; }
+    #cardHint { font-size: calc(var(--px) * 7); color: #8890b0; animation: pulse .6s infinite alternate; }
+
+    #shout { position: absolute; left: 0; right: 0; top: 28%; text-align: center; color: #ffe66b;
+             font: calc(var(--px) * 12) 'Press Start 2P', monospace; text-shadow: 0 calc(var(--px) * 1) 0 #000; }
+
+    .bubble { position: absolute; transform: translate(-50%, -100%); white-space: nowrap;
+              font-size: calc(var(--px) * 7); line-height: 1; color: #1b1b2a; background: #fff;
+              padding: calc(var(--px) * 1) calc(var(--px) * 2); border-radius: calc(var(--px) * 2);
+              box-shadow: 0 calc(var(--px) * .6) 0 #000; }
+    .bubble::after { content: ''; position: absolute; left: 50%; bottom: calc(var(--px) * -1.5); margin-left: calc(var(--px) * -1.5);
+                     border: calc(var(--px) * 1.5) solid transparent; border-bottom: 0; border-top-color: #fff; }
+    .bubble.henrik { background: #ffb838; }
+    .bubble.henrik::after { border-top-color: #ffb838; }
+    .bubble.me { background: #9fd0ff; }
+    .bubble.me::after { border-top-color: #9fd0ff; }
+    .bubble.station { background: rgba(10, 12, 30, .8); color: #fff; font-size: calc(var(--px) * 6.5); }
+    .bubble.station::after { display: none; }
+    .bubble.station.next { background: #ffb838; color: #1b1b2a; }
+    .bubble.station.done { opacity: .55; }
+    #help { text-align: center; color: #8890b0;
+            font: 14px system-ui, sans-serif; pointer-events: none; }
   </style>
 </head>
 <body>
-  <canvas id="game" width="320" height="180"></canvas>
-  <div id="hint">← → gå · ↑ hoppa · 1 2 byt nivå</div>
+  <div id="stage">
+    <canvas id="game" width="320" height="180"></canvas>
+    <div id="bubbles"></div>
+    <div id="hud">
+      <div id="clock"></div>
+      <div id="goal" hidden></div>
+      <div id="timer" hidden></div>
+      <div id="meter" hidden><i></i><span></span></div>
+    </div>
+    <div id="shout" hidden></div>
+    <div id="dialog" hidden>
+      <canvas id="portrait" width="24" height="24"></canvas>
+      <div><div id="speaker"></div><div id="line"></div></div>
+      <div id="next">▼</div>
+    </div>
+    <div id="card" hidden><div id="cardTop"></div><div id="cardTitle"></div><div id="cardSub"></div><div id="cardHint"></div></div>
+  </div>
+  <div id="help">← → gå · ↑ hoppa · mellanslag: prata / gå in</div>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

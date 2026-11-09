@@ -11,3 +11,7 @@ export function hash(n) {
   h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
+
+// Random helpers for minigames
+export const pick = (a) => a[Math.floor(Math.random() * a.length)];
+export const rand = (a, b) => a + Math.random() * (b - a);
