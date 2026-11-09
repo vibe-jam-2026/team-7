@@ -22,8 +22,8 @@ export default {
   tint: 'rgba(255,170,190,0.12)',
   intro: [
     ['H', 'Gör EXAKT som jag säger! Piltangenterna. Snabbt. Med ett leende.'],
-    ['A', 'Hur ska någon se att jag ler? Jag har hjälm.'],
-    ['H', 'Jag ser det på din aura. Redo? KÖR!'],
+    ['D', 'Jag har inte druckit kaffe än. Jag är tekniskt sett en screensaver.'],
+    ['H', 'Kaffe kommer efter energizern. Det kallas motivation. KÖR!'],
   ],
   goal: (g) => `Gör som Henrik säger: ${g.flags.ok}/${NEED} · Fel: ${g.flags.miss}/${MAX_MISSES}`,
   setup(g) { g.flags.ok = 0; g.flags.miss = 0; g.flags.cur = null; g.flags.gap = 0.8; },
@@ -52,8 +52,8 @@ export default {
     if (f.miss >= MAX_MISSES) return 'fail';
   },
   win: [
-    ['H', 'FANTASTISKT! Jag ser verkligen energin. Eller paniken. Svårt att säga genom en hjälm.'],
-    ['A', 'Mina ben har slutat svara på mejl.'],
+    ['H', 'FANTASTISKT! Jag ser verkligen energin. Eller paniken. Svårt att säga i det här ljuset.'],
+    ['D', 'Mina ben har slutat svara på mejl.'],
   ],
   fail: [['H', 'Fyra fel! Inga problem. Energizers är som strategier: man kör tills det känns rätt.']],
 };

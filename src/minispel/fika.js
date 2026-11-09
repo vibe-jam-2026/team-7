@@ -2,8 +2,8 @@
 import { GROUND_Y } from '../world.js';
 
 const ASKERS = [
-  'Har du 5 minuter?', 'Snabb fråga!', 'Kan vi ta en kort sync?', 'Har du sett mitt mejl?',
-  'Jag bokade in oss 15:00–17:30, lugnt?', 'Bara en liten grej...', 'Du som är från rymden – kan du Excel?',
+  'Har du 5 minuter?', 'Snabb fråga!', 'Hur går det med 13.2?', 'Kan vi ta en kort sync?', 'Har du sett mitt mejl?',
+  'Jag bokade in oss 15:00–17:30, lugnt?', 'Bara en liten grej...', 'Du som kan Git – kan du fixa min skrivare?',
 ];
 
 export default {
@@ -15,7 +15,7 @@ export default {
   time: 22,
   intro: [
     ['H', 'Bullen ligger längst bort vid sjön. Spring! Och se upp: folk vill ha "fem minuter".'],
-    ['A', 'Hur farligt kan fem minuter vara?'],
+    ['D', 'Hur farligt kan fem minuter vara?'],
     ['H', 'Ingen har någonsin kommit tillbaka från fem minuter.'],
   ],
   goal: () => 'Nå den sista kanelbullen →',
@@ -36,7 +36,7 @@ export default {
   },
   win: [
     ['H', '*mums* Åh. Var den här din?'],
-    (g) => ['A', `Jag sprang hela vägen och hoppade över ${g.dodgedHere} sync-möten.`],
+    (g) => ['D', `Jag sprang hela vägen och hoppade över ${g.dodgedHere} sync-möten.`],
     ['H', 'Jag trodde det stod "chefen" på den. Det står "kanel". Nära.'],
     ['H', 'Som tack: middagen ikväll har ett tal. Mitt.'],
   ],

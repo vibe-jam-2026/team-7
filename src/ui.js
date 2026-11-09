@@ -82,7 +82,9 @@ export function bubbles(list, camX) {
     el.hidden = false;
     if (el.textContent !== b.text) el.textContent = b.text;
     el.className = 'bubble' + (b.style ? ' ' + b.style : '');
-    // Keep the bubble inside the screen
+    // Hide bubbles for things off screen; keep the others inside the screen
+    const sx = b.x - camX;
+    if (sx < -10 || sx > stage.clientWidth / scale + 10) { el.hidden = true; return; }
     const half = el.offsetWidth / 2;
     const max = stage.clientWidth - half - 2 * scale;
     el.style.left = Math.max(half + 2 * scale, Math.min(max, (b.x - camX) * scale)) + 'px';

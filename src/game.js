@@ -2,15 +2,16 @@
 // The story (what happens when) lives in src/story.js. Each minigame lives in src/minispel/.
 import { WIDTH, GROUND_Y, pick, rand } from './world.js';
 import { wasPressed } from './input.js';
-import { moon } from './levels/moon.js';
 import { haga } from './levels/haga.js';
+import { kontoret } from './levels/kontoret.js';
+import { bussen } from './levels/bussen.js';
 import { createPlayer, updatePlayer, drawPlayer } from './player.js';
-import { drawPerson, drawItem, drawProp, HENRIK, COLLEAGUES } from './sprites.js';
+import { drawPerson, drawItem, drawProp, PLAYER, HENRIK, COLLEAGUES } from './sprites.js';
 import { MINIGAMES } from './minispel/index.js';
 import { STORY, SPEAKERS, HUB, STUCK_LINES, END_STATS } from './story.js';
 import * as ui from './ui.js';
 
-const LEVELS = { moon, haga };
+const LEVELS = { haga, kontoret, bussen };
 const STEP = 1 / 120;
 
 
@@ -18,7 +19,7 @@ const STEP = 1 / 120;
 const g = {
   p: createPlayer(HUB.start), level: haga, camX: 0, time: 0,
   t: 0, left: 0, count: 0, meter: 100, flags: {}, dodgedHere: 0,
-  items: [], props: [], walkers: [], fallers: [], bubbles: [],
+  items: [], props: [], walkers: [], fallers: [], bubbles: [], npcs: [],
   henrik: null, done: new Set(),
   stats: newStats(),
 
@@ -36,6 +37,12 @@ const g = {
     };
     g.walkers.push(w);
     return w;
+  },
+  // A named person who stands still (or paces between two points) and can talk.
+  npc(look, x, o = {}) {
+    const n = { look, x, facing: o.facing ?? -1, patrol: o.patrol, speed: o.speed ?? 40, t: Math.random() * 5, walking: false };
+    g.npcs.push(n);
+    return n;
   },
   // Speech bubble above someone (`who` = g.p, g.henrik, a walker, or {x, y}).
   say(text, who = g.p, style = '', ttl = 2.4) {
@@ -82,12 +89,8 @@ function showLine() {
 }
 
 function drawPortrait(pc, who) {
-  if (who === 'A') {
-    const fake = createPlayer(12); fake.y = 31; fake.facing = 1;
-    drawPlayer(pc, fake, 0);
-  } else {
-    drawPerson(pc, 12, 34, who === 'H' ? HENRIK : COLLEAGUES[0], 1, 0);
-  }
+  const look = SPEAKERS[who]?.look || PLAYER;
+  drawPerson(pc, 12, 34, look, 1, 0);
 }
 
 function updateDialog(dt) {
@@ -107,7 +110,7 @@ function updateDialog(dt) {
 }
 
 function clearScene() {
-  g.items = []; g.props = []; g.walkers = []; g.fallers = []; g.bubbles = [];
+  g.items = []; g.props = []; g.walkers = []; g.fallers = []; g.bubbles = []; g.npcs = [];
   ui.shout(null);
 }
 
@@ -226,6 +229,7 @@ function near(x, y, rx = 9, ry = 15) {
 
 function updatePlay(dt) {
   g.t += dt;
+  if (mg.cinematic && wasPressed('action')) { winMinigame(); return; }
 
   for (const it of g.items) {
     if (it.ttl != null) it.ttl -= dt;
@@ -302,7 +306,7 @@ export function frame(ctx, dt) {
   else if (mode === 'play') updatePlay(dt);
   else if (mode === 'end' && wasPressed('action')) { ui.card(false); startStory(); }
 
-  const free = mode === 'hub' || mode === 'play';
+  const free = (mode === 'hub' || mode === 'play') && !mg?.lockPlayer && !mg?.cinematic;
   acc += dt;
   while (acc >= STEP) { updatePlayer(g.p, STEP, g.level, !free); acc -= STEP; }
 
@@ -312,6 +316,19 @@ export function frame(ctx, dt) {
     h.walking = h.target != null && Math.abs(h.target - h.x) > 2;
     if (h.walking) { const d = Math.sign(h.target - h.x); h.x += d * 110 * dt; h.facing = d; }
     else h.facing = g.p.x < h.x ? -1 : 1;
+  }
+
+  // Pacing people
+  for (const n of g.npcs) {
+    n.t += dt;
+    n.walking = false;
+    if (n.patrol && !(mg?.lockNpcs && mode !== 'play')) {
+      const [a, b] = n.patrol;
+      if (n.x <= a) n.facing = 1;
+      if (n.x >= b) n.facing = -1;
+      n.x += n.facing * n.speed * dt;
+      n.walking = true;
+    } else if (!n.patrol) n.facing = g.p.x < n.x ? -1 : 1;
   }
 
   for (const b of g.bubbles) b.ttl -= dt;
@@ -325,13 +342,16 @@ export function frame(ctx, dt) {
 function draw(ctx) {
   const camX = g.camX, t = g.time;
   g.level.draw(ctx, camX, t);
-  for (const pr of g.props) drawProp(ctx, pr.x - camX, pr, t);
+  for (const pr of g.props) if (!pr.front) drawProp(ctx, pr.x - camX, pr, t);
+  for (const n of g.npcs) drawPerson(ctx, n.x - camX, GROUND_Y, n.look, n.facing, n.t, n.walking);
   if (mode !== 'play' && !mg && g.level === haga) drawStations(ctx);
   for (const it of g.items) drawItem(ctx, it.x - camX, it.y, it, t);
   if (g.henrik) drawPerson(ctx, g.henrik.x - camX, GROUND_Y, HENRIK, g.henrik.facing, t, g.henrik.walking);
   for (const w of g.walkers) drawPerson(ctx, w.x - camX, GROUND_Y, w.look, w.dir, w.t, true);
   for (const f of g.fallers) drawItem(ctx, f.x - camX, f.y, f, t);
+  g.p.hidden = !!mg?.cinematic;
   drawPlayer(ctx, g.p, camX, g.level.dustColor);
+  for (const pr of g.props) if (pr.front) drawProp(ctx, pr.x - camX, pr, t);
 
   const tint = mg?.tint ?? beat().tint;
   if (tint) { ctx.fillStyle = tint; ctx.fillRect(0, 0, WIDTH, 180); }
@@ -343,6 +363,10 @@ function draw(ctx) {
     ctx.fillStyle = grad; ctx.fillRect(0, 0, WIDTH, 180);
   }
   if (mg?.draw && mode !== 'card') mg.draw(g, ctx);
+  if (mg?.cinematic) { // letterbox bars for the film
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, WIDTH, 14); ctx.fillRect(0, 166, WIDTH, 14);
+  }
 
   // Bubbles and station labels are HTML on top of the canvas
   const list = g.bubbles.map((b) => {
@@ -388,7 +412,7 @@ function drawHud() {
   if (mg) {
     ui.hud({
       clock: b.clock, goal: mode === 'play' ? (mg.goal?.(g) ?? '') : '',
-      timer: mode === 'play' && mg.time ? g.left : null,
+      timer: mode === 'play' && mg.time && !mg.cinematic ? g.left : null,
       meter: mg.meter && mode === 'play' ? g.meter : null, meterLabel: mg.meter || '',
     });
   } else {

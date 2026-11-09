@@ -8,6 +8,7 @@ const CUTTERS = [
   'Är det här kön eller bara folk?',
   'Oj, förlåt! Jag ska bara ha sås.',
   'Vem tar ens sill till lunch? Jag!',
+  'Står 13.2 med på menyn?',
 ];
 
 export default {
@@ -37,7 +38,7 @@ export default {
   },
   win: [
     (g) => ['H', `${Math.ceil(30 - g.t)} sekunder kvar! Imponerande. Mitt rekord är 12 sekunder. Jag åt stående.`],
-    ['A', 'Kände du ens smaken?'],
+    ['D', 'Kände du ens smaken?'],
     ['H', 'Smak är ett möte jag har tackat nej till.'],
   ],
   fail: [['H', 'Klockan är 12:05 och din tallrik är tom. Jag skriver in det som en lärdom.']],
