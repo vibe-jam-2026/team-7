@@ -22,8 +22,9 @@ export default {
   timeoutWins: true,
   intro: [],
   goal: () => 'Mellanslag: hoppa över',
-  setup(g) { g.flags.i = 0; },
+  setup(g) { g.flags.i = 0; g.flags.honked = false; g.sfx.honk(); },
   update(g) {
+    if (!g.flags.honked && g.t > 12.6) { g.flags.honked = true; g.sfx.honk(); } // arriving
     while (g.flags.i < SCRIPT.length && g.t >= SCRIPT[g.flags.i][0]) {
       const [, who, text] = SCRIPT[g.flags.i++];
       g.bubbles = [];

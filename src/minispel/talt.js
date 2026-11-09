@@ -61,7 +61,7 @@ export default {
   lockPlayer: true,
   meter: 'Henrik',
   intro: [
-    ['H', 'Agendapunkt 47: "Vi behöver lyfta på tältet." Det stod i medarbetarundersökningen.'],
+    ['H', 'Agendapunkt 46,5: "Vi behöver lyfta på tältet." Det stod i medarbetarundersökningen.'],
     ['D', 'Jag tror det stod "lyfta på taket".'],
     ['H', 'Tält! Och jag har tagit det bokstavligt. Under ett av Koppartälten ligger samarbetet.'],
     ['H', 'Jag lyfter på tältet, sen skyfflar jag runt dem. Välj tält med ← → och lyft med mellanslag.'],
@@ -97,6 +97,7 @@ export default {
         const a = Math.floor(Math.random() * 3);
         const b = (a + 1 + Math.floor(Math.random() * 2)) % 3;
         f.swap = { a: tentAt(f, a), b: tentAt(f, b), from: a, to: b, e: 0 };
+        g.sfx.whoosh();
       }
       const s = f.swap;
       s.e = Math.min(1, s.e + dt / f.dur);
@@ -115,16 +116,16 @@ export default {
       f.bark -= dt;
       if (f.bark <= 0) { f.bark = 1.6; g.henrikSay(pick(SHUFFLE_BARKS), 1.4); }
     } else if (f.phase === 'choose') {
-      if (wasPressed('left')) f.cursor = Math.max(0, f.cursor - 1);
-      if (wasPressed('right')) f.cursor = Math.min(2, f.cursor + 1);
+      if (wasPressed('left') && f.cursor > 0) { f.cursor--; g.sfx.blip(); }
+      if (wasPressed('right') && f.cursor < 2) { f.cursor++; g.sfx.blip(); }
       if (wasPressed('action') || wasPressed('up') || wasPressed('down')) {
         f.chosen = tentAt(f, f.cursor);
         f.chosen.target = 1;
         f.right = f.chosen === f.tents[f.prize];
         f.phase = 'reveal'; f.pt = 2.2;
         g.say(f.right ? pick(RIGHT) : f.chosen.junk.say, g.p, 'me', 2.2);
-        if (f.right) { g.meter = Math.max(0, g.meter - 34); g.shout('SAMARBETE!'); g.henrikSay(pick(HENRIK_RIGHT), 1.8); }
-        else g.henrikSay(pick(HENRIK_WRONG), 2);
+        if (f.right) { g.meter = Math.max(0, g.meter - 34); g.shout('SAMARBETE!'); g.sfx.tada(); g.henrikSay(pick(HENRIK_RIGHT), 1.8); }
+        else { g.sfx.sadTrombone(); g.henrikSay(pick(HENRIK_WRONG), 2); }
       }
     } else if (f.phase === 'reveal') {
       f.pt -= dt;
@@ -139,7 +140,7 @@ export default {
       }
     }
   },
-  onWin(g) { g.shout('TÄLTET ÄR LYFT!'); for (const t of g.flags.tents) t.target = 1; },
+  onWin(g) { g.shout('TÄLTET ÄR LYFT!'); g.sfx.fanfare(); for (const t of g.flags.tents) t.target = 1; },
   draw(g, ctx) {
     const f = g.flags;
     if (!f.tents) return;

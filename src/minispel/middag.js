@@ -45,6 +45,9 @@ export default {
       g.flags.line++;
       g.flags.slide += 7;
     }
+    // Snoring when you're about to fall asleep
+    g.flags.snore = (g.flags.snore ?? 0) - dt;
+    if (g.meter < 30 && g.flags.snore <= 0) { g.flags.snore = 1.4; g.sfx.snore(); }
     if (g.meter <= 0) return 'fail';
   },
   onCollect(g) {

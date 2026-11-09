@@ -50,20 +50,23 @@ export default {
     // Pick up a sapling at the crate
     if (!f.carry && onGround && Math.abs(g.p.x - CRATE_X) < 14) {
       f.carry = true;
+      g.sfx.pickup();
       g.say('En planta!', g.p, 'me', 1);
     }
 
     // Dig and plant at the nearest free stake
     const plot = f.plots.find((p) => !p.planted && Math.abs(p.x - g.p.x) < 10);
     if (plot && wasPressed('down') && g.p.stun <= 0) {
-      if (!f.carry) g.say('Jag behöver en planta.', g.p, 'me', 1.2);
+      if (!f.carry) { g.sfx.nope(); g.say('Jag behöver en planta.', g.p, 'me', 1.2); }
       else {
         plot.dig++;
         g.p.vx = 0;
+        g.sfx.dig();
         if (plot.dig >= DIGS) {
           plot.planted = true; plot.target = 0.15;
           f.carry = false;
           g.count++;
+          g.sfx.plant();
           g.say(pick(PRAISE), g.p, 'me', 1.3);
         }
       }

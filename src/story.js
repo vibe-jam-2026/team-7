@@ -40,6 +40,7 @@ export const END_STATS = (s) => `
   Möten du fastnade i: ${s.meetings}<br>
   Kanelbullar ätna: 0<br>
   Slides i Henriks tal: 83<br>
+  Stress efter spat: 0 %<br>
   Omtag: ${s.retries}`;
 
 export const STORY = [
@@ -134,12 +135,12 @@ export const STORY = [
     ],
   },
   {
-    clock: 'Dag 2 · 11:58', title: 'Agendapunkt 47',
+    clock: 'Dag 2 · 11:58', title: 'Agendapunkt 46,5',
     play: 'talt',
     before: [
-      ['H', 'Två minuter till lunch! Men först: sista punkten. Den är i guld.'],
+      ['H', 'Två minuter till lunch! Men först: punkt 46,5. Den är i guld.'],
       ['D', 'Jag trodde demon var sista punkten.'],
-      ['H', 'Det var den näst sista. Punkt 47: "Lyfta på tältet". Ut till Koppartälten!'],
+      ['H', 'Jag lade till en halv: "Lyfta på tältet". Ut till Koppartälten!'],
       ['D', 'Är det en metafor?'],
       ['H', 'Det är ett tält.'],
     ],
@@ -153,7 +154,15 @@ export const STORY = [
       ['H', 'Åtta idéer, sex träd, noll kanelbullar och en demo. Och en ny tradition!'],
       ['H', 'Nästa år kör vi frukost till frukost.'],
       ['D', 'Jag tar bussen tillbaka. Det känns som att jag glömt något.'],
-      ['N', '13.2!!! HUR GÅR DET MED 13.2?!'],
+      ['H', 'Vänta! Agendapunkt 47. Den är vit. Det betyder: ingenting.'],
+      ['H', 'Jag har bokat spat åt dig. Badrocken ligger framme. Stäng av mobilen.'],
+      ['D', 'Spa? Inga slides? Ingen energizer?'],
+      ['H', 'Inga slides. Ner till spat vid bryggan. Det är en order.'],
+    ],
+    play: 'spa',
+    after: [
+      ['H', '(från bastun) Nästa år: frukost till frukost. MED spa.'],
+      ['D', 'Då kanske jag kommer.'],
     ],
   },
 ];

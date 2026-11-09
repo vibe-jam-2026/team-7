@@ -53,7 +53,7 @@ export default {
     const names = { hdmi: 'HDMI-adaptern!', dongle: 'Dongeln!', charger: 'Laddaren!' };
     g.say(names[item.kind], g.p, 'me', 1.4);
   },
-  onWin(g) { g.flags.projector.working = true; g.fallers = []; },
+  onWin(g) { g.flags.projector.working = true; g.fallers = []; g.sfx.powerUp(); },
   win: [
     ['D', 'Bild! VI HAR BILD!'],
     ['H', 'Applåder! Och precis i tid till...'],

@@ -11,6 +11,7 @@
 //   g.walker(['repliker'], {side})       en kollega som går mot dig; hoppa över!
 //   g.prop('table' | 'projector', x)     dekor på marken
 //   g.say(text, vem), g.henrikSay(text), g.shout('STOR TEXT')
+//   g.sfx.ding(), g.sfx.kazoo(), g.sfx.sadTrombone() ...  ljudeffekter, se src/ljud.js
 import { GROUND_Y } from '../world.js';
 
 export default {
@@ -21,6 +22,7 @@ export default {
   level: 'haga',                       // 'haga', 'kontoret' eller 'bussen'
   // lockPlayer: true,                // spelaren står still (tangenterna används till annat)
   // cinematic: true,                 // filmsekvens: ingen styrning, mellanslag hoppar över
+  // stayAfterWin: true,              // stanna kvar i minispelet efter vinst (i stället för att gå tillbaka till Haga)
   start: 300,                          // spelarens startposition
   henrik: 340,                         // var Henrik står (null = inte med)
   time: 20,                            // sekunder, eller ta bort för ingen tidsgräns

@@ -2,6 +2,7 @@
 import { keys } from './input.js';
 import { GROUND_Y } from './world.js';
 import { drawPerson, PLAYER } from './sprites.js';
+import { sfx } from './ljud.js';
 
 const WALK_SPEED = 95;   // px/s
 const ACCEL = 500;       // px/s²
@@ -30,6 +31,7 @@ export function updatePlayer(p, dt, level, frozen = false) {
 
   if (control && keys.up && p.onGround) {
     p.vy = -level.jumpSpeed;
+    sfx.jump();
     p.onGround = false;
   }
 
@@ -42,7 +44,7 @@ export function updatePlayer(p, dt, level, frozen = false) {
   if (p.x > level.width - 6) { p.x = level.width - 6; p.vx = Math.min(0, p.vx); }
 
   if (p.y >= GROUND_Y) { // land on the solid ground
-    if (!p.onGround) puff(p, 6);
+    if (!p.onGround) { puff(p, 6); sfx.land(); }
     p.y = GROUND_Y; p.vy = 0; p.onGround = true;
   }
 
