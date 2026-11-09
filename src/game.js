@@ -405,26 +405,53 @@ function draw(ctx) {
   if (mode === 'hub' || (mode !== 'play' && !mg && g.level === haga)) {
     const nextId = beat().play;
     for (const m of stations()) {
-      const style = 'station' + (m.id === nextId ? ' next' : '') + (g.done.has(m.id) ? ' done' : '');
-      const label = (g.done.has(m.id) ? '✓ ' : '') + m.station.label;
-      list.push({ text: label, x: m.station.x, y: GROUND_Y - 38, style });
+      const state = stationState(m);
+      const label = state === 'done' ? `✓ ${m.station.label}` : state === 'locked' ? `${m.station.label} · LÅST` : m.station.label;
+      list.push({ text: label, x: m.station.x, y: GROUND_Y - 38, style: `station ${state}` });
     }
     if (mode === 'hub' && nearStation) {
-      list.push({ text: nearStation.id === nextId ? 'Mellanslag: gå in' : '...', x: g.p.x, y: g.p.y - 30, style: 'me' });
+      const state = stationState(nearStation);
+      const next = MINIGAMES[nextId]?.station?.label;
+      const text = state === 'next' ? 'Mellanslag: gå in'
+        : state === 'done' ? 'Redan klar ✓'
+        : `Låst! Först: ${next ?? 'agendan'}`;
+      list.push({ text, x: g.p.x, y: g.p.y - 30, style: state === 'locked' ? 'locked' : 'me' });
     }
   }
   ui.bubbles(list, camX);
 }
 
-// A small doorway sign for each station, and a bouncing arrow over the next one.
+// 'next' = open now, 'done' = already played, 'locked' = not yet on the agenda
+function stationState(m) {
+  if (m.id === beat().play) return 'next';
+  if (g.done.has(m.id)) return 'done';
+  return 'locked';
+}
+
+// A small sign for each station: orange with a bouncing arrow when open, green with a tick
+// when done, and grey with a padlock and a rope barrier when locked.
 function drawStations(ctx) {
   const nextId = beat().play;
+  const r = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
   for (const m of stations()) {
     const x = Math.round(m.station.x - g.camX);
     if (x < -20 || x > WIDTH + 20) continue;
-    ctx.fillStyle = '#6b4a30'; ctx.fillRect(x - 1, GROUND_Y - 30, 2, 30);
-    ctx.fillStyle = m.id === nextId ? '#ffb838' : '#e8e2d0';
-    ctx.fillRect(x - 6, GROUND_Y - 32, 12, 6);
+    const state = stationState(m);
+    r(x - 1, GROUND_Y - 30, 2, 30, '#6b4a30');
+    r(x - 7, GROUND_Y - 33, 14, 8, '#1e1b22');
+    r(x - 6, GROUND_Y - 32, 12, 6, state === 'next' ? '#ffb838' : state === 'done' ? '#57d27a' : '#8a8a94');
+    if (state === 'done') { // tick
+      r(x - 3, GROUND_Y - 29, 1, 1, '#fff'); r(x - 2, GROUND_Y - 28, 1, 1, '#fff');
+      r(x - 1, GROUND_Y - 29, 1, 1, '#fff'); r(x, GROUND_Y - 30, 1, 1, '#fff'); r(x + 1, GROUND_Y - 31, 1, 1, '#fff');
+    }
+    if (state === 'locked') {
+      // Padlock on the sign
+      r(x - 2, GROUND_Y - 33, 1, 3, '#d8d8de'); r(x + 1, GROUND_Y - 33, 1, 3, '#d8d8de'); r(x - 2, GROUND_Y - 34, 4, 1, '#d8d8de');
+      r(x - 3, GROUND_Y - 30, 6, 4, '#f6c623'); r(x - 1, GROUND_Y - 29, 2, 2, '#1e1b22');
+      // Rope barrier between two small posts
+      for (const px of [x - 12, x + 11]) { r(px, GROUND_Y - 9, 2, 9, '#c9a46a'); r(px - 1, GROUND_Y - 10, 4, 2, '#e8d8b0'); }
+      for (let i = 0; i < 22; i++) r(x - 10 + i, GROUND_Y - 8 + Math.round(Math.sin((i / 21) * Math.PI) * 2), 1, 1, '#d63a3a');
+    }
     if (m.id === nextId && mode === 'hub') {
       const y = GROUND_Y - 62 + Math.round(Math.sin(g.time * 6) * 3);
       ctx.fillStyle = '#ffb838';
