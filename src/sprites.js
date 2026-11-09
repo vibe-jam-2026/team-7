@@ -121,6 +121,30 @@ export function drawItem(ctx, sx, y, item, t) {
   }
 }
 
+// A young tree that grows from a twig (size 0) to a full tree (size 1). Used by the planting game.
+export function drawGrowingTree(ctx, x, size, seed = 1) {
+  const y = GROUND_Y;
+  const h = Math.round(7 + size * 33);
+  const trunkW = size < 0.3 ? 1 : size < 0.7 ? 2 : 3;
+  r(ctx, x - Math.floor(trunkW / 2), y - h + 3, trunkW, h - 3, '#5a4030');
+  const greens = ['#2f5d34', '#3d7442', '#4d8a50', '#6aa85a'];
+  if (size < 0.15) { // just a twig with two leaves
+    r(ctx, x - 2, y - h + 2, 2, 2, greens[3]); r(ctx, x + 1, y - h + 1, 2, 2, greens[2]);
+    return;
+  }
+  const blobs = 3 + Math.round(size * 5);
+  const rad = 2 + size * 6;
+  for (let i = 0; i < blobs; i++) {
+    const a = (i / blobs) * Math.PI * 2 + seed;
+    const ox = Math.round(Math.cos(a) * size * 8);
+    const oy = Math.round(Math.sin(a) * size * 6 + size * 4);
+    ctx.fillStyle = greens[(i + seed) % 3];
+    ctx.beginPath(); ctx.arc(x + ox, y - h + oy, rad, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.fillStyle = greens[3];
+  ctx.beginPath(); ctx.arc(x - size * 2, y - h - size * 2, rad * 0.6, 0, Math.PI * 2); ctx.fill();
+}
+
 // Props stand on the ground and are not picked up.
 export function drawProp(ctx, sx, prop, t) {
   const x = Math.round(sx);
@@ -129,6 +153,22 @@ export function drawProp(ctx, sx, prop, t) {
     r(ctx, x - 14, y - 13, 28, 2, OUTLINE); r(ctx, x - 13, y - 13, 26, 1, '#fff');
     r(ctx, x - 13, y - 12, 26, 3, '#f2efe6'); // tablecloth
     r(ctx, x - 12, y - 9, 2, 9, '#6b4a30'); r(ctx, x + 10, y - 9, 2, 9, '#6b4a30');
+  }
+  if (prop.kind === 'saplings') { // a crate of saplings
+    for (let i = 0; i < 4; i++) drawGrowingTree(ctx, x - 6 + i * 4, 0.05, i);
+    r(ctx, x - 10, y - 7, 20, 7, OUTLINE); r(ctx, x - 9, y - 6, 18, 5, '#a07850');
+    r(ctx, x - 9, y - 4, 18, 1, '#7d5a3a');
+  }
+  if (prop.kind === 'plot') { // a planting spot: a stake with a ribbon, a hole, then a tree
+    if (!prop.planted) {
+      r(ctx, x - 5 - prop.dig, y - 1, 10 + prop.dig * 2, 2, '#6b4a30');
+      if (prop.dig > 0) r(ctx, x - 3 - prop.dig, y - 1, 6 + prop.dig * 2, 1, '#3a2618');
+      r(ctx, x + 7, y - 14, 1, 14, '#c9a46a');
+      r(ctx, x + 8, y - 14 + Math.round(Math.sin(t * 4 + x) * 1), 4, 2, '#ff7a2e');
+    } else {
+      r(ctx, x - 5, y - 2, 10, 2, '#6b4a30'); r(ctx, x - 3, y - 3, 6, 1, '#6b4a30');
+      drawGrowingTree(ctx, x, prop.size, prop.seed);
+    }
   }
   if (prop.kind === 'projector') {
     // Screen on a stand
