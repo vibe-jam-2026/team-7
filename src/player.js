@@ -5,8 +5,6 @@ import { GROUND_Y } from './world.js';
 const WALK_SPEED = 70;   // px/s
 const ACCEL = 500;       // px/s²
 const FRICTION = 600;    // px/s²
-const GRAVITY = 220;     // low moon gravity, px/s²
-const JUMP_SPEED = 120;  // px/s
 
 const C = {
   outline: '#1b1b2a', suit: '#f1f1f5', shade: '#c4c4d2',
@@ -17,7 +15,8 @@ export function createPlayer(x) {
   return { x, y: GROUND_Y, vx: 0, vy: 0, facing: 1, onGround: true, walkTime: 0, time: 0, dust: [] };
 }
 
-export function updatePlayer(p, dt) {
+// `level` gives gravity, jump speed and the level width (see src/levels/).
+export function updatePlayer(p, dt, level) {
   p.time += dt;
   const dir = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
 
@@ -31,13 +30,17 @@ export function updatePlayer(p, dt) {
   }
 
   if (keys.up && p.onGround) {
-    p.vy = -JUMP_SPEED;
+    p.vy = -level.jumpSpeed;
     p.onGround = false;
   }
 
-  p.vy += GRAVITY * dt;
+  p.vy += level.gravity * dt;
   p.x += p.vx * dt;
   p.y += p.vy * dt;
+
+  // Stay inside the level
+  if (p.x < 6) { p.x = 6; p.vx = Math.max(0, p.vx); }
+  if (p.x > level.width - 6) { p.x = level.width - 6; p.vx = Math.min(0, p.vx); }
 
   if (p.y >= GROUND_Y) { // land on the solid ground
     if (!p.onGround) puff(p, 6);
@@ -75,8 +78,8 @@ function flush(ctx) {
   parts = [];
 }
 
-export function drawPlayer(ctx, p, camX) {
-  ctx.fillStyle = '#9a9aa8';
+export function drawPlayer(ctx, p, camX, dustColor = '#9a9aa8') {
+  ctx.fillStyle = dustColor;
   for (const d of p.dust) ctx.fillRect(Math.round(d.x - camX), Math.round(d.y), 1, 1);
 
   // Animation pose
