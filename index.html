@@ -5,10 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Team 7</title>
   <style>
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #111; color: #FFB838; font: 600 48px/1.2 system-ui, sans-serif; }
+    html, body { margin: 0; height: 100%; background: #05060f; overflow: hidden; }
+    body { display: grid; place-items: center; }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+    #hint { position: fixed; bottom: 12px; left: 0; right: 0; text-align: center;
+            color: #8890b0; font: 14px system-ui, sans-serif; pointer-events: none; }
   </style>
 </head>
 <body>
-  <h1>Hello world</h1>
+  <canvas id="game" width="320" height="180"></canvas>
+  <div id="hint">← → gå · ↑ hoppa</div>
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>
