@@ -25,7 +25,7 @@ Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas up
 | Fil | Innehåll |
 |---|---|
 | `src/story.js` | **Berättelsen:** klockslag, Henriks repliker och ordningen på minispelen. Ändra dialog här. |
-| `src/minispel/` | **Ett minispel per fil.** `_mall.js` är en mall att kopiera. Registreras i `index.js`. |
+| `src/minispel/` | **Ett minispel per fil** (t.ex. `trad.js`: plantera träd i parken). `_mall.js` är en mall att kopiera. Registreras i `index.js`. |
 | `src/game.js` | Motorn: navvärlden, in och ut ur minispel, dialog, kollegor som vill ha "fem minuter" |
 | `src/sprites.js` | Pixelgrafik: Henrik (`HENRIK`), kollegor, föremål och dekor |
 | `src/ui.js` | HUD, dialogruta, titelkort och pratbubblor (HTML) |
