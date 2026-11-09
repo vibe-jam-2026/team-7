@@ -54,6 +54,8 @@ const g = {
   },
   henrikSay(text, ttl = 2.6) { if (g.henrik) g.say(text, g.henrik, 'henrik', ttl); },
   shout(text) { ui.shout(text); },
+  // Dialogue choices panel (see ui.choices). Call every frame with the current state; null hides it.
+  choices(data, onPick) { ui.choices(data, onPick); },
 };
 
 // Which sound plays when you pick something up
@@ -62,7 +64,7 @@ const PICKUP_SOUNDS = {
   hdmi: sfx.gadget, dongle: sfx.gadget, charger: sfx.gadget, postit: sfx.paper,
 };
 
-function newStats() { return { coffee: 0, dodged: 0, meetings: 0, retries: 0, hits: 0 }; }
+function newStats() { return { coffee: 0, dodged: 0, meetings: 0, retries: 0, hits: 0, buttons: 0 }; }
 
 // ---- Flow: title → story beats → hub ↔ minigames → end -------------------------
 let mode = 'title';
@@ -124,7 +126,7 @@ function updateDialog(dt) {
 
 function clearScene() {
   g.items = []; g.props = []; g.walkers = []; g.fallers = []; g.bubbles = []; g.npcs = [];
-  ui.shout(null);
+  ui.shout(null); ui.choices(null);
 }
 
 function snapCamera() { g.camX = clampCam(g.p.x - WIDTH / 2); }
@@ -141,7 +143,7 @@ export function startStory(fromBeat = 0) {
 // ---- Dev menu jumps (see src/devmeny.js) -------------------------------------------
 function resetFlow() {
   dlg = null; dlgNext = null; cardNext = null;
-  ui.dialog(null); ui.card(false); ui.shout(null);
+  ui.dialog(null); ui.card(false); ui.shout(null); ui.choices(null);
 }
 
 // Jump to story beat i. direct = go straight into its minigame, otherwise play the beat from its start.
@@ -234,7 +236,7 @@ function enterMinigame(id) {
 }
 
 function winMinigame() {
-  ui.shout(null);
+  ui.shout(null); ui.choices(null);
   mg.onWin?.(g);
   if (!mg.cinematic) sfx.tada();
   talk(mg.win, () => {
@@ -249,7 +251,7 @@ function winMinigame() {
 }
 
 function failMinigame() {
-  ui.shout(null);
+  ui.shout(null); ui.choices(null);
   g.stats.retries++;
   sfx.sadTrombone();
   talk(mg.fail, () => {

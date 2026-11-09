@@ -150,3 +150,41 @@ export function bubbles(list, camX) {
     el.style.top = bottom + 'px';
   }
 }
+
+// ---- Dialogue choices -------------------------------------------------------------
+// A panel with someone's line and up to three answers, used by minigames via g.choices().
+// data: { who, text, mood: ''|'calm'|'angry', options: [{ key, text, state }], bar: 0–1 or null }
+// state: '' | 'good' | 'bad' | 'dim' | 'hidden'. onPick(i) runs when an answer is clicked.
+let choicesKey = '';
+let choicesPick = null;
+export function choices(data, onPick) {
+  const c = $('choices');
+  if (!data) { c.hidden = true; choicesKey = ''; return; }
+  c.hidden = false;
+  choicesPick = onPick;
+  const key = JSON.stringify([data.who, data.text, data.mood, data.options]);
+  if (key !== choicesKey) {
+    choicesKey = key;
+    c.className = data.mood || '';
+    $('choicesWho').textContent = data.who || '';
+    $('choicesText').textContent = data.text || '';
+    const list = $('choicesList');
+    list.innerHTML = '';
+    data.options.forEach((o, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.tabIndex = -1;
+      b.className = 'choice ' + (o.state || '');
+      const k = document.createElement('b'); k.textContent = o.key;
+      b.append(k, document.createTextNode(' ' + o.text));
+      b.addEventListener('mousedown', (e) => e.preventDefault()); // never take focus (space is the action key)
+      b.addEventListener('click', () => { b.blur(); choicesPick?.(i); });
+      list.appendChild(b);
+    });
+  }
+  const bar = $('choicesBar');
+  bar.hidden = data.bar == null;
+  if (data.bar != null) {
+    bar.querySelector('i').style.width = Math.max(0, Math.min(1, data.bar)) * 100 + '%';
+    bar.classList.toggle('urgent', data.bar < 0.35);
+  }
+}

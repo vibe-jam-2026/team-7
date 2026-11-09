@@ -69,6 +69,30 @@
     .bubble.station.locked { background: rgba(40, 40, 48, .8); color: #a8a8b4; }
     .bubble.locked { background: #d63a3a; color: #fff; }
     .bubble.locked::after { border-top-color: #d63a3a; }
+    /* Dialogue choices (ui.choices, used by the Kontrakt minigame) */
+    #choices { position: absolute; left: calc(var(--px) * 14); right: calc(var(--px) * 14); top: calc(var(--px) * 24);
+               background: rgba(12, 14, 32, .94); border: calc(var(--px) * .8) solid #fff;
+               box-shadow: 0 0 0 calc(var(--px) * .8) #000; padding: calc(var(--px) * 2) calc(var(--px) * 3); }
+    #choices.angry { border-color: #ff5a4a; animation: shake .12s 6; }
+    #choices.calm { border-color: #57d27a; }
+    #choicesWho { font: calc(var(--px) * 3.6) 'Press Start 2P', monospace; color: #ff7a6a; margin-bottom: calc(var(--px) * 1); }
+    #choicesText { font-size: calc(var(--px) * 8); line-height: 1; min-height: calc(var(--px) * 8); }
+    #choices.angry #choicesText { color: #ff8a7a; }
+    #choices.calm #choicesText { color: #a8f0b8; }
+    #choicesList { display: flex; flex-direction: column; gap: calc(var(--px) * 1); margin-top: calc(var(--px) * 2); }
+    .choice { all: unset; cursor: pointer; font-family: 'VT323', monospace; font-size: calc(var(--px) * 6.5); line-height: 1.05;
+              color: #dfe3f5; background: #262b4a; padding: calc(var(--px) * .6) calc(var(--px) * 2);
+              border-left: calc(var(--px) * 1) solid #9fd0ff; }
+    .choice b { color: #ffb838; font-weight: normal; }
+    .choice:hover { background: #343b66; }
+    .choice.good { background: #1f6b3a; border-color: #57d27a; color: #fff; }
+    .choice.bad { background: #8e1c1c; border-color: #ff5a4a; color: #fff; }
+    .choice.dim { opacity: .35; }
+    .choice.hidden { visibility: hidden; }
+    #choicesBar { height: calc(var(--px) * 1.5); background: rgba(255,255,255,.15); margin-top: calc(var(--px) * 2); position: relative; }
+    #choicesBar i { position: absolute; left: 0; top: 0; bottom: 0; background: #ffb838; }
+    #choicesBar.urgent i { background: #ff5a4a; }
+    @keyframes shake { 25% { transform: translateX(calc(var(--px) * -1.5)); } 75% { transform: translateX(calc(var(--px) * 1.5)); } }
     #devmeny { position: absolute; inset: calc(var(--px) * 8) calc(var(--px) * 30); overflow-y: auto;
                background: rgba(5, 6, 15, .95); border: calc(var(--px) * .8) solid #57d27a;
                padding: calc(var(--px) * 3) calc(var(--px) * 5); font-size: calc(var(--px) * 7.5); line-height: 1.15; }
@@ -104,6 +128,7 @@
       <div id="meter" hidden><i></i><span></span></div>
     </div>
     <div id="shout" hidden></div>
+    <div id="choices" hidden><div id="choicesWho"></div><div id="choicesText"></div><div id="choicesList"></div><div id="choicesBar"><i></i></div></div>
     <div id="dialog" hidden>
       <canvas id="portrait" width="24" height="24"></canvas>
       <div><div id="speaker"></div><div id="line"></div></div>
