@@ -73,6 +73,16 @@
     .dev-row { white-space: pre; cursor: pointer; color: #c8cdf0; }
     .dev-row.sel { color: #1b1b2a; background: #57d27a; }
     .dev-foot { margin-top: calc(var(--px) * 3); color: #8890b0; font-size: calc(var(--px) * 6); }
+    /* The button you must not press (src/knappen.js) */
+    #forbidden { position: absolute; left: 50%; top: calc(var(--px) * 3); transform: translateX(-50%);
+                 font: calc(var(--px) * 4) 'Press Start 2P', monospace; color: #fff; cursor: pointer;
+                 background: #d42a2a; border: calc(var(--px) * .8) solid #fff; border-radius: calc(var(--px) * 3);
+                 padding: calc(var(--px) * 2) calc(var(--px) * 3);
+                 box-shadow: 0 calc(var(--px) * 1.2) 0 #6e0f0f, 0 0 0 calc(var(--px) * .6) #000; }
+    #forbidden:hover { background: #ff3b3b; }
+    #forbidden:active { transform: translateX(-50%) translateY(calc(var(--px) * 1)); box-shadow: 0 calc(var(--px) * .2) 0 #6e0f0f; }
+    #card.lost { background: rgba(90, 8, 8, .93); }
+    #card.lost #cardTop { color: #ff8a8a; }
     #help { text-align: center; color: #8890b0;
             font: 14px system-ui, sans-serif; pointer-events: none; }
   </style>
@@ -93,6 +103,7 @@
       <div><div id="speaker"></div><div id="line"></div></div>
       <div id="next">▼</div>
     </div>
+    <button id="forbidden" type="button" tabindex="-1">TRYCK INTE</button>
     <div id="card" hidden><div id="cardTop"></div><div id="cardTitle"></div><div id="cardSub"></div><div id="cardHint"></div></div>
   </div>
   <div id="help">← → gå · ↑ hoppa · mellanslag: prata / gå in · Ö: dev-meny</div>
