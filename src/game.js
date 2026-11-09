@@ -8,7 +8,7 @@ import { bussen } from './levels/bussen.js';
 import { createPlayer, updatePlayer, drawPlayer } from './player.js';
 import { drawPerson, drawItem, drawProp, PLAYER, HENRIK, COLLEAGUES } from './sprites.js';
 import { MINIGAMES } from './minispel/index.js';
-import { STORY, SPEAKERS, HUB, STUCK_LINES, END_STATS } from './story.js';
+import { STORY, SPEAKERS, HUB, STUCK_LINES, END_STATS, FORBIDDEN } from './story.js';
 import * as ui from './ui.js';
 
 const LEVELS = { haga, kontoret, bussen };
@@ -150,6 +150,26 @@ export function devPlay(id) {
   const i = STORY.findIndex((b) => b.play === id);
   if (i >= 0) { devJump(i, true); return; }
   enterMinigame(id);
+}
+
+// ---- The red "TRYCK INTE" button (src/knappen.js): you lose, then the game starts over ----
+let lostT = 0;
+export function pressedForbidden() {
+  if (mode === 'lost') return;
+  resetFlow();
+  mode = 'lost';
+  lostT = 0;
+  const l = pick(FORBIDDEN);
+  ui.card(true, { top: 'Du förlorade!', title: l.title, sub: l.sub, hint: 'Spelet börjar om...', lost: true });
+}
+
+function updateLost(dt) {
+  lostT += dt;
+  if (lostT > 6 || (lostT > 1.5 && wasPressed('action'))) {
+    ui.card(false);
+    mg = null;
+    startStory();
+  }
 }
 
 // For testing: lets the console and scripts look at the game state.
@@ -331,6 +351,7 @@ export function frame(ctx, dt) {
   } else if (mode === 'dialog') updateDialog(dt);
   else if (mode === 'hub') updateHub(dt);
   else if (mode === 'play') updatePlay(dt);
+  else if (mode === 'lost') updateLost(dt);
   else if (mode === 'end' && wasPressed('action')) { ui.card(false); startStory(); }
 
   const free = (mode === 'hub' || mode === 'play') && !mg?.lockPlayer && !mg?.cinematic;
@@ -462,7 +483,8 @@ function drawStations(ctx) {
 
 function drawHud() {
   const b = beat();
-  if (mode === 'title' || mode === 'end') { ui.hud({}); return; }
+  ui.forbiddenButton(mode !== 'lost');
+  if (mode === 'title' || mode === 'end' || mode === 'lost') { ui.hud({}); return; }
   if (mg) {
     ui.hud({
       clock: b.clock, goal: mode === 'play' ? (mg.goal?.(g) ?? '') : '',
