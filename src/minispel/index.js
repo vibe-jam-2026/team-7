@@ -9,9 +9,10 @@ import natt from './natt.js';
 import energizer from './energizer.js';
 import trad from './trad.js';
 import demo from './demo.js';
+import talt from './talt.js';
 import spa from './spa.js';
 import kontrakt from './kontrakt.js';
 
 export const MINIGAMES = Object.fromEntries(
-  [kontoret, bussen, buffe, workshop, fika, kontrakt, middag, natt, energizer, trad, demo, spa].map((m) => [m.id, m]),
+  [kontoret, bussen, buffe, workshop, fika, kontrakt, middag, natt, energizer, trad, demo, talt, spa].map((m) => [m.id, m]),
 );
