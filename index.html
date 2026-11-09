@@ -66,6 +66,13 @@
     .bubble.station::after { display: none; }
     .bubble.station.next { background: #ffb838; color: #1b1b2a; }
     .bubble.station.done { opacity: .55; }
+    #devmeny { position: absolute; inset: calc(var(--px) * 8) calc(var(--px) * 30); overflow-y: auto;
+               background: rgba(5, 6, 15, .95); border: calc(var(--px) * .8) solid #57d27a;
+               padding: calc(var(--px) * 3) calc(var(--px) * 5); font-size: calc(var(--px) * 7.5); line-height: 1.15; }
+    .dev-head { font: calc(var(--px) * 5) 'Press Start 2P', monospace; color: #57d27a; margin-bottom: calc(var(--px) * 3); }
+    .dev-row { white-space: pre; cursor: pointer; color: #c8cdf0; }
+    .dev-row.sel { color: #1b1b2a; background: #57d27a; }
+    .dev-foot { margin-top: calc(var(--px) * 3); color: #8890b0; font-size: calc(var(--px) * 6); }
     #help { text-align: center; color: #8890b0;
             font: 14px system-ui, sans-serif; pointer-events: none; }
   </style>
@@ -88,7 +95,7 @@
     </div>
     <div id="card" hidden><div id="cardTop"></div><div id="cardTitle"></div><div id="cardSub"></div><div id="cardHint"></div></div>
   </div>
-  <div id="help">← → gå · ↑ hoppa · mellanslag: prata / gå in</div>
+  <div id="help">← → gå · ↑ hoppa · mellanslag: prata / gå in · Ö: dev-meny</div>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

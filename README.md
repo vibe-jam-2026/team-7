@@ -20,6 +20,8 @@ python3 -m http.server 8000
 ## Kontroller
 ← → gå · ↑ hoppa · mellanslag: prata vidare / gå in vid en station
 
+**Dev-meny:** tryck **Ö** när som helst för att hoppa till valfritt kapitel eller minispel. Enter går direkt in i minispelet, → spelar kapitlet från början (dialog och Haga). Spelet pausas medan menyn är öppen.
+
 ## Struktur
 Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas upp; text och dialog är HTML ovanpå.
 
@@ -29,6 +31,7 @@ Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas up
 | `src/minispel/` | **Ett minispel per fil** (t.ex. `trad.js`: plantera träd i parken). `_mall.js` är en mall att kopiera. Registreras i `index.js`. |
 | `src/game.js` | Motorn: navvärlden, in och ut ur minispel, dialog, kollegor som vill ha "fem minuter" |
 | `src/sprites.js` | Pixelgrafik: du (`PLAYER`), Henrik, Natalie, Markus, Gustav, kollegor, föremål och dekor |
+| `src/devmeny.js` | Dev-menyn (Ö) |
 | `src/ui.js` | HUD, dialogruta, titelkort och pratbubblor (HTML) |
 | `src/player.js` | Spelarens fysik och rörelse |
 | `src/levels/` | Världarna: kontoret, bussen och Haga slott |

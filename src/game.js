@@ -125,6 +125,33 @@ export function startStory(fromBeat = 0) {
   startBeat(fromBeat);
 }
 
+// ---- Dev menu jumps (see src/devmeny.js) -------------------------------------------
+function resetFlow() {
+  dlg = null; dlgNext = null; cardNext = null;
+  ui.dialog(null); ui.card(false); ui.shout(null);
+}
+
+// Jump to story beat i. direct = go straight into its minigame, otherwise play the beat from its start.
+export function devJump(i, direct = true) {
+  resetFlow();
+  g.stats = newStats();
+  g.done = new Set();
+  for (let k = 0; k < i; k++) if (STORY[k]?.play) g.done.add(STORY[k].play);
+  const b = STORY[i];
+  if (direct && b?.play) {
+    beatIndex = i;
+    enterMinigame(b.play);
+  } else startBeat(i);
+}
+
+// Play any minigame, also ones that are not part of the story yet.
+export function devPlay(id) {
+  resetFlow();
+  const i = STORY.findIndex((b) => b.play === id);
+  if (i >= 0) { devJump(i, true); return; }
+  enterMinigame(id);
+}
+
 // For testing: lets the console and scripts look at the game state.
 export const debug = { g, get mode() { return mode; }, get minigame() { return mg?.id; } };
 
