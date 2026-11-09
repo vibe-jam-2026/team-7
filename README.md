@@ -6,7 +6,8 @@ Live: https://vibe-jam-2026.github.io/team-7/ · Instruktioner: [instructions.ht
 Du sitter och kodar på 13.2-leveransen medan projektledarna Natalie, Markus och Gustav får panik.
 Då kliver chefen Henrik Kauhanen in: alla ska på "lunch till lunch" på Haga slott, högsta prio.
 Efter bussresan går man runt på Haga (navvärlden) och går in i minispel vid stationerna, i den ordning
-agendan säger, från lunch dag 1 till lunch dag 2.
+agendan säger, från lunch dag 1 till lunch dag 2. Som belöning slutar allt i spat på Haga slott
+(`src/minispel/spa.js`): en kort film där du äntligen får slappna av i badtunnan medan mobilen surrar om 13.2.
 
 ## Kör lokalt
 Spelet använder ES-moduler och måste därför köras via en webbserver:

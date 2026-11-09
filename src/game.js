@@ -240,7 +240,7 @@ function winMinigame() {
   talk(mg.win, () => {
     g.done.add(mg.id);
     const station = mg.station;
-    if (station) {
+    if (station && !mg.stayAfterWin) {
       enterHub(station.x);
       g.henrik.x = station.x + 26;
     }
