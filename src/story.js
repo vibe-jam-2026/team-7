@@ -139,7 +139,9 @@ export const STORY = [
     before: [
       ['H', 'Två minuter till lunch! Men först: sista punkten. Den är i guld.'],
       ['D', 'Jag trodde demon var sista punkten.'],
-      ['H', 'Det var den näst sista. Ut till Koppartälten!'],
+      ['H', 'Det var den näst sista. Punkt 47: "Lyfta på tältet". Ut till Koppartälten!'],
+      ['D', 'Är det en metafor?'],
+      ['H', 'Det är ett tält.'],
     ],
   },
   {
