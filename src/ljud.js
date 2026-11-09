@@ -3,6 +3,7 @@
 // Use from anywhere: import { sfx } from './ljud.js'; sfx.jump();  (minigames also get g.sfx)
 // M mutes / unmutes. Browsers only allow sound after the first key press or click.
 
+const VOLUME = 1.6; // overall loudness; the compressor keeps it from distorting
 let ac = null;
 let master = null;
 let muted = false;
@@ -13,9 +14,15 @@ function unlock() {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     ac = new AC();
+    // Loud master volume through a compressor, so quiet effects are heard on laptop speakers
+    // and loud ones don't distort.
+    const comp = ac.createDynamicsCompressor();
+    comp.threshold.value = -18; comp.knee.value = 12; comp.ratio.value = 4;
+    comp.attack.value = 0.003; comp.release.value = 0.15;
     master = ac.createGain();
-    master.gain.value = muted ? 0 : 0.32;
-    master.connect(ac.destination);
+    master.gain.value = muted ? 0 : VOLUME;
+    master.connect(comp);
+    comp.connect(ac.destination);
   }
   if (ac.state === 'suspended') ac.resume();
 }
@@ -25,7 +32,8 @@ addEventListener('pointerdown', unlock, true);
 export function toggleMute() {
   muted = !muted;
   try { localStorage.setItem('ljud-av', muted ? '1' : '0'); } catch { /* no storage */ }
-  if (master) master.gain.value = muted ? 0 : 0.32;
+  if (master) master.gain.value = muted ? 0 : VOLUME;
+  if (!muted) setTimeout(() => sfx.pickup(), 30); // a little "pling" so you hear that sound is on
   return muted;
 }
 export function isMuted() { return muted; }
@@ -119,13 +127,13 @@ export const sfx = {
   // Talking: a few babble blips in the speaker's voice
   blip: (who = 'D') => {
     const base = VOICES[who] ?? 240;
-    tone({ type: 'square', f0: base * (0.85 + Math.random() * 0.4), dur: 0.035, vol: 0.05, lp: 2200 });
+    tone({ type: 'square', f0: base * (0.85 + Math.random() * 0.4), dur: 0.045, vol: 0.17, lp: 2200 });
   },
   chatter: (who = 'K', n = 4) => {
     const base = VOICES[who] ?? 230;
-    for (let i = 0; i < n; i++) tone({ type: 'square', f0: base * (0.8 + Math.random() * 0.5), dur: 0.04, vol: 0.045, at: i * 0.06, lp: 2000 });
+    for (let i = 0; i < n; i++) tone({ type: 'square', f0: base * (0.8 + Math.random() * 0.5), dur: 0.045, vol: 0.09, at: i * 0.06, lp: 2000 });
   },
-  click: () => tone({ type: 'square', f0: 1800, dur: 0.02, vol: 0.05 }),
+  click: () => tone({ type: 'square', f0: 1800, dur: 0.025, vol: 0.09 }),
 
   // Story moments
   slide: () => tone({ type: 'sine', f0: 380, f1: 1500, dur: 0.38, vol: 0.18, vib: 7, vibDepth: 20 }),        // slide whistle (title cards)
@@ -149,7 +157,7 @@ export const sfx = {
 
   // Minigame specials
   type: () => noise({ dur: 0.025, vol: 0.12, type: 'highpass', f0: 2500 + Math.random() * 2000 }),            // keyboard clack
-  siren: () => [0, 0.25, 0.5, 0.75].forEach((at, i) => tone({ type: 'square', f0: i % 2 ? 660 : 880, dur: 0.24, vol: 0.07, at, lp: 2500 })),
+  siren: () => [0, 0.25, 0.5, 0.75].forEach((at, i) => tone({ type: 'square', f0: i % 2 ? 660 : 880, dur: 0.24, vol: 0.12, at, lp: 2500 })),
   honk: () => [0, 0.32].forEach((at) => { tone({ type: 'square', f0: 330, dur: 0.22, vol: 0.1, at, lp: 1200 }); tone({ type: 'square', f0: 415, dur: 0.22, vol: 0.08, at, lp: 1200 }); }),
   whistle: () => tone({ type: 'sine', f0: 2400, dur: 0.22, vol: 0.12, vib: 40, vibDepth: 150 }),               // referee whistle
   ding: () => tone({ type: 'sine', f0: 1046, dur: 0.3, vol: 0.2 }),
