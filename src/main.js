@@ -4,7 +4,7 @@ import { clearPressed } from './input.js';
 import { frame, startStory } from './game.js';
 import { setScale } from './ui.js';
 import { devMenuOpen } from './devmeny.js';
-import { toggleMute, isMuted } from './ljud.js';
+import { toggleMute, audioStatus, soundButton } from './ljud.js';
 import './knappen.js';
 
 const canvas = document.getElementById('game');
@@ -26,8 +26,23 @@ const chapter = new URLSearchParams(location.search).get('kapitel');
 if (chapter != null) startStory(parseInt(chapter, 10) || 0);
 
 // M turns the sound on and off
-const showMute = () => { const el = document.getElementById('ljudstatus'); if (el) el.textContent = isMuted() ? 'M: ljud av' : 'M: ljud på'; };
-addEventListener('keydown', (e) => { if (e.key === 'm' || e.key === 'M') { toggleMute(); showMute(); } });
+// The sound button under the game shows whether sound is on, off or blocked by the browser
+const ljudBtn = document.getElementById('ljudbtn');
+const LJUD_TEXT = {
+  waiting: '🔈 Ljud: tryck en tangent',
+  on: '🔊 Ljud på (M)',
+  off: '🔇 Ljud av (M)',
+  blocked: '⚠ Ljudet blockeras av webbläsaren – klicka här',
+};
+const showMute = () => {
+  const st = audioStatus();
+  ljudBtn.textContent = LJUD_TEXT[st];
+  ljudBtn.classList.toggle('blocked', st === 'blocked');
+};
+ljudBtn.addEventListener('mousedown', (e) => e.preventDefault()); // don't steal keyboard focus
+ljudBtn.addEventListener('click', () => { soundButton(); setTimeout(showMute, 100); });
+addEventListener('keydown', (e) => { if (e.key === 'm' || e.key === 'M') toggleMute(); });
+setInterval(showMute, 400);
 showMute();
 
 let last = performance.now();

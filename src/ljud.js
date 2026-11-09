@@ -9,7 +9,7 @@ let master = null;
 let muted = false;
 try { muted = localStorage.getItem('ljud-av') === '1'; } catch { /* no storage */ }
 
-function unlock() {
+export function unlock() {
   if (!ac) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
@@ -26,8 +26,22 @@ function unlock() {
   }
   if (ac.state === 'suspended') ac.resume();
 }
-addEventListener('keydown', unlock, true);
-addEventListener('pointerdown', unlock, true);
+// Any of these count as "the user did something", which browsers require before playing sound
+for (const ev of ['keydown', 'pointerdown', 'mousedown', 'click', 'touchend']) addEventListener(ev, unlock, true);
+
+// 'waiting' = no key pressed yet, 'on', 'off' = muted with M, 'blocked' = the browser refuses to play
+export function audioStatus() {
+  if (muted) return 'off';
+  if (!ac) return 'waiting';
+  return ac.state === 'running' ? 'on' : 'blocked';
+}
+
+// The sound button: start sound, unmute if needed, and play a test pling
+export function soundButton() {
+  unlock();
+  if (muted) toggleMute();
+  else setTimeout(() => sfx.pickup(), 30);
+}
 
 export function toggleMute() {
   muted = !muted;
