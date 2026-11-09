@@ -134,6 +134,15 @@ export const STORY = [
     ],
   },
   {
+    clock: 'Dag 2 · 11:58', title: 'Agendapunkt 47',
+    play: 'talt',
+    before: [
+      ['H', 'Två minuter till lunch! Men först: sista punkten. Den är i guld.'],
+      ['D', 'Jag trodde demon var sista punkten.'],
+      ['H', 'Det var den näst sista. Ut till Koppartälten!'],
+    ],
+  },
+  {
     clock: 'Dag 2 · 12:00', title: 'Lunch. Igen.',
     before: [
       ['H', 'Och så var det lunch igen. Precis enligt agendan.'],
