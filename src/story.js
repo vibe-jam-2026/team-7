@@ -2,7 +2,7 @@
 // Each beat has a clock, Henrik's lines before and after, and which minigame (station) comes next.
 // Edit the text here freely. Lines are ['H', 'text'] (see SPEAKERS for who is who),
 // or a function (g) => [...] when the line needs live numbers.
-import { HENRIK, PLAYER, NATALIE, MARKUS, GUSTAV } from './sprites.js';
+import { HENRIK, PLAYER, NATALIE, MARKUS, GUSTAV, KERSTIN } from './sprites.js';
 
 export const SPEAKERS = {
   H: { name: 'Henrik Kauhanen', role: 'chefen', color: '#ffb838', look: HENRIK },
@@ -10,6 +10,7 @@ export const SPEAKERS = {
   N: { name: 'Natalie', role: 'projektledare', color: '#ff9fc8', look: NATALIE },
   M: { name: 'Markus', role: 'projektledare', color: '#a8e08a', look: MARKUS },
   G: { name: 'Gustav', role: 'projektledare', color: '#c8b0ff', look: GUSTAV },
+  K: { name: 'Kerstin', role: 'avdelning Kontrakt', color: '#ff7a6a', look: KERSTIN },
 };
 
 export const HUB = {
@@ -38,6 +39,7 @@ export const END_STATS = (s) => `
   Kaffekoppar: ${s.coffee}<br>
   Möten du hoppade över: ${s.dodged}<br>
   Möten du fastnade i: ${s.meetings}<br>
+  Kerstins knappar du tryckte på: ${s.buttons ?? 0}<br>
   Kanelbullar ätna: 0<br>
   Slides i Henriks tal: 83<br>
   Stress efter spat: 0 %<br>
@@ -86,6 +88,17 @@ export const STORY = [
       ['H', 'FIKA! Nere vid bryggan. Det finns kaffe och EN kanelbulle kvar.'],
       ['D', 'En bulle? Till hela teamet?'],
       ['H', 'Jag kallar det resursoptimering.'],
+    ],
+  },
+  {
+    clock: 'Dag 1 · 16:30', title: 'Mingel på terrassen',
+    play: 'kontrakt',
+    before: [
+      ['H', 'Mingel på terrassen! Nätverka över avdelningsgränserna. Det står i punkt 17.'],
+      ['D', 'Jag tar ett glas vatten och står nära utgången.'],
+      ['H', 'Kerstin från Kontrakt har frågat efter dig. Fyra gånger. Med en pärm.'],
+      ['D', 'En pärm? Vad har jag gjort?'],
+      ['H', 'Något med kontona. Ett tips: tryck inte på hennes knappar.'],
     ],
   },
   {

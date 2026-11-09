@@ -29,6 +29,12 @@ export const GUSTAV = {
   shoes: '#333', glasses: true, prop: 'mug', lanyard: '#2e86de',
 };
 
+// Kerstin from the contracts department (avdelning Kontrakt). Always carries the binder.
+export const KERSTIN = {
+  jacket: '#7a1f2b', pants: '#2a2a33', shirt: '#f4efe6', hair: '#9a9aa4', skin: '#f1c9a5',
+  shoes: '#222', glasses: true, hairLong: true, prop: 'binder', lanyard: '#2e86de',
+};
+
 export const COLLEAGUES = [
   { jacket: '#8e3b46', pants: '#33334a', shirt: '#f0e6d2', hair: '#2b2b2b', skin: '#c68e6b', shoes: '#222', prop: 'laptop', lanyard: '#2e86de' },
   { jacket: '#3b7d6e', pants: '#4a3b2b', shirt: '#fff', hair: '#d9b14a', skin: '#f1c9a5', shoes: '#222', prop: 'laptop', lanyard: '#2e86de' },
@@ -77,6 +83,7 @@ export function drawPerson(ctx, sx, y, look, facing = 1, t = 0, walking = false)
   if (look.prop === 'mug') { r(ctx, 1, -14 + bob, 4, 4, '#fff'); r(ctx, 1, -14 + bob, 4, 1, '#6b3e1f'); r(ctx, 5, -13 + bob, 1, 2, '#fff'); }
   if (look.prop === 'laptop') { r(ctx, 0, -15 + bob, 8, 5, '#9aa0a8'); r(ctx, 1, -14 + bob, 6, 3, '#cfe3ff'); }
   if (look.prop === 'phone') { r(ctx, 1, -15 + bob, 3, 5, '#222'); r(ctx, 2, -14 + bob, 1, 3, '#7fc4ff'); }
+  if (look.prop === 'binder') { r(ctx, 0, -16 + bob, 6, 8, '#1f4fa8'); r(ctx, 1, -15 + bob, 1, 6, '#e8e8e8'); r(ctx, 3, -13 + bob, 2, 2, '#fff'); }
   if (look.prop === 'glass') { r(ctx, 1, -15 + bob, 3, 5, '#cfeaf7'); r(ctx, 1, -13 + bob, 3, 3, '#f6c623'); }
   ctx.restore();
 }
