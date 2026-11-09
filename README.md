@@ -32,6 +32,7 @@ Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas up
 | `src/game.js` | Motorn: navvärlden, in och ut ur minispel, dialog, kollegor som vill ha "fem minuter" |
 | `src/sprites.js` | Pixelgrafik: du (`PLAYER`), Henrik, Natalie, Markus, Gustav, kollegor, föremål och dekor |
 | `src/devmeny.js` | Dev-menyn (Ö) |
+| `src/ljud.js` | Ljudeffekter, skapade med Web Audio (inga ljudfiler). `g.sfx.namn()` i minispel. M stänger av. |
 | `src/ui.js` | HUD, dialogruta, titelkort och pratbubblor (HTML) |
 | `src/player.js` | Spelarens fysik och rörelse |
 | `src/levels/` | Världarna: kontoret, bussen och Haga slott |

@@ -36,14 +36,15 @@ export default {
         f.last = f.cur;
         f.window = Math.max(0.9, 1.9 - f.ok * 0.13);
         g.shout(f.cur.label);
+        g.sfx.whistle();
         g.henrikSay(f.cur.label, 1);
       }
     } else {
       f.window -= dt;
       const pressed = ['up', 'down', 'left', 'right'].find((k) => wasPressed(k));
       if (pressed || f.window <= 0) {
-        if (pressed === f.cur.key) { f.ok++; g.henrikSay(pick(PRAISE), 1); }
-        else { f.miss++; g.henrikSay(pressed ? pick(WRONG) : 'För långsamt! Vakna!', 1.2); }
+        if (pressed === f.cur.key) { f.ok++; g.sfx.ding(); g.henrikSay(pick(PRAISE), 1); }
+        else { f.miss++; g.sfx.buzzer(); g.henrikSay(pressed ? pick(WRONG) : 'För långsamt! Vakna!', 1.2); }
         f.cur = null; f.gap = 0.45;
         g.shout(null);
       }

@@ -37,7 +37,7 @@ export default {
   },
   update(g, dt) {
     const presses = ['left', 'right', 'up', 'down', 'action'].filter((k) => wasPressed(k)).length;
-    if (presses) { g.meter = Math.min(99, g.meter + 2.6 * presses); g.flags.desk.lines += presses; }
+    if (presses) { g.meter = Math.min(99, g.meter + 2.6 * presses); g.flags.desk.lines += presses; g.sfx.type(); }
 
     // The project managers take turns shouting
     g.flags.shoutT -= dt;
@@ -52,6 +52,7 @@ export default {
       g.flags.bugT = 4;
       g.meter = Math.max(5, g.meter - 12);
       g.shout(pick(BUGS));
+      g.sfx.siren();
       g.flags.bigT = 1.2;
     }
     g.flags.bigT -= dt;
