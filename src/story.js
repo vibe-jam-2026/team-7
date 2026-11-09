@@ -116,6 +116,15 @@ export const STORY = [
     ],
   },
   {
+    clock: 'Dag 2 · 09:30', title: 'Hållbarhetspunkten',
+    play: 'trad',
+    before: [
+      ['H', 'Agendapunkt 31! Den är grön. Det betyder hållbarhet. Eller att jag fick slut på de andra pennorna.'],
+      ['D', 'Vad ska vi göra?'],
+      ['H', 'Plantera träd! Ut i parken, vid trädplanteringen. Spaden är redan där.'],
+    ],
+  },
+  {
     clock: 'Dag 2 · 11:52', title: 'Strax före lunch',
     play: 'demo',
     before: [
@@ -130,7 +139,7 @@ export const STORY = [
       ['H', 'Och så var det lunch igen. Precis enligt agendan.'],
       ['H', 'Bra jobbat. Du överlevde lunch till lunch.'],
       ['D', 'Tack. Vad kom vi fram till?'],
-      ['H', 'Åtta idéer, noll kanelbullar och en demo. Och en ny tradition!'],
+      ['H', 'Åtta idéer, sex träd, noll kanelbullar och en demo. Och en ny tradition!'],
       ['H', 'Nästa år kör vi frukost till frukost.'],
       ['D', 'Jag tar bussen tillbaka. Det känns som att jag glömt något.'],
       ['N', '13.2!!! HUR GÅR DET MED 13.2?!'],

@@ -7,8 +7,9 @@ import fika from './fika.js';
 import middag from './middag.js';
 import natt from './natt.js';
 import energizer from './energizer.js';
+import trad from './trad.js';
 import demo from './demo.js';
 
 export const MINIGAMES = Object.fromEntries(
-  [kontoret, bussen, buffe, workshop, fika, middag, natt, energizer, demo].map((m) => [m.id, m]),
+  [kontoret, bussen, buffe, workshop, fika, middag, natt, energizer, trad, demo].map((m) => [m.id, m]),
 );
