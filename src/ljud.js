@@ -122,7 +122,7 @@ function noise({ dur = 0.2, vol = 0.2, at = 0, when = null, type = 'bandpass', f
 const notes = (list, opts) => list.forEach(([f, at, dur]) => tone({ ...opts, f0: f, at, dur }));
 
 // Voices for dialogue babble: base pitch per speaker
-const VOICES = { H: 240, D: 420, N: 640, M: 280, G: 500, K: 380, henrik: 240, me: 420 };
+const VOICES = { H: 240, D: 420, N: 640, M: 280, G: 500, K: 380, KA: 580, J: 320, NI: 700, ux: 600, henrik: 240, me: 420 };
 
 // ---- The effects ----------------------------------------------------------------
 export const sfx = {

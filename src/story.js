@@ -2,7 +2,7 @@
 // Each beat has a clock, Henrik's lines before and after, and which minigame (station) comes next.
 // Edit the text here freely. Lines are ['H', 'text'] (see SPEAKERS for who is who),
 // or a function (g) => [...] when the line needs live numbers.
-import { HENRIK, PLAYER, NATALIE, MARKUS, GUSTAV, KERSTIN } from './sprites.js';
+import { HENRIK, PLAYER, NATALIE, MARKUS, GUSTAV, KERSTIN, KATARINA, JOCKE, NIKKI } from './sprites.js';
 
 export const SPEAKERS = {
   H: { name: 'Henrik Kauhanen', role: 'chefen', color: '#ffb838', look: HENRIK },
@@ -11,6 +11,69 @@ export const SPEAKERS = {
   M: { name: 'Markus', role: 'projektledare', color: '#a8e08a', look: MARKUS },
   G: { name: 'Gustav', role: 'projektledare', color: '#c8b0ff', look: GUSTAV },
   K: { name: 'Kerstin', role: 'avdelning Kontrakt', color: '#ff7a6a', look: KERSTIN },
+  KA: { name: 'Katarina', role: 'UX-designer', color: '#c9a2ff', look: KATARINA },
+  J: { name: 'Jocke', role: 'UX-designer', color: '#c9a2ff', look: JOCKE },
+  NI: { name: 'Nikki', role: 'UX-designer', color: '#c9a2ff', look: NIKKI },
+};
+
+// The UX designers who now and then chase you around the Haga hub (src/designers.js).
+// shout = what they yell while running after you, pitch = what they say when they catch you,
+// giveUp = what they say when you have jumped over them too many times.
+export const DESIGNERS = {
+  chaseEvery: [16, 28], // seconds in the hub between chases (random in this range)
+  speed: 112,           // you walk at 95 px/s, so you have to jump over them
+  people: [
+    {
+      who: 'KA', name: 'Katarina',
+      shout: [
+        'Har du fem sek?! Jag har 14 nya flöden!',
+        'Användarflödet är TRASIGT! Jag har en ny happy path!',
+        'Det är bara lo-fi! Men pixelperfekt!',
+        'Min prototyp har 312 frames! Kolla!',
+        'Användaren hittar inte knappen! Den måste bli mer... knappig!',
+      ],
+      pitch: [
+        'Se här: onboarding i 11 steg. Nej, 12!',
+        'Swipea här! Nej, inte där! Där är det en hover!',
+        'Det här är user journeyn. Den gråter i steg 4.',
+      ],
+    },
+    {
+      who: 'J', name: 'Jocke',
+      shout: [
+        'Knappen ligger inte i 8-punktsgriden!',
+        'Jag har gjort om hela designsystemet. IGEN!',
+        'Hamburgermenyn är död! Leve kebabmenyn!',
+        'Ni har hårdkodat #333! Det heter grey-900-alpha-80!',
+        'Glassmorphism! Neumorphism! Allt-morphism!',
+      ],
+      pitch: [
+        'Auto layout! AUTO LAYOUT! Ser du?!',
+        'final_FINAL_v7_riktig_DENNA.fig',
+        'Och här öppnas en modal. I en modal. I en modal.',
+      ],
+    },
+    {
+      who: 'NI', name: 'Nikki',
+      shout: [
+        'Jag pratade med EN användare och hon HATAR dropdowns!',
+        'Kan vi flytta CTA:n tre pixlar? Strategiskt!',
+        'Dark mode! Varför finns inget dark mode?!',
+        'Jag har en persona! Han heter Kent! Kent är arg!',
+        'Det är inte en bugg, det är UX-skuld!',
+      ],
+      pitch: [
+        'Empatikartan säger att Kent vill ha konfetti.',
+        'Jag har taggat dig i 40 kommentarer i Figma!',
+        'Kan vi bara... A/B-testa hela appen? Idag?',
+      ],
+    },
+  ],
+  // What you say when one of them catches you
+  stuck: ['Jag är backend...', 'Det ser... väldigt lila ut.', 'Kan du lägga det i Jira?', 'Snyggt! Absolut! Jag måste gå.', 'Är det där ens möjligt i CSS?'],
+  giveUp: ['Jag lägger länken i Slack!', 'Jag bokar en design-crit kl 03!', 'Vänta tills du ser v8!', 'Jag taggar dig i Figma då!'],
+  // Sometimes all three come at once
+  rush: 'UX-RUSH! Alla tre har Figma-länkar!',
 };
 
 export const HUB = {
@@ -40,6 +103,8 @@ export const END_STATS = (s) => `
   Möten du hoppade över: ${s.dodged}<br>
   Möten du fastnade i: ${s.meetings}<br>
   Kerstins knappar du tryckte på: ${s.buttons ?? 0}<br>
+  Figma-koncept du tvingades se: ${s.figma ?? 0}<br>
+  UX-designers du hoppade över: ${s.uxDodged ?? 0}<br>
   Kanelbullar ätna: 0<br>
   Slides i Henriks tal: 83<br>
   Stress efter spat: 0 %<br>
