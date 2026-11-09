@@ -10,6 +10,7 @@ import { drawPerson, drawItem, drawProp, PLAYER, HENRIK, COLLEAGUES } from './sp
 import { MINIGAMES } from './minispel/index.js';
 import { STORY, SPEAKERS, HUB, STUCK_LINES, END_STATS, FORBIDDEN } from './story.js';
 import * as ui from './ui.js';
+import { sfx } from './ljud.js';
 
 const LEVELS = { haga, kontoret, bussen };
 const STEP = 1 / 120;
@@ -22,6 +23,7 @@ const g = {
   items: [], props: [], walkers: [], fallers: [], bubbles: [], npcs: [],
   henrik: null, done: new Set(),
   stats: newStats(),
+  sfx, // sound effects for minigames: g.sfx.ding() etc. (see src/ljud.js)
 
   item(kind, x, y, extra = {}) { const it = { kind, x, y, ...extra }; g.items.push(it); return it; },
   prop(kind, x, extra = {}) { const pr = { kind, x, ...extra }; g.props.push(pr); return pr; },
@@ -48,9 +50,16 @@ const g = {
   say(text, who = g.p, style = '', ttl = 2.4) {
     g.bubbles = g.bubbles.filter((b) => b.who !== who);
     g.bubbles.push({ text, who, style, ttl });
+    sfx.chatter(style === 'henrik' ? 'H' : style === 'me' ? 'D' : 'K', 3);
   },
   henrikSay(text, ttl = 2.6) { if (g.henrik) g.say(text, g.henrik, 'henrik', ttl); },
   shout(text) { ui.shout(text); },
+};
+
+// Which sound plays when you pick something up
+const PICKUP_SOUNDS = {
+  coffee: sfx.coffee, bulle: sfx.mums, key: sfx.jingle,
+  hdmi: sfx.gadget, dongle: sfx.gadget, charger: sfx.gadget, postit: sfx.paper,
 };
 
 function newStats() { return { coffee: 0, dodged: 0, meetings: 0, retries: 0, hits: 0 }; }
@@ -69,6 +78,7 @@ const beat = () => STORY[beatIndex] || {};
 function showCard(info, next, duration = 1.8) {
   mode = 'card';
   ui.card(true, info);
+  sfx.slide();
   cardT = duration; cardMin = duration - 0.3; cardNext = next;
 }
 
@@ -97,9 +107,12 @@ function updateDialog(dt) {
   const text = dlg.lines[dlg.i][1];
   const before = Math.floor(dlg.n);
   dlg.n = Math.min(text.length, dlg.n + dt * 70);
+  const now = Math.floor(dlg.n);
+  if (now !== before && now % 3 === 0 && text[now - 1] && text[now - 1] !== ' ') sfx.blip(dlg.lines[dlg.i][0]);
   if (Math.floor(dlg.n) !== before || dlg.n === text.length) ui.dialogText(text.slice(0, Math.floor(dlg.n)), dlg.n >= text.length);
   if (wasPressed('action') || wasPressed('up')) {
     if (dlg.n < text.length) { dlg.n = text.length; ui.dialogText(text, true); return; }
+    sfx.click();
     dlg.i++;
     if (dlg.i >= dlg.lines.length) {
       ui.dialog(null);
@@ -159,6 +172,7 @@ export function pressedForbidden() {
   resetFlow();
   mode = 'lost';
   lostT = 0;
+  sfx.siren(); sfx.sadTrombone(); // you were told not to
   const l = pick(FORBIDDEN);
   ui.card(true, { top: 'Du förlorade!', title: l.title, sub: l.sub, hint: 'Spelet börjar om...', lost: true });
 }
@@ -222,6 +236,7 @@ function enterMinigame(id) {
 function winMinigame() {
   ui.shout(null);
   mg.onWin?.(g);
+  if (!mg.cinematic) sfx.tada();
   talk(mg.win, () => {
     g.done.add(mg.id);
     const station = mg.station;
@@ -236,6 +251,7 @@ function winMinigame() {
 function failMinigame() {
   ui.shout(null);
   g.stats.retries++;
+  sfx.sadTrombone();
   talk(mg.fail, () => {
     const id = mg.id;
     setupMinigame(id);
@@ -245,6 +261,7 @@ function failMinigame() {
 
 function endGame() {
   mode = 'end';
+  sfx.fanfare();
   ui.card(true, { top: 'Lunch till lunch', title: 'Du överlevde!', sub: END_STATS(g.stats), hint: 'Mellanslag: spela igen' });
 }
 
@@ -260,7 +277,8 @@ function updateHub(dt) {
 
   nearStation = stations().find((m) => Math.abs(m.station.x - g.p.x) < 16) || null;
   if (nearStation && wasPressed('action')) {
-    if (nearStation.id === nextId) { enterMinigame(nextId); return; }
+    if (nearStation.id === nextId) { sfx.door(); enterMinigame(nextId); return; }
+    sfx.nope();
     if (g.done.has(nearStation.id)) g.say(pick(HUB.alreadyDone), g.p, 'me', 2);
     else g.henrikSay(pick(HUB.notYet)(next?.station.label || 'lunch'));
   }
@@ -282,6 +300,7 @@ function updatePlay(dt) {
     if (it.ttl != null) it.ttl -= dt;
     if (!it.gone && near(it.x, it.y)) {
       it.gone = true;
+      (PICKUP_SOUNDS[it.kind] || sfx.pickup)();
       if (mg.onCollect) mg.onCollect(g, it); else g.count++;
     }
   }
@@ -294,11 +313,15 @@ function updatePlay(dt) {
       if (f.bad) {
         g.p.stun = Math.max(g.p.stun, f.stun ?? 0.9);
         g.stats.hits++;
+        (f.kind === 'postit' ? sfx.kazoo : f.kind === 'popup' ? sfx.error : sfx.bonk)();
         if (f.text) g.say(f.text, g.p, 'me', 1.6);
         mg.onHit?.(g, f);
-      } else if (mg.onCatch) mg.onCatch(g, f); else g.count++;
+      } else {
+        (f.kind === 'postit' ? sfx.paper : sfx.pickup)();
+        if (mg.onCatch) mg.onCatch(g, f); else g.count++;
+      }
     }
-    if (f.y >= GROUND_Y - 4 && !f.gone) { f.gone = true; mg.onMiss?.(g, f); }
+    if (f.y >= GROUND_Y - 4 && !f.gone) { f.gone = true; if (!f.bad) sfx.plop(); mg.onMiss?.(g, f); }
   }
   g.fallers = g.fallers.filter((f) => !f.gone);
 
@@ -312,12 +335,14 @@ function updatePlay(dt) {
         w.done = true;
         g.p.stun = 1.2;
         g.stats.meetings++;
+        sfx.bonk();
         g.say(pick(STUCK_LINES), g.p, 'me', 1.4);
         w.dir = -w.dir; w.speed *= 1.8;
         mg.onWalkerHit?.(g, w);
       } else if (Math.sign(w.x - g.p.x) !== w.side && dist > 6) {
         w.done = true;
         g.stats.dodged++; g.dodgedHere++;
+        sfx.whoosh();
       }
     }
   }
@@ -325,7 +350,9 @@ function updatePlay(dt) {
 
   let result = mg.update?.(g, dt);
   if (!result && mg.time) {
+    const before = Math.ceil(g.left);
     g.left -= dt;
+    if (Math.ceil(g.left) !== before && before <= 6 && before > 1) sfx.tick(); // last seconds tick
     if (g.left <= 0) result = mg.timeoutWins ? 'win' : 'fail';
   }
   if (result === 'win') winMinigame();
