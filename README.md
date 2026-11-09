@@ -20,7 +20,7 @@ python3 -m http.server 8000
 ## Kontroller
 ← → gå · ↑ hoppa · mellanslag: prata vidare / gå in vid en station
 
-**Dev-meny:** tryck **Ö** när som helst för att hoppa till valfritt kapitel eller minispel. Enter går direkt in i minispelet, → spelar kapitlet från början (dialog och Haga). Spelet pausas medan menyn är öppen.
+**Dev-meny:** tryck **Ö** (eller **§**, eller klicka **DEV** under spelet) när som helst för att hoppa till valfritt kapitel eller minispel. Enter går direkt in i minispelet, → spelar kapitlet från början (dialog och Haga). Spelet pausas medan menyn är öppen.
 
 ## Struktur
 Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas upp; text och dialog är HTML ovanpå.

@@ -1,4 +1,4 @@
-// Dev menu: press Ö to jump to any chapter or minigame. Handy when building and testing.
+// Dev menu: press Ö (or §, or click DEV) to jump to any chapter or minigame. Handy when testing.
 // ↑ ↓ choose · Enter: straight into the minigame · → : play the chapter from its start (dialogue + Haga) · Ö / Esc: close
 import { STORY } from './story.js';
 import { MINIGAMES } from './minispel/index.js';
@@ -61,7 +61,7 @@ function choose(i, direct) {
 
 export function devMenuOpen() { return open; }
 
-const isToggle = (e) => e.key === 'ö' || e.key === 'Ö' || e.code === 'Semicolon';
+const isToggle = (e) => ['ö', 'Ö', '§', '½'].includes(e.key) || e.code === 'Semicolon' || e.code === 'Backquote';
 
 // Capture phase on window runs before the game's own key handling, so the menu can swallow keys.
 addEventListener('keydown', (e) => {
@@ -74,4 +74,8 @@ addEventListener('keydown', (e) => {
   else if (e.key === 'Enter' || e.key === ' ') choose(sel, true);
   else if (e.key === 'ArrowRight') choose(sel, false);
 }, true);
-addEventListener('keyup', (e) => { if (open || isToggle(e)) e.stopImmediatePropagation(); }, true);
+addEventListener('keyup', (e) => { if (open || isToggle(e)) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+
+// A clickable DEV button, in case the keyboard layout has no Ö
+const btn = document.getElementById('devbtn');
+if (btn) btn.onclick = () => { btn.blur(); setOpen(!open); };
