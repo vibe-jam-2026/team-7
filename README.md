@@ -36,6 +36,7 @@ Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas up
 | `src/sprites.js` | Pixelgrafik: du (`PLAYER`), Henrik, Natalie, Markus, Gustav, kollegor, föremål och dekor |
 | `src/devmeny.js` | Dev-menyn (Ö) |
 | `src/ljud.js` | Ljudeffekter, skapade med Web Audio (inga ljudfiler). `g.sfx.namn()` i minispel. M stänger av. |
+| `src/musik.js` | Bakgrundsmusik, genererad i koden: lugn vid slottet, stressig i minispel, sirener på kontoret, resemusik i bussen. Minispel kan välja med `music: '...'`. |
 | `src/knappen.js` | Den röda knappen man inte får trycka på |
 | `src/ui.js` | HUD, dialogruta, titelkort och pratbubblor (HTML) |
 | `src/player.js` | Spelarens fysik och rörelse |

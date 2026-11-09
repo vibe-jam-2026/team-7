@@ -11,6 +11,7 @@ import { MINIGAMES } from './minispel/index.js';
 import { STORY, SPEAKERS, HUB, STUCK_LINES, END_STATS, FORBIDDEN } from './story.js';
 import * as ui from './ui.js';
 import { sfx } from './ljud.js';
+import { setMusic, setMusicBoost } from './musik.js';
 
 const LEVELS = { haga, kontoret, bussen };
 const STEP = 1 / 120;
@@ -361,6 +362,14 @@ function updatePlay(dt) {
   else if (result === 'fail') failMinigame();
 }
 
+// A minigame can pick its own track with `music: '...'`; otherwise minigames are stressful,
+// films are calm, and the castle hub, title and end are calm.
+function pickMusic() {
+  if (mode === 'lost') return null;
+  if (mg) return mg.music ?? (mg.cinematic ? 'slott' : 'stress');
+  return 'slott';
+}
+
 // ---- Frame ---------------------------------------------------------------------
 export function frame(ctx, dt) {
   g.time += dt;
@@ -382,6 +391,10 @@ export function frame(ctx, dt) {
   else if (mode === 'play') updatePlay(dt);
   else if (mode === 'lost') updateLost(dt);
   else if (mode === 'end' && wasPressed('action')) { ui.card(false); startStory(); }
+
+  // Background music follows the situation: calm at the castle, stressful in minigames
+  setMusic(pickMusic());
+  setMusicBoost(mode === 'play' && mg?.time && !mg.timeoutWins && g.left < 8);
 
   const free = (mode === 'hub' || mode === 'play') && !mg?.lockPlayer && !mg?.cinematic;
   acc += dt;

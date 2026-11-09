@@ -18,6 +18,7 @@ export default {
   level: 'bussen',
   start: 160,
   cinematic: true,
+  music: 'resa',
   time: 13.8,
   timeoutWins: true,
   intro: [],

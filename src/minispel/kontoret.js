@@ -18,6 +18,7 @@ export default {
   level: 'kontoret',
   start: 150,
   lockPlayer: true,
+  music: 'panik', // fast music with sirens
   meter: '13.2',
   intro: [
     ['G', 'Hamra på tangenterna! Alla tangenter! Det är så man kodar!'],
@@ -26,6 +27,7 @@ export default {
   goal: (g) => `Koda 13.2: ${Math.floor(g.meter)} % · hamra på tangenterna!`,
   setup(g) {
     g.p.facing = 1;
+    g.sfx.wail(); // sirens as the story starts
     g.flags.desk = g.prop('desk', 157, { front: true, lines: 0 });
     g.flags.pms = {
       N: g.npc(NATALIE, 110, { facing: 1 }),

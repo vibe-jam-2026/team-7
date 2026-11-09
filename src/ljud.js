@@ -4,8 +4,10 @@
 // M mutes / unmutes. Browsers only allow sound after the first key press or click.
 
 const VOLUME = 1.6; // overall loudness; the compressor keeps it from distorting
+const MUSIC_VOLUME = 0.42; // background music relative to the effects
 let ac = null;
 let master = null;
+let musicBus = null;
 let muted = false;
 try { muted = localStorage.getItem('ljud-av') === '1'; } catch { /* no storage */ }
 
@@ -23,6 +25,9 @@ export function unlock() {
     master.gain.value = muted ? 0 : VOLUME;
     master.connect(comp);
     comp.connect(ac.destination);
+    musicBus = ac.createGain();
+    musicBus.gain.value = MUSIC_VOLUME;
+    musicBus.connect(master);
   }
   if (ac.state === 'suspended') ac.resume();
 }
@@ -52,11 +57,24 @@ export function toggleMute() {
 }
 export function isMuted() { return muted; }
 
+// For the background music (src/musik.js): the audio clock, and notes routed to the music volume.
+export function audioTime() { return ac && ac.state === 'running' ? ac.currentTime : null; }
+export function musicTone(opts) { if (musicBus) tone({ ...opts, out: musicBus }); }
+export function musicNoise(opts) { if (musicBus) noise({ ...opts, out: musicBus }); }
+export function musicFade(to, seconds = 0.4) {
+  if (!musicBus) return;
+  const t = ac.currentTime;
+  musicBus.gain.cancelScheduledValues(t);
+  musicBus.gain.setValueAtTime(musicBus.gain.value, t);
+  musicBus.gain.linearRampToValueAtTime(to * MUSIC_VOLUME, t + seconds);
+}
+
 // ---- Building blocks -------------------------------------------------------------
 // A tone that glides from f0 to f1. Optional vibrato (Hz, depth in Hz) and a low-pass filter.
-function tone({ type = 'square', f0, f1 = f0, dur = 0.15, vol = 0.25, at = 0, vib = 0, vibDepth = 0, lp = 0, attack = 0.005 }) {
+// `when` = exact audio-clock time (used by the music), otherwise `at` seconds from now.
+function tone({ type = 'square', f0, f1 = f0, dur = 0.15, vol = 0.25, at = 0, when = null, vib = 0, vibDepth = 0, lp = 0, attack = 0.005, out = null }) {
   if (!ac || muted) return;
-  const t = ac.currentTime + at;
+  const t = when ?? ac.currentTime + at;
   const o = ac.createOscillator();
   const gn = ac.createGain();
   o.type = type;
@@ -73,20 +91,20 @@ function tone({ type = 'square', f0, f1 = f0, dur = 0.15, vol = 0.25, at = 0, vi
   gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   let node = o;
   if (lp) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp; o.connect(f); node = f; }
-  node.connect(gn); gn.connect(master);
+  node.connect(gn); gn.connect(out || master);
   o.start(t); o.stop(t + dur + 0.05);
 }
 
 let noiseBuf = null;
 // A burst of noise through a filter that can sweep (for whooshes, slurps, thuds and paper).
-function noise({ dur = 0.2, vol = 0.2, at = 0, type = 'bandpass', f0 = 1000, f1 = f0, q = 1 }) {
+function noise({ dur = 0.2, vol = 0.2, at = 0, when = null, type = 'bandpass', f0 = 1000, f1 = f0, q = 1, out = null }) {
   if (!ac || muted) return;
   if (!noiseBuf) {
     noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
     const d = noiseBuf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   }
-  const t = ac.currentTime + at;
+  const t = when ?? ac.currentTime + at;
   const src = ac.createBufferSource();
   src.buffer = noiseBuf;
   const f = ac.createBiquadFilter();
@@ -97,14 +115,14 @@ function noise({ dur = 0.2, vol = 0.2, at = 0, type = 'bandpass', f0 = 1000, f1 
   gn.gain.setValueAtTime(0.0001, t);
   gn.gain.exponentialRampToValueAtTime(vol, t + 0.01);
   gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  src.connect(f); f.connect(gn); gn.connect(master);
+  src.connect(f); f.connect(gn); gn.connect(out || master);
   src.start(t); src.stop(t + dur + 0.05);
 }
 
 const notes = (list, opts) => list.forEach(([f, at, dur]) => tone({ ...opts, f0: f, at, dur }));
 
 // Voices for dialogue babble: base pitch per speaker
-const VOICES = { H: 140, D: 260, N: 420, M: 170, G: 320, K: 230, henrik: 140, me: 260 };
+const VOICES = { H: 240, D: 420, N: 640, M: 280, G: 500, K: 380, henrik: 240, me: 420 };
 
 // ---- The effects ----------------------------------------------------------------
 export const sfx = {
@@ -172,6 +190,10 @@ export const sfx = {
   // Minigame specials
   type: () => noise({ dur: 0.025, vol: 0.12, type: 'highpass', f0: 2500 + Math.random() * 2000 }),            // keyboard clack
   siren: () => [0, 0.25, 0.5, 0.75].forEach((at, i) => tone({ type: 'square', f0: i % 2 ? 660 : 880, dur: 0.24, vol: 0.12, at, lp: 2500 })),
+  wail: () => { // police-style siren sweeping up and down
+    tone({ type: 'sawtooth', f0: 600, f1: 1250, dur: 0.75, vol: 0.09, lp: 2200 });
+    tone({ type: 'sawtooth', f0: 1250, f1: 600, dur: 0.75, vol: 0.09, at: 0.75, lp: 2200 });
+  },
   honk: () => [0, 0.32].forEach((at) => { tone({ type: 'square', f0: 330, dur: 0.22, vol: 0.1, at, lp: 1200 }); tone({ type: 'square', f0: 415, dur: 0.22, vol: 0.08, at, lp: 1200 }); }),
   whistle: () => tone({ type: 'sine', f0: 2400, dur: 0.22, vol: 0.12, vib: 40, vibDepth: 150 }),               // referee whistle
   ding: () => tone({ type: 'sine', f0: 1046, dur: 0.3, vol: 0.2 }),
