@@ -3,6 +3,7 @@ import { WIDTH, HEIGHT } from './world.js';
 import { clearPressed } from './input.js';
 import { frame, startStory } from './game.js';
 import { setScale } from './ui.js';
+import { devMenuOpen } from './devmeny.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -26,7 +27,7 @@ let last = performance.now();
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
-  frame(ctx, dt);
+  if (!devMenuOpen()) frame(ctx, dt); // the game pauses while the dev menu is open
   clearPressed();
   requestAnimationFrame(loop);
 }
