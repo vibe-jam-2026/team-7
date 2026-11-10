@@ -157,6 +157,7 @@ export const END_STATS = (s) => `
   Kerstins knappar du tryckte på: ${s.buttons ?? 0}<br>
   Figma-koncept du tvingades se: ${s.figma ?? 0}<br>
   UX-designers du hoppade över: ${s.uxDodged ?? 0}<br>
+  AI-slogans du duckade: ${s.aiSlogans ?? 0}<br>
   Keynote-slogans du duckade: ${s.slogans ?? 0}<br>
   Stress efter spat: 0 %<br>
   Omtag: ${s.retries}`;
@@ -233,12 +234,23 @@ export const STORY = [
     ],
   },
   {
+    clock: 'Dag 2 · 11:45', title: 'Agendapunkt 46,9',
+    play: 'aiboss',
+    before: [
+      ['H', 'Femton minuter till lunch! Men först: agendapunkt 46,9. Den är i neonblått. Det betyder AI.'],
+      ['D', 'Jag trodde MUG:en var sista punkten före lunch.'],
+      ['H', 'Ledningen har bestämt att vi ska vara AI-först. Även före lunch. Jag har bjudit in en AI-evangelist.'],
+      ['D', 'Är det den där med hästsvansen som pratade i hissen i tjugo minuter?'],
+      ['H', 'AI-Göran! Han väntar i AI-labbet. Han kallar det så. Det är ett förråd.'],
+    ],
+  },
+  {
     clock: 'Dag 2 · 12:00', title: 'Lunch. Igen.',
     before: [
       ['H', 'Och så var det lunch igen. Nästan enligt agendan.'],
       ['H', 'Bra jobbat. Du överlevde lunch till lunch.'],
       ['D', 'Tack. Vad kom vi fram till?'],
-      ['H', 'Sex träd, ett hittat samarbete, en silo och en MUG. Och en ny tradition!'],
+      ['H', 'Sex träd, ett hittat samarbete, en silo, en sövd AI-evangelist och en MUG. Och en ny tradition!'],
       ['H', 'Nästa år kör vi frukost till frukost.'],
       ['D', 'Jag tar bussen tillbaka. Det känns som att jag glömt något.'],
       ['H', 'Vänta! Agendapunkt 47. Den är vit. Det betyder: ingenting.'],
