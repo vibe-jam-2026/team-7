@@ -3,8 +3,7 @@
 // överlev i 2:00. Piltangenterna styr fritt i alla riktningar, Shift = långsamt och visar
 // träffpunkten (pricken på bröstet), mellanslag = tysta John (rensar skärmen, 2 gånger).
 // Sex agendapunkter à 20 sekunder, var och en med egna mönster (se PATTERNS).
-// Ingår inte i berättelsen än: nås via dev-menyn (Ö). Lägg till ett steg med play: 'finalfinalboss'
-// i src/story.js och en `station` nedan för att ta med det.
+// Näst sista kapitlet i berättelsen (src/story.js), före spat. Stationen är Hörsalen i Haga.
 import { keys, wasPressed } from '../input.js';
 import { WIDTH as W, HEIGHT as H, pick, rand } from '../world.js';
 import { drawPerson, PLAYER } from '../sprites.js';
@@ -278,6 +277,7 @@ export default {
   title: 'FinalFinalBoss',
   tagline: 'Överlev John Vantages keynote i två minuter',
   level: 'kontoret',
+  station: { x: 600, label: 'Hörsalen' },
   lockPlayer: true,   // vi styr vår egen spelare i update()
   start: 100,         // håller kameran stilla (camX = 0)
   henrik: null,
@@ -382,6 +382,7 @@ export default {
     const f = g.flags;
     clearBullets(f);
     f.won = true;
+    g.stats.slogans = (g.stats.slogans ?? 0) + f.dodges;
     g.shout(null);
     for (let i = 0; i < 120; i++) part(f, rand(0, W), rand(-40, 0), rand(-20, 20), rand(20, 70), rand(2, 4), pick(['#ffc23d', '#ff5a86', '#5ee0ff', '#f1ede0']), 2, 20);
   },
