@@ -27,6 +27,8 @@ python3 -m http.server 8000
 
 **Dev-meny:** tryck **Ö** (eller **§**, eller klicka **DEV** under spelet) när som helst för att hoppa till valfritt kapitel eller minispel. Enter går direkt in i minispelet, → spelar kapitlet från början (dialog och Haga). Spelet pausas medan menyn är öppen.
 
+**SiloEscape** (`src/minispel/siloescape.js`): ett Doodle Jump-liknande minispel där du studsar 800 m rakt upp ur en silo medan kvartalsfyrverkeriet exploderar under dig och bilden kryper uppåt. ← → styr, kaffemuggar ger extra skjuts, OMORG-lådor rasar och mötesdrönare hoppar man på ovanifrån. Ingår inte i berättelsen än: spela det via dev-menyn ("utanför storyn").
+
 ## Struktur
 Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas upp; text och dialog är HTML ovanpå.
 
