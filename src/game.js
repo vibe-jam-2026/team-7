@@ -549,7 +549,8 @@ function draw(ctx) {
     const y = who.y != null && !isPlayer ? who.y : (isPlayer ? g.p.y - 30 : GROUND_Y - 33);
     return { text: b.text, x: who.x, y, style: b.style };
   });
-  if (mode !== 'card') list.push(...nameTags());
+  if (mg?.hideTags?.(g)) list.length = 0; // e.g. while a minigame zooms the camera
+  else if (mode !== 'card') list.push(...nameTags());
   if (mode === 'hub' || (mode !== 'play' && !mg && g.level === haga)) {
     const nextId = beat().play;
     for (const m of stations()) {
