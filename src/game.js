@@ -12,7 +12,7 @@ import { STORY, SPEAKERS, HUB, STUCK_LINES, END_STATS, FORBIDDEN, COLLEAGUE_NAME
 import * as ui from './ui.js';
 import { sfx } from './ljud.js';
 import { setMusic, setMusicBoost } from './musik.js';
-import { power, updatePowerUps, render as renderPowerUps, onPowerUp, setPanelVisible, blockPowerKeys } from './powerups.js';
+import { power, updatePowerUps, render as renderPowerUps, onPowerUp, setPanelVisible, blockPowerKeys, keepOnly, HUB_POWERUPS } from './powerups.js';
 import { updateDesigners, drawDesigners } from './designers.js';
 
 const LEVELS = { haga, kontoret, bussen };
@@ -90,7 +90,11 @@ function nameTags() {
 }
 
 // Shout the phrase when a power-up starts
-onPowerUp((pu) => g.say(`${pu.phrase.toUpperCase()}! ${pu.icon}`, g.p, 'me', 1.6));
+onPowerUp((pu) => {
+  g.say(`${pu.phrase.toUpperCase()}! ${pu.icon}`, g.p, 'me', 1.6);
+  // Quick win: more time, or less time left to survive when surviving is the goal
+  if (pu.id === 'quickwin' && mg?.time) g.left = mg.timeoutWins ? Math.max(1, g.left - 6) : g.left + 6;
+});
 
 function newStats() { return { coffee: 0, dodged: 0, meetings: 0, retries: 0, hits: 0, buttons: 0, figma: 0, uxDodged: 0 }; }
 
@@ -219,6 +223,15 @@ function updateLost(dt) {
 // For testing: lets the console and scripts look at the game state.
 export const debug = { g, get mode() { return mode; }, get minigame() { return mg?.id; } };
 
+// Dev shortcut: Q completes the minigame you are playing right now (as if you won it).
+// Not while mashing the keyboard in the office intro, where Q is just a letter.
+addEventListener('keydown', (e) => {
+  if (e.repeat || (e.key !== 'q' && e.key !== 'Q') || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (mode !== 'play' || !mg || mg.id === 'kontoret') return;
+  e.preventDefault();
+  winMinigame();
+});
+
 function startBeat(i) {
   beatIndex = i;
   const b = beat();
@@ -246,8 +259,21 @@ function enterHub(x) {
   snapCamera();
 }
 
+// Which power-ups can show up right now. A minigame lists its own with `powerups: [...]`.
+// Without a list: the moving ones, unless you can't move (lockPlayer) or it's a film.
+function minigamePowerUps(m) {
+  if (m.powerups) return m.powerups;
+  return m.cinematic || m.lockPlayer ? [] : HUB_POWERUPS;
+}
+function allowedPowerUps() {
+  if (mode === 'hub') return HUB_POWERUPS;
+  if (mode === 'play' && mg) return minigamePowerUps(mg);
+  return [];
+}
+
 function setupMinigame(id) {
   mg = MINIGAMES[id];
+  keepOnly(minigamePowerUps(mg));
   clearScene();
   g.level = LEVELS[mg.level || 'haga'];
   g.p = createPlayer(mg.start ?? 100);
@@ -325,9 +351,22 @@ function near(x, y, rx = 9, ry = 15) {
   return Math.abs(x - g.p.x) < rx && Math.abs(y - (g.p.y - 12)) < ry;
 }
 
-function updatePlay(dt) {
+function updatePlay(realDt) {
+  // "Vi parkerar det": everything except you runs in slow motion, and the clock stops
+  const slow = power.slow > 0;
+  const dt = slow ? realDt * 0.3 : realDt;
   g.t += dt;
   if (mg.cinematic && wasPressed('action')) { winMinigame(); return; }
+
+  // "Lågt hängande frukt": good things drift towards you
+  if (power.magnet > 0) {
+    const pull = (o) => {
+      const dx = g.p.x - o.x, dy = g.p.y - 12 - o.y;
+      if (Math.abs(dx) < 110 && Math.abs(dy) < 110) { o.x += Math.sign(dx) * Math.min(Math.abs(dx), 130 * realDt); o.y += Math.sign(dy) * Math.min(Math.abs(dy), 60 * realDt); }
+    };
+    for (const it of g.items) pull(it);
+    for (const f of g.fallers) if (!f.bad && f.tone !== 'grey') pull(f);
+  }
 
   for (const it of g.items) {
     if (it.ttl != null) it.ttl -= dt;
@@ -389,10 +428,10 @@ function updatePlay(dt) {
   }
   g.walkers = g.walkers.filter((w) => w.age < 1 || (w.x > g.camX - 60 && w.x < g.camX + WIDTH + 60));
 
-  let result = mg.update?.(g, dt);
+  let result = mg.update?.(g, dt, realDt); // realDt: for things that should not slow down (you)
   if (!result && mg.time) {
     const before = Math.ceil(g.left);
-    g.left -= dt;
+    if (!slow || mg.timeoutWins) g.left -= realDt; // the clock stops in slow motion, unless surviving is the goal
     if (Math.ceil(g.left) !== before && before <= 6 && before > 1) sfx.tick(); // last seconds tick
     if (g.left <= 0) result = mg.timeoutWins ? 'win' : 'fail';
   }
@@ -431,7 +470,7 @@ export function frame(ctx, dt) {
   else if (mode === 'end' && wasPressed('action')) { ui.card(false); startStory(); }
 
   // Power-ups run down while you play, and the panel in the corner shows them
-  if (mode === 'hub' || mode === 'play') updatePowerUps(dt);
+  updatePowerUps(dt, { allowed: allowedPowerUps(), survive: !!mg?.timeoutWins, texts: (mode === 'play' && mg?.powerupText) || {} });
   renderPowerUps(dt);
   setPanelVisible(mode === 'hub' || mode === 'play' || mode === 'dialog');
   blockPowerKeys(mg?.id === 'kontoret'); // digits are for mashing there

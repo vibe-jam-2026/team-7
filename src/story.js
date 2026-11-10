@@ -26,7 +26,7 @@ export const COLLEAGUE_NAMES = ['Anders', 'Maria', 'Johan', 'Sara', 'Mikael', 'E
 // giveUp = what they say when you have jumped over them too many times.
 export const DESIGNERS = {
   chaseEvery: [18, 30], // seconds in the hub between chases (random in this range)
-  speed: 104,           // you walk at 95 px/s, so you still have to jump over them
+  speed: 55,            // a slow jog (you walk at 95 px/s) so their lines can be read; stand still and they catch you
   lineTime: 3.2,        // seconds each chase line stays up (and the gap until the next one)
   pitchLine: 2.6,       // seconds per line in the group pitch
   order: ['J', 'KA', 'NI'], // the order they run in: Jocke first
@@ -200,19 +200,12 @@ export const STORY = [
     ],
   },
   {
-    clock: 'Dag 2 · 07:00', title: 'God morgon', tint: 'rgba(255,170,190,0.12)',
-    play: 'energizer',
-    before: [
-      ['H', 'GOOOOD MORGON HAGA! Har alla sovit gott?'],
-      ['D', 'Vänta, vad hände med middagen? Och natten?'],
-      ['H', 'Strukna ur agendan. Effektivisering! Vi sov stående i mingelkön.'],
-      ['H', 'Perfekt! Då är du redo för ENERGIZERN. Ut på gräsmattan!'],
-    ],
-  },
-  {
-    clock: 'Dag 2 · 09:30', title: 'Hållbarhetspunkten',
+    clock: 'Dag 2 · 09:30', title: 'God morgon', tint: 'rgba(255,170,190,0.12)',
     play: 'trad',
     before: [
+      ['H', 'GOOOOD MORGON HAGA! Har alla sovit gott?'],
+      ['D', 'Vänta, vad hände med middagen? Och natten? Och morgonens energizer?'],
+      ['H', 'Strukna ur agendan. Effektivisering! Vi sov stående i mingelkön.'],
       ['H', 'Agendapunkt 31! Den är grön. Det betyder hållbarhet. Eller att jag fick slut på de andra pennorna.'],
       ['D', 'Vad ska vi göra?'],
       ['H', 'Plantera träd! Ut i parken, vid trädplanteringen. Spaden är redan där.'],
@@ -255,9 +248,9 @@ export const STORY = [
     before: [
       ['H', 'En minut till lunch! Men först: punkt 46,75. Den är i platina.'],
       ['D', 'Det finns ingen platina-penna.'],
-      ['H', 'Jag köpte en. Till keynoten! Vår inhyrda talare väntar i Hörsalen.'],
+      ['H', 'Jag köpte en. Till keynoten! Segertoft väntar i slottets konferensrum.'],
       ['D', 'En keynote. En minut före lunch.'],
-      ['H', 'Den är på två minuter. Vi tar lunchen lite sent. In i Hörsalen!'],
+      ['H', 'Den är på två minuter. Han har en Gripen-spellista. In i konferensrummet!'],
     ],
   },
   {

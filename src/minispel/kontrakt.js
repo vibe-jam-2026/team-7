@@ -6,6 +6,7 @@
 import { wasPressed } from '../input.js';
 import { pick } from '../world.js';
 import { KERSTIN } from '../sprites.js';
+import { power } from '../powerups.js';
 
 const KERSTIN_X = 345;
 const ROUNDS_TOTAL = 8;   // frågor som finns i högen (fler än som behövs)
@@ -123,6 +124,13 @@ function react(g, text, good) {
   f.phase = 'react'; f.wait = good ? 1.3 : 2.1;
   f.cur.q = text; f.mood = good ? 'calm' : 'angry';
   if (good) { f.calm++; g.sfx.ding(); return; }
+  if (power.shield > 0) { // "Vi tar det offline": this wrong answer doesn't count, but it uses up the shield
+    power.shield = 0;
+    f.mood = 'calm';
+    f.cur.q = 'Jaha. Vi tar det offline, då. Men jag har antecknat det.';
+    g.sfx.whoosh();
+    return;
+  }
   f.pushed++;
   g.stats.buttons = (g.stats.buttons ?? 0) + 1;
   f.flash = 1; f.pressAnim[f.pushed - 1] = 0;
@@ -146,6 +154,11 @@ function mix(a, b, k) {
 
 export default {
   id: 'kontrakt',
+  powerups: ['slow', 'shield'], // more time to answer; the shield saves you from one wrong answer
+  powerupText: {
+    slow: 'Kerstin pratar i slowmotion i 6 sekunder. Mer betänketid!',
+    shield: 'Ditt nästa felsvar räknas inte. Kerstin tar det offline.',
+  }, // what the power-ups mean here
   title: 'Tryck inte på knapparna',
   tagline: 'Kerstin från Kontrakt vill prata kontohantering.',
   station: { x: 330, label: 'Terrassen' },

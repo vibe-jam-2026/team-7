@@ -43,7 +43,7 @@ Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas up
 | `src/designers.js` | UX-designerna Katarina, Jocke och Nikki som jagar dig i Haga med sina Figma-koncept |
 | `src/devmeny.js` | Dev-menyn (Ö) |
 | `src/ljud.js` | Ljudeffekter, skapade med Web Audio (inga ljudfiler). `g.sfx.namn()` i minispel. M stänger av. |
-| `src/powerups.js` | Power-ups med röststyrning på svenska: säg "Effektivisera" (snabbare), "Högt i tak" (superhopp) eller "Vi tar det offline" (sköld). Tangenterna 1, 2, 3 fungerar också. |
+| `src/powerups.js` | Power-ups som flyger in på skärmen. Säg klyschan på kortet (svensk taligenkänning, 🎤-knappen) innan tiden tar slut: "Effektivisera", "Högt i tak", "Vi tar det offline", "Vi parkerar det", "Lågt hängande frukt", "Quick win". Utan mikrofon: P. |
 | `src/musik.js` | Bakgrundsmusik, genererad i koden: lugn vid slottet, stressig i minispel, sirener på kontoret, resemusik i bussen. Minispel kan välja med `music: '...'`. |
 | `src/knappen.js` | Den röda knappen man inte får trycka på |
 | `src/ui.js` | HUD, dialogruta, titelkort och pratbubblor (HTML) |

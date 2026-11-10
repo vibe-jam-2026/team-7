@@ -53,6 +53,8 @@ const ease = (e) => e * e * (3 - 2 * e);
 
 export default {
   id: 'talt',
+  powerups: ['slow'], // slower shuffling; you only pick a tent
+  powerupText: { slow: 'Tälten blandas i slowmotion i 6 sekunder. Håll ögonen på samarbetet!' }, // what the power-ups mean here
   title: 'BOSS: Koppartälten',
   tagline: 'Lyft på rätt tält och hitta samarbetet!',
   station: { x: 790, label: 'Koppartälten' },

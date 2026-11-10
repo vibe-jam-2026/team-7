@@ -50,7 +50,7 @@ showMute();
 const mikBtn = document.getElementById('mikbtn');
 const MIK_TEXT = {
   off: '🎤 Slå på röststyrning', starting: '🎤 Startar…', on: '🎤 Lyssnar – säg en klyscha!',
-  denied: '🎤 Mikrofonen nekad – använd 1 2 3', unsupported: '🎤 Röst stöds inte här – använd 1 2 3',
+  denied: '🎤 Mikrofonen nekad – tryck P', unsupported: '🎤 Röst stöds inte här – tryck P',
 };
 onMicStatus((st) => {
   mikBtn.textContent = MIK_TEXT[st] ?? MIK_TEXT.off;
