@@ -74,7 +74,7 @@ export function shout(text) {
 // Each bubble wants to sit with its bottom edge at (x, y). If it would overlap a bubble
 // that is already placed, or HUD text (clock, goal, timer, meter, the red button),
 // it is lifted above it, or pushed below the HUD when there is no room above.
-// Station labels are placed first and stay put; speech bubbles move out of their way.
+// Station labels are placed first and stay put, then name tags; speech bubbles move out of their way.
 const pool = [];
 const GAP = 2; // game pixels between bubbles (room for the little tail)
 const HUD_IDS = ['clock', 'goal', 'timer', 'meter', 'forbidden'];
@@ -113,10 +113,11 @@ export function bubbles(list, camX) {
     el.hidden = false;
     if (el.textContent !== b.text) el.textContent = b.text;
     el.className = 'bubble' + (b.style ? ' ' + b.style : '');
-    shown.push({ el, b, station: /^(station|nametag)/.test(b.style || '') });
+    const st = b.style || '';
+    shown.push({ el, b, rank: st.startsWith('station') ? 0 : st.startsWith('nametag') ? 1 : 2 });
   });
   // Fixed labels first, then speech bubbles in the order they were given.
-  shown.sort((a, c) => c.station - a.station);
+  shown.sort((a, c) => a.rank - c.rank);
 
   const gap = GAP * scale;
   const hud = hudRects();

@@ -172,6 +172,8 @@ export default {
       else g.say(text, { x: pose(g.t).x, y: (g.t >= HOP_END ? IN_TUB_FEET : DECK_Y) - 32 }, 'me', 2.4);
     }
   },
+  // Name tag for you (drawn here in screen coordinates, so add the camera)
+  labels(g) { const p = pose(g.t); return [{ text: 'Du', x: p.x + g.camX, feetY: p.y }]; },
   draw(g, ctx) {
     const t = g.t, time = g.time;
     drawSky(ctx, t, time);

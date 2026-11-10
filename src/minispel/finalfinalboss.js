@@ -387,6 +387,12 @@ export default {
     for (let i = 0; i < 120; i++) part(f, rand(0, W), rand(-40, 0), rand(-20, 20), rand(20, 70), rand(2, 4), pick(['#ffc23d', '#ff5a86', '#5ee0ff', '#f1ede0']), 2, 20);
   },
 
+  // Name tags: John on his scissor lift, and you
+  labels(g) {
+    const f = g.flags;
+    if (!f.boss) return [];
+    return [{ text: 'John Vantage', x: f.boss.x + g.camX, feetY: f.boss.fy - 24 }, { text: 'Du', x: f.pl.x + g.camX, feetY: f.pl.y + 15 }];
+  },
   draw(g, ctx) {
     const f = g.flags, t = g.time;
     ctx.save();

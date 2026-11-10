@@ -64,9 +64,10 @@
     .bubble.me::after { border-top-color: #9fd0ff; }
     .bubble.ux { background: #a259ff; color: #fff; }
     .bubble.ux::after { border-top-color: #a259ff; }
-    /* Name tags under the UX designers (src/designers.js) */
-    .bubble.nametag { background: #1b1b2a; color: #e2ccff; border: calc(var(--px) * .5) solid #a259ff;
-                      font: calc(var(--px) * 3.5) 'Press Start 2P', monospace; padding: calc(var(--px) * 1) calc(var(--px) * 1.5); }
+    /* Name tags above everyone's head (nameTags() in src/game.js) */
+    .bubble.nametag { background: rgba(20, 22, 40, .85); color: #fff; border: calc(var(--px) * .4) solid rgba(255,255,255,.7);
+                      font: calc(var(--px) * 3) 'Press Start 2P', monospace; padding: calc(var(--px) * .8) calc(var(--px) * 1.2);
+                      border-radius: calc(var(--px) * 1); box-shadow: none; }
     .bubble.nametag::after { display: none; }
     .bubble.station { background: rgba(10, 12, 30, .8); color: #fff; font-size: calc(var(--px) * 6.5); }
     .bubble.station::after { display: none; }

@@ -167,7 +167,7 @@ export default {
     f.lastUsed = false;
     f.round = 0; f.pushed = 0; f.calm = 0; f.flash = 0;
     f.pressAnim = []; f.steam = []; f.steamT = 0;
-    f.kerstin = g.npc({ ...KERSTIN }, KERSTIN_X, { facing: -1 });
+    f.kerstin = g.npc({ ...KERSTIN }, KERSTIN_X, { facing: -1, name: 'Kerstin' });
     g.p.facing = 1;
     nextRound(g);
   },
