@@ -4,7 +4,9 @@
 // stå i den markerade rutan på golvet tills nedräkningen når noll. Nedräkningen går bara medan du
 // står i rutan, men den nollställs inte när du kliver ut. Tre rutor = tre kluster.
 // Fas 2: när tre kluster är nere genererar Göran "med AI:s kraft" en tredje dimension. Scenen ses
-// då i perspektiv och du drar ur tre kluster till (se FAS 2 längre ner). Sex kluster = vinst.
+// då i perspektiv och du drar ur tre kluster till (se FAS 2 längre ner).
+// Fas 3: verkligheten kraschar och allt blir 2D igen. Göran är nu lika stor som du, flåsar och
+// skjuter långsamt. Tre rutor till tömmer hans powerbank och han somnar på golvet = vinst.
 // Piltangenterna styr fritt i alla riktningar. Tre träffar ("sunt förnuft") och det blir omtag;
 // har du nått fas 2 börjar omtaget där.
 import { keys, wasPressed } from '../input.js';
@@ -171,8 +173,9 @@ function placeZone(g) {
   const footY = f.pl.y + 15;
   let best = null, bestD = -1;
   for (let tries = 0; tries < 20; tries++) { // långt från spelaren, men inte i hörnen
-    const cx = rand(40, W - 40), cy = rand(110, 160);
-    const d = Math.hypot(cx - f.pl.x, cy - footY);
+    const cx = rand(40, W - 40), cy = f.stage === 3 ? rand(86, 160) : rand(110, 160);
+    let d = Math.hypot(cx - f.pl.x, cy - footY);
+    if (f.gb && Math.hypot(cx - f.gb.x, cy - f.gb.y) < 34) d *= 0.3; // inte rakt under Göran
     if (d > bestD) { bestD = d; best = [cx, cy]; }
     if (d > 110) break;
   }
@@ -213,6 +216,7 @@ function clusterDown(g) {
   const [gx, gy] = f.stage === 2 ? clusterScreen(f.cleared - 1) : [CLUSTER_X[f.cleared - 1], 48];
   for (let i = 0; i < 40; i++) part(f, gx + rand(-14, 14), gy, rand(-70, 70), rand(-60, 30), rand(0.6, 1.4), pick(['#ffc23d', '#ff5a86', '#f1ede0']), 2, 120);
   if (f.cleared >= 3 && f.stage === 1) { startMorph(g); return; }
+  if (f.cleared >= 3 && f.stage === 2) { startCollapse(g); return; }
   if (f.cleared >= 3) {
     f.dying = 2.2; f.zone = null;
     g.shout('ALLA KLUSTER NERE!');
@@ -223,6 +227,37 @@ function clusterDown(g) {
   goranSay(g, DOWN_LINES[f.cleared - 1], 2.4);
   f.timers = {}; f.calm = 1.6; // en kort paus innan nästa våg
   if (f.stage === 2) placeZone3(g); else placeZone(g);
+}
+
+// Spelaren i 2D: bröstet i (x, y), fötterna 15 px lägre
+function movePlayer2D(p, dt, area) {
+  let dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+  if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
+  p.x = clamp(p.x + dx * 100 * dt, area.x0, area.x1);
+  p.y = clamp(p.y + dy * 100 * dt, area.y0, area.y1);
+  p.moving = !!(dx || dy);
+  if (dx) p.facing = Math.sign(dx);
+  if (p.inv > 0) p.inv -= dt;
+}
+// Skotten i 2D. Returnerar true om sista sunda förnuftet tog slut.
+function moveBullets2D(g, dt) {
+  const f = g.flags, p = f.pl;
+  for (let i = f.bullets.length - 1; i >= 0; i--) {
+    const b = f.bullets[i];
+    b.age += dt;
+    b.x += Math.cos(b.ang) * b.spd * dt;
+    b.y += Math.sin(b.ang) * b.spd * dt;
+    if (b.x + b.hw < -30 || b.x - b.hw > W + 30 || b.y - b.hh > H + 4 || b.y < -40 || b.age > 15) {
+      f.bullets[i] = f.bullets[f.bullets.length - 1]; f.bullets.pop(); f.dodged++; continue;
+    }
+    if (p.inv > 0 || f.dying > 0 || f.sleep > 0) continue;
+    // träffytan är kroppen, lite mindre än figuren
+    if (Math.abs(b.x - p.x) < b.hw + 3 && b.y + b.hh > p.y - 9 && b.y - b.hh < p.y + 10) {
+      hit(g);
+      return f.lives <= 0;
+    }
+  }
+  return false;
 }
 
 function tickBoss(g, dt) {
@@ -260,7 +295,7 @@ const PL3 = 0.5;                                  // spelarens storlek i världe
 const RAIN = ['AI', 'LLM', 'GPU', 'RAG', 'AGI', 'TOKENS', 'ML'];
 const TAUNTS3 = ['Jag promptade fram en hel dimension!', 'Nästa version: 4D!', 'Kolla mitt skägg i 3D!',
   'Det här är bara en demo. Den riktiga är bättre.', 'Djup? Jag har DEEP learning!'];
-let checkpoint3D = false;                         // har man nått fas 2 börjar omtaget där
+let checkpoint = 1;                               // omtag börjar i den senaste fasen man nått
 
 function proj(x, y, z) {
   const d = Math.max(4, z - CAMZ), s = F3 / d;
@@ -393,7 +428,7 @@ function startMorph(g) {
 }
 function enter3D(g) {
   const f = g.flags, old = f.pl;
-  checkpoint3D = true;
+  checkpoint = 2;
   buildBG3D();
   f.stage = 2; f.cleared = 0; f.lives = LIVES; f.bullets = []; f.timers = {}; f.calm = 1.5; f.dying = 0; f.wallHint = false;
   f.pl = { x: old && old.z == null ? clamp((old.x - 160) / 160 * X3, -X3, X3) : 0, y: 0, z: 22, vy: 0, inv: 1, moving: false, facing: 1 };
@@ -467,7 +502,7 @@ function update3D(g, dt) {
       f.tickAcc = (f.tickAcc || 0) + dt;
       if (f.tickAcc >= 0.5) { f.tickAcc = 0; g.sfx.tick(); }
       if (Math.random() < dt * 10) { const [zx, zy] = proj(z.x + rand(-5, 5), 0, z.z); part(f, zx, zy, rand(-20, 20), rand(-50, -20), 0.4, '#ffc23d', 1, 60); }
-      if (z.left <= 0) clusterDown(g);
+      if (z.left <= 0) { clusterDown(g); if (f.stage !== 2) return; }
     }
     if (f.dying <= 0) {
       if (f.calm > 0) f.calm -= dt;
@@ -653,6 +688,319 @@ function drawMorph(g, ctx) {
   drawText(ctx, pct < 100 ? `${pct} %` : '100 % (BETA)', 160, 130, { color: '#c8fbff' }, 'center');
 }
 
+// =============================================================================================
+// ---- FAS 3: verkligheten kraschar, tillbaka i 2D ---------------------------------------------
+// Göran är nu lika stor som du, står framåtböjd med händerna på knäna och flåsar. Han skjuter
+// fortfarande slogans, men långsamt: han lyfter armen först så att man hinner se det komma.
+// Sladden från rutan går till powerbanken på hans rygg. Tre rutor = tom powerbank = han somnar.
+const COLLAPSE_T = 3.0;                           // sekunder för "VERKLIGHETEN KRASCHAR"
+const AREA3 = { x0: 10, x1: 310, y0: 62, y1: 158 }; // nu finns ingen jättehuvud, golvet börjar högre upp
+const WALL3P = 56;                                // väggens underkant i fas 3
+const TIRED = ['A... I...', 'AGI... SNART...', 'PROMPTA... TYP', 'SKALA... SEN', 'TOKENS... PUH', 'AGENTER... ZZZ', 'LLM... VATTEN...'];
+const PANT = ['*flås*', 'Puh... puh...', 'Vänta... lite...', 'Bara... en slide... till...', 'Mina... tokens...',
+  'Jag är... inte... klar...', 'Har någon... en laddare?', 'Det här... skalar... inte...'];
+const BATTERY_LINES = ['Min powerbank...!', 'Två... procent...'];
+const FIRE3P = [ // [sekunder mellan skott, antal ord, spridning, fart] för varje ruta
+  [2.8, 1, 0, 34], [2.6, 2, 0.35, 36], [2.4, 3, 0.5, 38],
+];
+const MG = { skin: '#e3a982', shade: '#c0815c', hair: '#9d9a95', hairLight: '#cfccc6', beard: '#2a2521', patch: '#9d9a95',
+  shirt: '#35313f', pants: '#454556', shoes: '#111014', tie: '#d23a3a', out: '#1a1418' };
+
+let bg3p = null;
+function buildBG3P() { // samma scen som fas 1, men utan jättehuvud och med podiet i bitar på golvet
+  if (bg3p) return bg3p;
+  const c = mk(W, H), x = c.getContext('2d');
+  const r = (a, b, w, h, col) => { x.fillStyle = col; x.fillRect(a, b, w, h); };
+  r(0, 0, W, H, '#0b0a1c');
+  for (let yy = 0; yy < WALL3P; yy += 8) for (let xx = 0; xx < W; xx += 8) {
+    const v = (xx * 7 + yy * 13) % 5;
+    r(xx, yy, 7, Math.min(7, WALL3P - yy - 1), v === 0 ? '#14122e' : v === 1 ? '#110f28' : '#0f0d24');
+  }
+  drawText(x, 'AI-SUMMIT 2026', 312, 5, { color: '#252150' }, 'right');
+  drawText(x, 'ERROR 404: DIMENSION SAKNAS', 160, 24, { color: '#3a1a3a' }, 'center');
+  r(0, WALL3P, W, H - WALL3P, '#100e24');
+  r(0, WALL3P, W, 1, '#2a2550');
+  x.fillStyle = '#1c1940';
+  for (let yy = WALL3P + 12, s = 6; yy < H; yy += s, s += 3) x.fillRect(0, yy, W, 1);
+  for (let k = -12; k <= 12; k++) for (let yy = WALL3P + 10; yy < H; yy++) {
+    const xx = Math.round(160 + k * 14 * (1 + (yy - WALL3P) / 40));
+    if (xx >= 0 && xx < W) x.fillRect(xx, yy, 1, 1);
+  }
+  // podiet i bitar och tre döda GPU-lådor som ramlat ner
+  r(20, 60, 34, 6, '#2a2550'); r(20, 60, 34, 1, '#3f3a80'); drawText(x, 'AI ÄR', 26, 61, { color: '#3a5a6a' });
+  r(250, 63, 46, 5, '#2a2550'); r(250, 63, 46, 1, '#3f3a80'); drawText(x, 'SVARET', 252, 63, { color: '#3a5a6a' });
+  [[64, 58], [80, 61], [230, 59]].forEach(([bx, by]) => {
+    r(bx, by, 14, 9, '#05040e'); r(bx + 1, by + 1, 12, 7, '#24222e');
+    x.fillStyle = '#3a1a1a'; for (let l = 0; l < 3; l++) x.fillRect(bx + 3 + l * 3, by + 3, 2, 1);
+  });
+  bg3p = c;
+  return c;
+}
+
+// ---- Övergången: 3D-bilden faller sönder i remsor ----------------------------------------
+function startCollapse(g) {
+  const f = g.flags;
+  f.stage = 'collapse'; f.col = 0; f.zone = null; f.built3 = false;
+  clearBullets(f);
+  f.strips = Array.from({ length: 18 }, () => ({ delay: rand(0, 0.9), vx: rand(-30, 30) }));
+  g.shout('VERKLIGHETEN KRASCHAR'); f.shoutT = 1.8;
+  goranSay(g, 'Nej... min dimension... OUT OF MEMORY...', 2.2);
+  g.sfx.error(); g.sfx.buzzer();
+}
+function enter3P(g) {
+  const f = g.flags, old = f.pl;
+  checkpoint = 3;
+  buildBG3P();
+  f.stage = 3; f.cleared = 0; f.lives = LIVES; f.bullets = []; f.timers = {}; f.calm = 1.5; f.dying = 0; f.sleep = 0;
+  let px = 160, py = 140;
+  if (old && old.z != null) { // samma ställe på skärmen som i 3D, ungefär
+    px = clamp(proj(old.x, 0, old.z)[0], AREA3.x0, AREA3.x1);
+    py = clamp(150 - (old.z - Z3[0]) / (Z3[1] - Z3[0]) * 80, AREA3.y0, AREA3.y1);
+  }
+  f.pl = { x: px, y: py, inv: 1.5, moving: false, facing: 1 };
+  f.gb = { x: px < 160 ? 230 : 90, y: 86, tx: 160, ty: 90, moveT: 2, facing: -1, wind: 0, fireT: 2.2, stagger: 0,
+    asleep: false, breath: 0, puffT: 0.5, walking: false, snoreT: 0 };
+  f.goran = { x: f.gb.x, y: f.gb.y - 36 };
+  placeZone(g);
+}
+function updateCollapse(g, dt) {
+  const f = g.flags;
+  f.col += dt;
+  tickBoss(g, dt);
+  if (!f.built3 && f.col >= 1.9) {
+    f.built3 = true;
+    enter3P(g); f.stage = 'collapse'; f.calm = 1.6;
+    f.flash = 0.9; g.sfx.whoosh();
+  }
+  if (f.col >= COLLAPSE_T) {
+    f.stage = 3;
+    g.shout('FAS 3: SLUTSPURTEN'); f.shoutT = 1.8;
+    goranSay(g, '*flås*... jag är... inte... klar...', 2.4);
+  }
+  tickFx(f, dt);
+}
+let snap = null;
+function drawCollapse(g, ctx) {
+  const f = g.flags, t = g.time;
+  if (f.col < 1.9) {
+    if (!snap) snap = mk(W, H);
+    draw3D(g, snap.getContext('2d'));
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    f.strips.forEach((st, i) => { // remsor som släpper och faller
+      const k = Math.max(0, f.col - st.delay), fall = k * k * 170, ox = Math.round(st.vx * k);
+      ctx.drawImage(snap, 0, i * 10, W, 10, ox, i * 10 + Math.round(fall), W, 10);
+    });
+    if (((t * 6) | 0) % 2) {
+      drawText(ctx, 'VERKLIGHETEN SVARAR INTE', 160, 80, { color: '#ff5a86', plate: '#000', pad: 2 }, 'center');
+      drawText(ctx, 'FEL 404: DIMENSION SAKNAS', 160, 94, { color: '#7af0ff', plate: '#000', pad: 2 }, 'center');
+    }
+  } else {
+    draw3P(g, ctx);
+    const inten = 1 - (f.col - 1.9) / (COLLAPSE_T - 1.9);
+    for (let i = 0; i < inten * 10; i++) {
+      const y = rand(0, H) | 0, h = rand(1, 6) | 0;
+      ctx.drawImage(ctx.canvas, 0, y, W, h, Math.round(rand(-10, 10) * inten), y, W, h);
+    }
+    ctx.fillStyle = `rgba(0,0,0,${(0.3 * inten).toFixed(3)})`;
+    for (let y = 0; y < H; y += 2) ctx.fillRect(0, y, W, 1);
+  }
+}
+
+// ---- Fas 3 ------------------------------------------------------------------------------------
+function fire3P(g) {
+  const f = g.flags, gb = f.gb, [iv, n, spread, spd] = FIRE3P[f.cleared];
+  const mx = gb.x + 6 * gb.facing, my = gb.y - 19;
+  const a = Math.atan2(f.pl.y - my, f.pl.x - mx);
+  for (let i = 0; i < n; i++) {
+    const o = n === 1 ? 0 : (i / (n - 1) - 0.5) * spread;
+    word(f, mx, my, a + o, spd, Math.random() < 0.5 ? pick(TIRED) : pick(SHORT), styleAny());
+  }
+  gb.fireT = iv;
+  g.sfx.kazoo();
+}
+function batteryDown(g) {
+  const f = g.flags, gb = f.gb;
+  f.cleared++;
+  gb.stagger = 1; gb.wind = 0;
+  f.shake = 3; f.flash = 0.25;
+  g.sfx.error();
+  for (let i = 0; i < 24; i++) part(f, gb.x - 6 * gb.facing, gb.y - 14, rand(-50, 50), rand(-70, 0), rand(0.4, 0.9), pick(['#ffc23d', '#ff5a86', '#f1ede0']), 1, 140);
+  if (f.cleared >= 3) {
+    f.sleep = 3.4; f.zone = null; gb.asleep = true;
+    clearBullets(f);
+    g.shout('AI-GÖRAN HAR SOMNAT'); f.shoutT = 2.6;
+    goranSay(g, 'Zzz... AGI... nästa... kvartal... zzz', 2.8);
+    return;
+  }
+  g.shout(`GÖRANS BATTERI ${3 - f.cleared}/3`); f.shoutT = 1.4;
+  goranSay(g, BATTERY_LINES[f.cleared - 1], 2);
+  f.calm = 1.4;
+  placeZone(g);
+}
+function update3P(g, dt) {
+  const f = g.flags, p = f.pl, gb = f.gb;
+  movePlayer2D(p, dt, AREA3);
+  tickBoss(g, dt);
+  gb.breath += dt;
+  if (gb.stagger > 0) gb.stagger -= dt;
+  f.goran.x = gb.asleep ? gb.x - 14 : gb.x; f.goran.y = gb.asleep ? gb.y - 22 : gb.y - 36;
+
+  if (f.sleep > 0) { // han sover; snarkar en stund och sen är det vunnet
+    f.sleep -= dt;
+    gb.snoreT -= dt;
+    if (gb.snoreT <= 0) { gb.snoreT = 1.6; g.sfx.snore(); }
+    if (f.sleep <= 0) return 'win';
+  } else {
+    gb.facing = p.x >= gb.x ? 1 : -1;
+    // Han släpar sig långsamt runt, men står still när han ska skjuta eller precis fått en smäll
+    gb.walking = false;
+    if (gb.wind <= 0 && gb.stagger <= 0) {
+      gb.moveT -= dt;
+      if (gb.moveT <= 0) { gb.moveT = rand(3, 5); gb.tx = rand(50, 270); gb.ty = rand(78, 104); }
+      const dx = gb.tx - gb.x, dy = gb.ty - gb.y, d = Math.hypot(dx, dy);
+      if (d > 1) { gb.x += dx / d * 9 * dt; gb.y += dy / d * 9 * dt; gb.walking = true; }
+    }
+    // Flåsandet: små moln ur munnen och svett från pannan
+    gb.puffT -= dt;
+    if (gb.puffT <= 0) {
+      gb.puffT = 0.7;
+      for (let k = 0; k < 3; k++) part(f, gb.x + 7 * gb.facing, gb.y - 19, gb.facing * rand(10, 25), rand(-12, -4), rand(0.4, 0.7), '#e8eef7', 1, -10);
+    }
+    if (Math.random() < dt * 1.2) part(f, gb.x + 3 * gb.facing, gb.y - 25, 0, 10, 0.6, '#7fc4ff', 1, 80);
+
+    // Rutan
+    const z = f.zone;
+    z.born += dt;
+    const was = z.on;
+    z.on = inZone(z, p);
+    if (z.on) {
+      z.left = Math.max(0, z.left - dt);
+      if (!was) g.sfx.click();
+      f.tickAcc = (f.tickAcc || 0) + dt;
+      if (f.tickAcc >= 0.5) { f.tickAcc = 0; g.sfx.tick(); }
+      if (Math.random() < dt * 10) part(f, z.x + rand(-6, 6), z.y - 4, rand(-20, 20), rand(-50, -20), 0.4, '#ffc23d', 1, 60);
+      if (z.left <= 0) batteryDown(g);
+    }
+
+    // Skjuta: lyfter armen (wind) en stund först
+    if (f.sleep <= 0) {
+      if (f.calm > 0) f.calm -= dt;
+      else if (gb.stagger <= 0) {
+        if (gb.wind > 0) { gb.wind -= dt; if (gb.wind <= 0) fire3P(g); }
+        else { gb.fireT -= dt; if (gb.fireT <= 0) gb.wind = 0.7; }
+      }
+      f.tauntT -= dt;
+      if (f.tauntT <= 0) { goranSay(g, pick(PANT), 1.8); f.tauntT = rand(4, 6); }
+    }
+  }
+  if (moveBullets2D(g, dt)) return 'fail';
+  tickFx(f, dt);
+}
+
+// Göran i spelarstorlek, ritad i samma stil som drawPerson (fötterna i 0,0, tittar åt +x)
+function drawMiniGoran(ctx, f, t) {
+  const gb = f.gb, asleep = gb.asleep && gb.stagger <= 0;
+  if (gb.stagger > 0 && ((t * 12) | 0) % 2) return; // blinkar när powerbanken tappar ett streck
+  const R = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
+  ctx.save();
+  ctx.translate(Math.round(gb.x), Math.round(gb.y));
+  if (asleep) { ctx.translate(0, -5); ctx.rotate(-PI / 2); } // ligger på rygg med huvudet åt vänster
+  else ctx.scale(gb.facing, 1);
+  const pant = asleep ? Math.sin(t * 1.4) : Math.sin(gb.breath * 5); // tungt och snabbt, eller lugnt i sömnen
+  const b = pant > 0.2 ? -1 : 0, hunch = asleep ? 0 : 1, wind = gb.wind > 0 && !asleep;
+  const s = gb.walking ? Math.round(Math.sin(t * 6)) : 0;
+  const hx = -3 + 2 * hunch, hy = -25 + b + hunch; // huvudets övre vänstra hörn
+
+  // hästsvansen bakom huvudet
+  R(hx - 3, hy + 2, 3, 8, MG.out); R(hx - 2, hy + 3, 1, 6, MG.hair); R(hx - 2, hy + 7, 1, 2, MG.hairLight);
+  const parts = [
+    [-3 - s, -9, 3, 8, MG.pants], [-3 - s, -2, 4, 2, MG.shoes], [0 + s, -9, 3, 8, MG.pants], [0 + s, -2, 4, 2, MG.shoes],
+    [-4 + hunch, -18 + b + hunch, 8, 10, MG.shirt],
+    [hx, hy, 7, 7, MG.skin],
+  ];
+  ctx.fillStyle = MG.out;
+  for (const [x, y, w, h] of parts) ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+  for (const [x, y, w, h, c] of parts) R(x, y, w, h, c);
+  // powerbanken på ryggen: tre lampor som släcks en i taget
+  R(-6 + hunch, -16 + b + hunch, 3, 7, MG.out); R(-5 + hunch, -15 + b + hunch, 1, 5, '#3a3f4a');
+  for (let k = 0; k < 3; k++) R(-5 + hunch, -15 + b + hunch + k * 2, 1, 1, k >= f.cleared ? '#7dffa8' : '#5a1a1a');
+  // hår, skägg och ansikte
+  R(hx, hy, 7, 2, MG.hair); R(hx + 1, hy, 3, 1, MG.hairLight); R(hx, hy + 2, 2, 2, MG.hair); R(hx - 1, hy + 2, 1, 2, MG.tie);
+  R(hx + 2, hy + 3, 1, 3, MG.beard); R(hx + 3, hy + 4, 4, 3, MG.beard);
+  R(hx + 5, hy + 5, 2, 1, !asleep && pant < 0 ? '#4a1418' : MG.beard); // munnen gapar när han andas ut
+  R(hx + 5, hy + 6, 2, 1, MG.patch);                                  // den grå fläcken under munnen
+  if (asleep) R(hx + 4, hy + 3, 2, 1, MG.out);                         // slutna ögon
+  else { R(hx + 5, hy + 3, 1, 1, MG.out); R(hx + 4, hy + 2, 3, 1, MG.shade); } // trötta, halvslutna ögon
+  // armen: händerna på knäna, eller rakt fram när han ska skjuta
+  if (wind) { R(hx + 1, hy + 8, 7, 3, MG.out); R(hx + 2, hy + 9, 4, 1, MG.shirt); R(hx + 6, hy + 8, 2, 2, MG.skin); }
+  else { R(0, -16 + b, 3, 9, MG.out); R(1, -15 + b, 1, 7, MG.shirt); R(1, -9, 2, 2, MG.skin); }
+  ctx.restore();
+}
+function draw3P(g, ctx) {
+  const f = g.flags, t = g.time, p = f.pl, gb = f.gb;
+  ctx.save();
+  if (f.shake > 0) ctx.translate(Math.round(rand(-f.shake, f.shake)), Math.round(rand(-f.shake, f.shake)));
+  ctx.drawImage(buildBG3P(), 0, 0);
+  if (Math.random() < 0.3) { ctx.fillStyle = pick(['#1d1a44', '#24205a', '#2e2a66']); ctx.fillRect(((rand(0, 40) | 0) * 8), ((rand(0, 7) | 0) * 8), 7, 7); } // LED-väggen fladdrar
+  if (f.zone) drawZone2D(ctx, f.zone, t, gb.x - 6 * gb.facing, gb.y - 13);
+  // den som står längst ner i bilden ritas sist
+  const meFeet = p.y + 15, drawMe = () => { if (!(p.inv > 0 && ((t * 14) | 0) % 2 === 0)) drawPerson(ctx, p.x, Math.round(meFeet), PLAYER, p.facing, t, p.moving); };
+  if (gb.asleep || gb.y <= meFeet) { drawMiniGoran(ctx, f, t); drawMe(); } else { drawMe(); drawMiniGoran(ctx, f, t); }
+  if (gb.asleep && gb.stagger <= 0) { // Zzz som stiger från huvudet
+    for (let k = 0; k < 3; k++) {
+      const u = (t * 0.5 + k / 3) % 1;
+      drawText(ctx, 'Z', Math.round(gb.x - 26 + u * 12), Math.round(gb.y - 14 - u * 22), { color: '#c8fbff', scale: u > 0.55 ? 2 : 1 });
+    }
+  }
+  for (const b of f.bullets) ctx.drawImage(b.spr, Math.round(b.x - b.spr.width / 2), Math.round(b.y - b.spr.height / 2));
+  for (const q of f.parts) {
+    if (q.life < q.max * 0.3 && ((t * 20) | 0) % 2) continue;
+    ctx.fillStyle = q.col; ctx.fillRect(Math.round(q.x), Math.round(q.y), q.s, q.s);
+  }
+  ctx.restore();
+  if (f.flash > 0) { ctx.fillStyle = `rgba(241,237,224,${f.flash.toFixed(3)})`; ctx.fillRect(0, 0, W, H); }
+}
+
+// En ruta i 2D med sladd till (cx1, cy1): streckad kant som snurrar, fylls underifrån när sladden dras ur
+function drawZone2D(ctx, z, t, cx1, cy1) {
+  const zx = Math.round(z.x - ZONE_W / 2), zy = Math.round(z.y - ZONE_H / 2);
+  // sladden
+  ctx.fillStyle = '#05040e';
+  const cx0 = z.x, cy0 = zy;
+  for (let s = 0; s <= 1; s += 0.02) {
+    const sx = cx0 + (cx1 - cx0) * s, sy = cy0 + (cy1 - cy0) * s + Math.sin(s * PI) * 6;
+    ctx.fillRect(Math.round(sx) - 1, Math.round(sy), 3, 2);
+  }
+  if (!z.on) { // data som strömmar upp till klustret
+    ctx.fillStyle = '#7af0ff';
+    for (let k = 0; k < 3; k++) {
+      const s = ((t * 0.8 + k / 3) % 1);
+      ctx.fillRect(Math.round(cx0 + (cx1 - cx0) * s), Math.round(cy0 + (cy1 - cy0) * s + Math.sin(s * PI) * 6), 2, 2);
+    }
+  }
+  // själva rutan: streckad kant som snurrar, fylls underifrån när sladden dras ur
+  const pulse = z.born < 1 ? ((t * 10) | 0) % 2 : 1;
+  if (pulse) {
+    ctx.fillStyle = z.on ? 'rgba(125,255,168,0.28)' : 'rgba(125,255,168,0.12)';
+    ctx.fillRect(zx, zy, ZONE_W, ZONE_H);
+    const done = 1 - z.left / z.need, fh = Math.round(ZONE_H * done);
+    ctx.fillStyle = 'rgba(255,194,61,0.45)'; ctx.fillRect(zx, zy + ZONE_H - fh, ZONE_W, fh);
+    const per = (ZONE_W + ZONE_H) * 2, ofs = (t * 20) | 0;
+    ctx.fillStyle = z.on ? '#ffc23d' : '#7dffa8';
+    for (let k = 0; k < per; k++) {
+      if (((k + ofs) >> 2) % 2) continue;
+      let px, py;
+      if (k < ZONE_W) { px = zx + k; py = zy; } else if (k < ZONE_W + ZONE_H) { px = zx + ZONE_W - 1; py = zy + k - ZONE_W; }
+      else if (k < ZONE_W * 2 + ZONE_H) { px = zx + ZONE_W - 1 - (k - ZONE_W - ZONE_H); py = zy + ZONE_H - 1; } else { px = zx; py = zy + ZONE_H - 1 - (k - ZONE_W * 2 - ZONE_H); }
+      ctx.fillRect(px, py, 1, 1);
+    }
+    // stickkontakt i mitten
+    ctx.fillStyle = '#d8d4c8'; ctx.fillRect(z.x - 4, z.y - 3, 8, 6);
+    ctx.fillStyle = '#1a1418'; ctx.fillRect(z.x - 2, z.y - 1, 1, 2); ctx.fillRect(z.x + 1, z.y - 1, 1, 2);
+  }
+  drawText(ctx, `${z.left.toFixed(1)}`, z.x, zy + ZONE_H + 3, { color: z.on ? '#ffc23d' : '#7dffa8', plate: '#0b0a1c', pad: 1 }, 'center');
+}
+
 // ---- Fas 1 ritas så här ----------------------------------------------------------------------
 function draw2D(g, ctx) {
   const f = g.flags, t = g.time, B = f.boss;
@@ -721,46 +1069,8 @@ function draw2D(g, ctx) {
     ctx.fillStyle = '#c0815c'; for (let k = 0; k < 4; k++) ctx.fillRect(hx2 - 4 + k * 2, hy2 + 2 - up, 1, 1);
   });
 
-  // Rutan och sladden upp till podiet
-  const z = f.zone;
-  if (z) {
-    const zx = Math.round(z.x - ZONE_W / 2), zy = Math.round(z.y - ZONE_H / 2);
-    // sladden
-    ctx.fillStyle = '#05040e';
-    const cx0 = z.x, cy0 = zy, cx1 = CLUSTER_X[f.cleared], cy1 = PODIUM_Y + 8;
-    for (let s = 0; s <= 1; s += 0.02) {
-      const sx = cx0 + (cx1 - cx0) * s, sy = cy0 + (cy1 - cy0) * s + Math.sin(s * PI) * 6;
-      ctx.fillRect(Math.round(sx) - 1, Math.round(sy), 3, 2);
-    }
-    if (!z.on) { // data som strömmar upp till klustret
-      ctx.fillStyle = '#7af0ff';
-      for (let k = 0; k < 3; k++) {
-        const s = ((t * 0.8 + k / 3) % 1);
-        ctx.fillRect(Math.round(cx0 + (cx1 - cx0) * s), Math.round(cy0 + (cy1 - cy0) * s + Math.sin(s * PI) * 6), 2, 2);
-      }
-    }
-    // själva rutan: streckad kant som snurrar, fylls underifrån när sladden dras ur
-    const pulse = z.born < 1 ? ((t * 10) | 0) % 2 : 1;
-    if (pulse) {
-      ctx.fillStyle = z.on ? 'rgba(125,255,168,0.28)' : 'rgba(125,255,168,0.12)';
-      ctx.fillRect(zx, zy, ZONE_W, ZONE_H);
-      const done = 1 - z.left / z.need, fh = Math.round(ZONE_H * done);
-      ctx.fillStyle = 'rgba(255,194,61,0.45)'; ctx.fillRect(zx, zy + ZONE_H - fh, ZONE_W, fh);
-      const per = (ZONE_W + ZONE_H) * 2, ofs = (t * 20) | 0;
-      ctx.fillStyle = z.on ? '#ffc23d' : '#7dffa8';
-      for (let k = 0; k < per; k++) {
-        if (((k + ofs) >> 2) % 2) continue;
-        let px, py;
-        if (k < ZONE_W) { px = zx + k; py = zy; } else if (k < ZONE_W + ZONE_H) { px = zx + ZONE_W - 1; py = zy + k - ZONE_W; }
-        else if (k < ZONE_W * 2 + ZONE_H) { px = zx + ZONE_W - 1 - (k - ZONE_W - ZONE_H); py = zy + ZONE_H - 1; } else { px = zx; py = zy + ZONE_H - 1 - (k - ZONE_W * 2 - ZONE_H); }
-        ctx.fillRect(px, py, 1, 1);
-      }
-      // stickkontakt i mitten
-      ctx.fillStyle = '#d8d4c8'; ctx.fillRect(z.x - 4, z.y - 3, 8, 6);
-      ctx.fillStyle = '#1a1418'; ctx.fillRect(z.x - 2, z.y - 1, 1, 2); ctx.fillRect(z.x + 1, z.y - 1, 1, 2);
-    }
-    drawText(ctx, `${z.left.toFixed(1)}`, z.x, zy + ZONE_H + 3, { color: z.on ? '#ffc23d' : '#7dffa8', plate: '#0b0a1c', pad: 1 }, 'center');
-  }
+  // Rutan och sladden upp till klustret
+  if (f.zone) drawZone2D(ctx, f.zone, t, CLUSTER_X[f.cleared], PODIUM_Y + 8);
 
   // Du (fötterna 15 px under bröstet)
   const p = f.pl;
@@ -780,7 +1090,7 @@ function draw2D(g, ctx) {
 const AIBOSS = {
   id: 'aiboss',
   title: 'AI-Göran',
-  tagline: 'Dra ur sladden till tre GPU-kluster. Sen tre till. I 3D.',
+  tagline: 'Dra ur sladden. I 2D, i 3D och till sist på en väldigt trött AI-evangelist.',
   level: 'kontoret',
   station: { x: 220, label: 'AI-labbet' },
   lockPlayer: true,   // vi styr vår egen spelare i update()
@@ -798,14 +1108,19 @@ const AIBOSS = {
   goal: (g) => {
     const f = g.flags, z = f.zone;
     if (f.stage === 'morph') return 'Fas 2 laddar... AI-Göran genererar en dimension';
+    if (f.stage === 'collapse') return 'Verkligheten kraschar...';
     const life = '♥'.repeat(Math.max(0, f.lives)) + '♡'.repeat(LIVES - Math.max(0, f.lives));
+    if (f.stage === 3) {
+      const bat = '▮'.repeat(Math.max(0, 3 - f.cleared)) + '▯'.repeat(Math.min(3, f.cleared));
+      return `Fas 3 · ${life} · Görans batteri ${bat}` + (z ? ` · Sladd ${z.left.toFixed(1)} s` : '');
+    }
     return (f.stage === 2 ? 'Fas 2 (3D) · ' : 'Fas 1 · ') + `${life} · Kluster ${f.cleared}/3` + (z ? ` · Sladd ${z.left.toFixed(1)} s` : '');
   },
 
   setup(g) {
     initSprites();
     g.flags = {
-      stage: 1, morph: 0, lives: LIVES, cleared: 0, timers: {}, hand: 0, calm: 1.2, dying: 0, won: false,
+      stage: 1, morph: 0, sleep: 0, lives: LIVES, cleared: 0, timers: {}, hand: 0, calm: 1.2, dying: 0, won: false,
       bullets: [], parts: [], shake: 0, flash: 0, shoutT: 0, tauntT: 6, dodged: 0,
       pl: { x: 160, y: 140, inv: 0, moving: false, facing: 1 },
       boss: { talk: 0, raise: [0, 0], hurt: 0 },
@@ -814,16 +1129,23 @@ const AIBOSS = {
       zone: null,
     };
     placeZone(g);
-    if (checkpoint3D) { // omtag efter att man nått fas 2: börja direkt i 3D
+    if (checkpoint === 2) { // omtag efter att man nått fas 2: börja direkt i 3D
       enter3D(g);
       g.shout('FAS 2: 3D! Mellanslag = hoppa'); g.flags.shoutT = 2.2; g.flags.calm = 2;
+    } else if (checkpoint === 3) {
+      enter3P(g);
+      g.shout('FAS 3: SLUTSPURTEN'); g.flags.shoutT = 2; g.flags.calm = 2;
     }
   },
 
   // namnlappen "Du" följer vår egen spelare (motorn sätter den 28 px ovanför fötterna)
   labels(g) {
     const f = g.flags, p = f.pl;
-    if (!p || f.stage === 'morph') return [];
+    if (!p || f.stage === 'morph' || f.stage === 'collapse') return [];
+    if (f.stage === 3) {
+      const gb = f.gb, me = { text: 'Du', x: p.x, feetY: p.y + 15 };
+      return gb.asleep ? [me] : [me, { text: 'Göran', x: gb.x, feetY: gb.y }]; // sovande: Zzz i stället för namnlapp
+    }
     if (p.z == null) return [{ text: 'Du', x: p.x, feetY: p.y + 15 }];
     const [sx, sy, s] = proj(p.x, p.y, p.z);
     return [{ text: 'Du', x: sx, feetY: sy - 27 * PL3 * s + 26 }];
@@ -833,15 +1155,10 @@ const AIBOSS = {
     const f = g.flags, p = f.pl;
     if (f.stage === 'morph') return updateMorph(g, dt);
     if (f.stage === 2) return update3D(g, dt);
+    if (f.stage === 'collapse') return updateCollapse(g, dt);
+    if (f.stage === 3) return update3P(g, dt);
 
-    // Du
-    let dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
-    if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
-    p.x = clamp(p.x + dx * 100 * dt, AREA.x0, AREA.x1);
-    p.y = clamp(p.y + dy * 100 * dt, AREA.y0, AREA.y1);
-    p.moving = !!(dx || dy);
-    if (dx) p.facing = Math.sign(dx);
-    if (p.inv > 0) p.inv -= dt;
+    movePlayer2D(p, dt, AREA);
 
     tickBoss(g, dt);
 
@@ -872,31 +1189,14 @@ const AIBOSS = {
       if (f.tauntT <= 0 && !f.dying) { goranSay(g, pick(TAUNTS), 2); f.tauntT = rand(7, 10); }
     }
 
-    // Skotten
-    for (let i = f.bullets.length - 1; i >= 0; i--) {
-      const b = f.bullets[i];
-      b.age += dt;
-      b.x += Math.cos(b.ang) * b.spd * dt;
-      b.y += Math.sin(b.ang) * b.spd * dt;
-      if (b.x + b.hw < -30 || b.x - b.hw > W + 30 || b.y - b.hh > H + 4 || b.y < -40 || b.age > 15) {
-        f.bullets[i] = f.bullets[f.bullets.length - 1]; f.bullets.pop(); f.dodged++; continue;
-      }
-      if (p.inv > 0 || f.dying > 0) continue;
-      // träffytan är kroppen, lite mindre än figuren
-      if (Math.abs(b.x - p.x) < b.hw + 3 && b.y + b.hh > p.y - 9 && b.y - b.hh < p.y + 10) {
-        hit(g);
-        if (f.lives <= 0) return 'fail';
-        break;
-      }
-    }
-
+    if (moveBullets2D(g, dt)) return 'fail';
     tickFx(f, dt);
   },
 
   onWin(g) {
     const f = g.flags;
     f.won = true;
-    checkpoint3D = false;
+    checkpoint = 1;
     clearBullets(f);
     g.shout(null);
     g.stats.aiSlogans = (g.stats.aiSlogans ?? 0) + f.dodged;
@@ -904,18 +1204,21 @@ const AIBOSS = {
 
   draw(g, ctx) {
     const f = g.flags;
+    if (f.stage === 'collapse') { drawCollapse(g, ctx); return; }
+    if (f.stage === 3) { draw3P(g, ctx); return; }
     if (f.stage === 2 || (f.stage === 'morph' && f.morph >= MORPH_T / 2)) draw3D(g, ctx); else draw2D(g, ctx);
     if (f.stage === 'morph') drawMorph(g, ctx);
   },
 
   win: [
-    ['H', 'Alla sex klustren nere! Både de platta och de tredimensionella. AI-Göran har gått i viloläge.'],
-    ['D', 'Han ser ut att buffra.'],
-    ['H', 'Han har lovat en uppdaterad version till nästa år. Med ännu fler parametrar.'],
+    ['H', 'AI-Göran sover som en stock. Han mumlar något om GPU:er.'],
+    ['D', 'Ska vi väcka honom?'],
+    ['H', 'Nej. Han har lovat en uppdaterad version till nästa år. Låt honom ladda.'],
   ],
   fail: [
     ['H', 'Ditt sunda förnuft tog slut! Du har just beställt 40 AI-licenser åt hela avdelningen.'],
-    (g) => ['H', g.flags.stage === 2 ? 'Dra ur sladden igen. Den tredje dimensionen står kvar, tyvärr.' : 'Dra ur sladden igen. Från början!'],
+    (g) => ['H', g.flags.stage === 3 ? 'Han kan knappt stå upp, och ändå vann han?! Slutspurten igen!'
+      : g.flags.stage === 2 ? 'Dra ur sladden igen. Den tredje dimensionen står kvar, tyvärr.' : 'Dra ur sladden igen. Från början!'],
   ],
 };
 export default AIBOSS;
