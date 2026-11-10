@@ -37,6 +37,8 @@ Vanlig JavaScript utan byggsteg. Allt ritas på en 320×180-canvas som skalas up
 | `src/story.js` | **Berättelsen:** klockslag, Henriks repliker och ordningen på minispelen. Ändra dialog här. |
 | `src/minispel/` | **Ett minispel per fil** (t.ex. `trad.js`: plantera träd i parken, `talt.js`: bossen vid Koppartälten där Henrik gömmer samarbetet under ett tält, skyfflar och du lyfter på ett). `_mall.js` är en mall att kopiera. Registreras i `index.js`. |
 | `src/game.js` | Motorn: navvärlden, in och ut ur minispel, dialog, kollegor som vill ha "fem minuter" |
+| `src/minispel/aiboss.js` | **AI-Göran:** AI-evangelist (grått skägg, hästsvans) som täcker skärmens överdel och skjuter AI-slogans. Stå i de gröna rutorna tills nedräkningen når noll (den räknas bara ned medan du står i rutan) och dra ur sladden till tre GPU-kluster. Repliker och slogans högst upp i filen. |
+| `src/pixeltext.js` | Litet 3×5-pixeltypsnitt för text på canvasen (används av FinalFinalBoss och AI-Göran) |
 | `src/sprites.js` | Pixelgrafik: du (`PLAYER`), Henrik, Natalie, Markus, Gustav, Katarina, Jocke, Nikki, kollegor, föremål och dekor |
 | `src/designers.js` | UX-designerna Katarina, Jocke och Nikki som jagar dig i Haga med sina Figma-koncept |
 | `src/devmeny.js` | Dev-menyn (Ö) |

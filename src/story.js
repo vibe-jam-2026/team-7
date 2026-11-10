@@ -156,6 +156,7 @@ export const END_STATS = (s) => `
   Kerstins knappar du tryckte på: ${s.buttons ?? 0}<br>
   Figma-koncept du tvingades se: ${s.figma ?? 0}<br>
   UX-designers du hoppade över: ${s.uxDodged ?? 0}<br>
+  AI-slogans du duckade: ${s.aiSlogans ?? 0}<br>
   Keynote-slogans du duckade: ${s.slogans ?? 0}<br>
   Stress efter spat: 0 %<br>
   Omtag: ${s.retries}`;
@@ -218,6 +219,17 @@ export const STORY = [
     ],
   },
   {
+    clock: 'Dag 2 · 10:45', title: 'AI-punkten',
+    play: 'aiboss',
+    before: [
+      ['H', 'Agendapunkt 38! Den är i neonblått. Det betyder AI.'],
+      ['D', 'Måste vi?'],
+      ['H', 'Ledningen har bestämt att vi ska vara AI-först. Jag har bjudit in en AI-evangelist.'],
+      ['D', 'Är det den där med hästsvansen som pratade i hissen i tjugo minuter?'],
+      ['H', 'AI-Göran! Han väntar i AI-labbet. Han kallar det så. Det är ett förråd.'],
+    ],
+  },
+  {
     clock: 'Dag 2 · 11:52', title: 'Strax före lunch',
     play: 'demo',
     before: [
@@ -254,7 +266,7 @@ export const STORY = [
       ['H', 'Och så var det lunch igen. Nästan enligt agendan.'],
       ['H', 'Bra jobbat. Du överlevde lunch till lunch.'],
       ['D', 'Tack. Vad kom vi fram till?'],
-      ['H', 'Tio idéer, sex träd, en demo och en keynote. Och en ny tradition!'],
+      ['H', 'Tio idéer, sex träd, tre urdragna GPU-kluster, en demo och en keynote. Och en ny tradition!'],
       ['H', 'Nästa år kör vi frukost till frukost.'],
       ['D', 'Jag tar bussen tillbaka. Det känns som att jag glömt något.'],
       ['H', 'Vänta! Agendapunkt 47. Den är vit. Det betyder: ingenting.'],
