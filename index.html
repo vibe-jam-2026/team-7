@@ -163,6 +163,12 @@
               border-radius: 4px; padding: 2px 8px; cursor: pointer; pointer-events: auto; }
     #mikbtn.on { color: #05060f; background: #57d27a; border-color: #57d27a; }
     #mikbtn.bad { color: #fff; background: #d63a3a; border-color: #d63a3a; }
+    /* The immortality button in the AI boss (src/minispel/aiboss.js) */
+    #ododlig { position: absolute; right: calc(var(--px) * 4); bottom: calc(var(--px) * 4); z-index: 5;
+               font: calc(var(--px) * 7) 'VT323', monospace; color: #fff; background: rgba(10, 12, 30, .8);
+               border: calc(var(--px) * .6) solid #8890b0; padding: calc(var(--px) * .8) calc(var(--px) * 2.5); cursor: pointer; }
+    #ododlig:hover { border-color: #fff; }
+    #ododlig.on { color: #1b1b2a; background: #ffd23a; border-color: #fff3c9; box-shadow: 0 0 calc(var(--px) * 3) #ffd23a; }
     #help { text-align: center; color: #8890b0;
             font: 14px system-ui, sans-serif; pointer-events: none; }
   </style>
