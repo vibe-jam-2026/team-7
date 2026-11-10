@@ -1,48 +1,110 @@
-// Power-ups you activate by SAYING corporate clichés out loud (Swedish speech recognition),
-// or with the keys 1, 2, 3 as a fallback. Shown in the top-right corner with their phrase.
-//   "Effektivisera"       → faster for a while
-//   "Högt i tak"          → super jump
-//   "Vi tar det offline"  → shield: meetings, SYNERGI notes and pop-ups bounce off you
-// Speech uses the browser's Web Speech API (works in Edge and Chrome, needs the microphone).
+// Power-ups that FLY IN on screen now and then. Say the cliché on the card before its time runs
+// out (Swedish speech recognition) and you catch it; a short line explains what you got.
+// Without a microphone, P catches it instead (only while voice control is off).
+// Active power-ups are shown in the top-right corner. Add more in POWERUPS below.
 import { sfx } from './ljud.js';
 
-const DURATION = 10; // seconds each power-up lasts
+const OFFER_TIME = 6;        // seconds to say the phrase
+const FIRST_OFFER = 5;       // seconds before the first one shows up
+const BETWEEN = [9, 15];     // seconds between offers
 
+// timed: only offered in minigames with a clock. instant: no duration, happens at once.
 export const POWERUPS = [
-  { id: 'speed', icon: '⚡', phrase: 'Effektivisera', effect: 'Snabbare', key: '1', match: /effektivi/ },
-  { id: 'jump', icon: '🦘', phrase: 'Högt i tak', effect: 'Superhopp', key: '2', match: /h[öo]g[a-z]* i tak/ },
-  { id: 'shield', icon: '🛡', phrase: 'Vi tar det offline', effect: 'Möten studsar av', key: '3', match: /off ?-?line|ofline|offlajn|of lajn/ },
+  { id: 'speed', icon: '⚡', phrase: 'Effektivisera', time: 10, match: /effektivi/,
+    explain: 'Du springer nästan dubbelt så fort i 10 sekunder.' },
+  { id: 'jump', icon: '🦘', phrase: 'Högt i tak', time: 10, match: /h[öo]g[a-z]* i tak/,
+    explain: 'Superhopp i 10 sekunder. Hoppa över allt och alla.' },
+  { id: 'shield', icon: '🛡️', phrase: 'Vi tar det offline', time: 10, match: /off ?-?line|ofline|offlajn|of lajn/,
+    explain: 'Sköld i 10 sekunder: möten, synergi och felrutor studsar av.' },
+  { id: 'slow', icon: '🐌', phrase: 'Vi parkerar det', time: 6, timed: true, match: /parker/,
+    explain: 'Allt utom du går i slowmotion i 6 sekunder, och klockan står still.' },
+  { id: 'magnet', icon: '🧲', phrase: 'Lågt hängande frukt', time: 10, match: /l[åa]gt? ?h[äa]ngande|h[äa]ngande frukt/,
+    explain: 'Idéer, sladdar och kaffe dras till dig i 10 sekunder.' },
+  { id: 'quickwin', icon: '🏆', phrase: 'Quick win', instant: true, timed: true, match: /quick ?win|kvick ?vin|kwick|quickwin|kvikk/,
+    explain: '+6 sekunder på klockan!' },
 ];
+const byId = Object.fromEntries(POWERUPS.map((p) => [p.id, p]));
 
 // Seconds left of each power-up; the player and the engine read these.
-export const power = { speed: 0, jump: 0, shield: 0 };
+export const power = Object.fromEntries(POWERUPS.filter((p) => !p.instant).map((p) => [p.id, 0]));
 
-let onActivate = null; // set by the game, to show a bubble over the player
+let onActivate = null; // set by the game (bubble over the player, extra time for quick win)
 export function onPowerUp(fn) { onActivate = fn; }
 
-export function activate(id) {
-  const pu = POWERUPS.find((p) => p.id === id);
-  if (!pu) return;
-  power[id] = DURATION;
+function activate(pu) {
+  if (!pu.instant) power[pu.id] = pu.time;
   sfx.powerUp();
   onActivate?.(pu);
-  render();
 }
 
-export function updatePowerUps(dt) {
-  for (const k in power) power[k] = Math.max(0, power[k] - dt);
-}
-
-// ---- The panel in the corner -------------------------------------------------------
+// ---- The flying offer card --------------------------------------------------------
 const stage = document.getElementById('stage');
+const card = document.createElement('div');
+card.id = 'pu-offer';
+card.innerHTML = '<span class="o-icon"></span><span class="o-text"><b></b><small></small></span><i class="o-bar"></i>';
+stage.appendChild(card);
+const cIcon = card.querySelector('.o-icon'), cTitle = card.querySelector('b'), cSmall = card.querySelector('small'), cBar = card.querySelector('.o-bar');
+
+let offer = null;      // { pu, left }
+let showT = 0;         // how long the caught/missed message stays
+let nextOffer = FIRST_OFFER;
+
+function showOffer(pu) {
+  offer = { pu, left: OFFER_TIME };
+  cIcon.textContent = pu.icon;
+  cTitle.textContent = `Säg: ”${pu.phrase}”`;
+  cSmall.textContent = micStatus === 'on' ? 'innan tiden tar slut!' : 'innan tiden tar slut! (utan mikrofon: tryck P)';
+  card.className = 'show';
+  sfx.slide();
+}
+
+function resolve(caught) {
+  const pu = offer.pu;
+  offer = null;
+  showT = caught ? 3 : 1.4;
+  cBar.style.width = '0%';
+  if (caught) {
+    card.className = 'show caught';
+    cTitle.textContent = `${pu.phrase.toUpperCase()}!`;
+    cSmall.textContent = pu.explain;
+    activate(pu);
+  } else {
+    card.className = 'show missed';
+    cTitle.textContent = 'För sent!';
+    cSmall.textContent = `Power-upen ”${pu.phrase}” flög iväg.`;
+    sfx.nope();
+  }
+  nextOffer = BETWEEN[0] + Math.random() * (BETWEEN[1] - BETWEEN[0]);
+}
+
+// Called every frame. canOffer: the player can act right now. timed: the minigame has a clock.
+export function updatePowerUps(dt, { canOffer, timed }) {
+  for (const k in power) power[k] = Math.max(0, power[k] - dt);
+
+  if (showT > 0) { showT -= dt; if (showT <= 0) card.className = ''; }
+  if (offer) {
+    if (!canOffer) { offer = null; card.className = ''; return; } // the scene changed; let it go quietly
+    offer.left -= dt;
+    cBar.style.width = (offer.left / OFFER_TIME) * 100 + '%';
+    if (offer.left <= 0) resolve(false);
+    return;
+  }
+  if (!canOffer || showT > 0) return;
+  nextOffer -= dt;
+  if (nextOffer > 0) return;
+  const choices = POWERUPS.filter((p) => (!p.timed || timed) && !(power[p.id] > 0));
+  if (choices.length) showOffer(choices[Math.floor(Math.random() * choices.length)]);
+}
+
+// ---- Active power-ups in the corner -------------------------------------------------
 const panel = document.createElement('div');
 panel.id = 'powerups';
 stage.appendChild(panel);
 const rows = {};
-for (const pu of POWERUPS) {
+for (const pu of POWERUPS.filter((p) => !p.instant)) {
   const row = document.createElement('div');
-  row.className = 'pu';
-  row.innerHTML = `<span class="pu-icon">${pu.icon}</span><span class="pu-text"><b>”${pu.phrase}”</b><small>${pu.effect} · ${pu.key}</small></span><i class="pu-bar"></i>`;
+  row.className = 'pu active';
+  row.innerHTML = `<span class="pu-icon">${pu.icon}</span><span class="pu-text"><b>${pu.phrase}</b></span><i class="pu-bar"></i>`;
   panel.appendChild(row);
   rows[pu.id] = row;
 }
@@ -52,42 +114,40 @@ panel.appendChild(heard);
 
 let heardText = '', heardT = 0;
 export function render(dt = 0) {
-  for (const pu of POWERUPS) {
-    const left = power[pu.id];
-    rows[pu.id].classList.toggle('active', left > 0);
-    rows[pu.id].querySelector('.pu-bar').style.width = (left / DURATION) * 100 + '%';
+  for (const id in rows) {
+    const left = power[id];
+    rows[id].hidden = !(left > 0);
+    rows[id].classList.toggle('ending', left > 0 && left < 3); // blink when it's about to run out
+    rows[id].querySelector('.pu-bar').style.width = (left / byId[id].time) * 100 + '%';
   }
   heardT -= dt;
   heard.textContent = heardT > 0 ? `🎤 ”${heardText}”` : '';
 }
 export function setPanelVisible(v) { panel.hidden = !v; }
 
-// ---- Keys 1, 2, 3 as a fallback ----------------------------------------------------
+// ---- P catches the offer when there is no voice control ------------------------------
 let keysBlocked = false; // e.g. while mashing the keyboard in the office intro
 export function blockPowerKeys(v) { keysBlocked = v; }
 addEventListener('keydown', (e) => {
-  if (keysBlocked) return;
-  const pu = POWERUPS.find((p) => p.key === e.key);
-  if (pu && !e.repeat) activate(pu.id);
+  if (keysBlocked || e.repeat || !offer || micStatus === 'on') return;
+  if (e.key === 'p' || e.key === 'P') resolve(true);
 });
 
 // ---- Speech recognition ------------------------------------------------------------
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let rec = null, listening = false, wanted = false, status = SR ? 'off' : 'unsupported';
+let rec = null, wanted = false, micStatus = SR ? 'off' : 'unsupported';
 const statusListeners = [];
-export function onMicStatus(fn) { statusListeners.push(fn); fn(status); }
-function setStatus(s) { status = s; statusListeners.forEach((fn) => fn(s)); }
+export function onMicStatus(fn) { statusListeners.push(fn); fn(micStatus); }
+function setStatus(s) { micStatus = s; statusListeners.forEach((fn) => fn(s)); }
 
 function normalise(t) { return t.toLowerCase().replace(/[.,!?"”]/g, ' ').replace(/\s+/g, ' ').trim(); }
 
-// Check what was heard against the phrases. `done` remembers what already fired for this phrase.
-export function hear(transcript, done = new Set()) {
+// Check what was heard. Only the phrase on the card that is flying right now counts.
+export function hear(transcript) {
   const text = normalise(transcript);
   heardText = text; heardT = 2.5;
-  for (const pu of POWERUPS) {
-    if (!done.has(pu.id) && pu.match.test(text)) { done.add(pu.id); activate(pu.id); }
-  }
-  return done;
+  if (offer && offer.pu.match.test(text)) { resolve(true); return true; }
+  return false;
 }
 
 if (SR) {
@@ -95,17 +155,11 @@ if (SR) {
   rec.lang = 'sv-SE';
   rec.continuous = true;
   rec.interimResults = true; // react while you're still talking
-  const fired = new Map();   // result index -> power-ups already fired for that phrase
   rec.onresult = (e) => {
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      fired.set(i, hear(e.results[i][0].transcript, fired.get(i)));
-      if (e.results[i].isFinal) fired.delete(i);
-    }
+    for (let i = e.resultIndex; i < e.results.length; i++) hear(e.results[i][0].transcript);
   };
-  rec.onstart = () => { listening = true; setStatus('on'); };
+  rec.onstart = () => setStatus('on');
   rec.onend = () => {
-    listening = false;
-    fired.clear();
     // Browsers stop listening after a pause; start again as long as voice control is on
     if (wanted) setTimeout(() => { try { rec.start(); } catch { /* already started */ } }, 250);
     else setStatus('off');
@@ -123,3 +177,6 @@ export function toggleVoice() {
   if (wanted) { setStatus('starting'); try { rec.start(); } catch { /* already started */ } }
   else { try { rec.stop(); } catch { /* not started */ } }
 }
+
+// For testing in the console: debugOffer('slow') shows that offer right away
+export function debugOffer(id) { if (byId[id]) { offer = null; showT = 0; showOffer(byId[id]); } }

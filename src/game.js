@@ -90,7 +90,10 @@ function nameTags() {
 }
 
 // Shout the phrase when a power-up starts
-onPowerUp((pu) => g.say(`${pu.phrase.toUpperCase()}! ${pu.icon}`, g.p, 'me', 1.6));
+onPowerUp((pu) => {
+  g.say(`${pu.phrase.toUpperCase()}! ${pu.icon}`, g.p, 'me', 1.6);
+  if (pu.id === 'quickwin' && mg?.time) g.left += 6;
+});
 
 function newStats() { return { coffee: 0, dodged: 0, meetings: 0, retries: 0, hits: 0, buttons: 0, figma: 0, uxDodged: 0 }; }
 
@@ -334,9 +337,22 @@ function near(x, y, rx = 9, ry = 15) {
   return Math.abs(x - g.p.x) < rx && Math.abs(y - (g.p.y - 12)) < ry;
 }
 
-function updatePlay(dt) {
+function updatePlay(realDt) {
+  // "Vi parkerar det": everything except you runs in slow motion, and the clock stops
+  const slow = power.slow > 0;
+  const dt = slow ? realDt * 0.3 : realDt;
   g.t += dt;
   if (mg.cinematic && wasPressed('action')) { winMinigame(); return; }
+
+  // "Lågt hängande frukt": good things drift towards you
+  if (power.magnet > 0) {
+    const pull = (o) => {
+      const dx = g.p.x - o.x, dy = g.p.y - 12 - o.y;
+      if (Math.abs(dx) < 110 && Math.abs(dy) < 110) { o.x += Math.sign(dx) * Math.min(Math.abs(dx), 130 * realDt); o.y += Math.sign(dy) * Math.min(Math.abs(dy), 60 * realDt); }
+    };
+    for (const it of g.items) pull(it);
+    for (const f of g.fallers) if (!f.bad && f.tone !== 'grey') pull(f);
+  }
 
   for (const it of g.items) {
     if (it.ttl != null) it.ttl -= dt;
@@ -401,7 +417,7 @@ function updatePlay(dt) {
   let result = mg.update?.(g, dt);
   if (!result && mg.time) {
     const before = Math.ceil(g.left);
-    g.left -= dt;
+    if (!slow) g.left -= dt;
     if (Math.ceil(g.left) !== before && before <= 6 && before > 1) sfx.tick(); // last seconds tick
     if (g.left <= 0) result = mg.timeoutWins ? 'win' : 'fail';
   }
@@ -440,7 +456,10 @@ export function frame(ctx, dt) {
   else if (mode === 'end' && wasPressed('action')) { ui.card(false); startStory(); }
 
   // Power-ups run down while you play, and the panel in the corner shows them
-  if (mode === 'hub' || mode === 'play') updatePowerUps(dt);
+  updatePowerUps(dt, {
+    canOffer: (mode === 'hub' || mode === 'play') && !mg?.cinematic && !mg?.lockPlayer,
+    timed: mode === 'play' && !!mg?.time && !mg.timeoutWins,
+  });
   renderPowerUps(dt);
   setPanelVisible(mode === 'hub' || mode === 'play' || mode === 'dialog');
   blockPowerKeys(mg?.id === 'kontoret'); // digits are for mashing there
