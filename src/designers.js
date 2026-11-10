@@ -14,6 +14,7 @@ const CATCH_DIST = 8;
 const OVERSHOOT = 50;  // how far past you they run before skidding round (time to turn and get ready)
 const MAX_TURNS = 2;   // turnarounds before they give up
 const MAX_CHASE = 28;  // seconds (they are slow, so give them time)
+const ESCAPE_DIST = 60; // walk this far from all of them and the pitch is over
 const SPACING = 11;    // px between them: a tight pack, so one jump clears all three
 
 let cooldown = rand(6, 10); // the first chase comes quickly
@@ -125,8 +126,7 @@ function catchYou(g, d) {
   // The one who caught you stands closest; the others take the remaining spots
   const team = [d, ...g.designers.filter((o) => o !== d && o.state === 'chase')];
   team.forEach((o, i) => { o.state = 'pitch'; o.slot = slots[i] ?? -42; });
-  g.p.stun = dur;
-  g.p.vx = 0;
+  g.p.stun = 0.3; // just a bump: you can walk away from the pitch (they follow, but slower than you)
   g.stats.figma = (g.stats.figma ?? 0) + 1;
   sfx.bonk();
   sfx.kazoo();
@@ -142,11 +142,14 @@ function runPitch(g, dt) {
     const speaker = who === 'me' ? g.p : g.designers.find((o) => o.person.who === who && o.state === 'pitch');
     if (speaker) g.say(text, speaker, who === 'me' ? 'me' : 'ux', L - 0.15);
   }
-  if (pi.t >= pi.dur) {
+  // Walked away from them? Then they give up on the pitch
+  const team = g.designers.filter((o) => o.state === 'pitch');
+  const walkedOff = team.every((o) => Math.abs(o.x - g.p.x) > ESCAPE_DIST);
+  if (pi.t >= pi.dur || walkedOff || !team.length) {
     group.pitch = null;
     group.talkT = 99; // no more shouting on the way out
-    const team = g.designers.filter((o) => o.state === 'pitch');
-    team.forEach((o, i) => leave(g, o, i === 0 ? pick(DESIGNERS.leaveLine) : null));
+    if (walkedOff) g.stats.uxDodged = (g.stats.uxDodged ?? 0) + 1;
+    team.forEach((o, i) => leave(g, o, i === 0 ? pick(walkedOff ? DESIGNERS.walkedOff : DESIGNERS.leaveLine) : null));
   }
 }
 
