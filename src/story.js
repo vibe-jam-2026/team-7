@@ -20,63 +20,112 @@ export const SPEAKERS = {
 export const COLLEAGUE_NAMES = ['Anders', 'Maria', 'Johan', 'Sara', 'Mikael', 'Emma', 'Peter', 'Linda', 'Fredrik', 'Åsa', 'Mats', 'Elin'];
 
 // The UX designers who now and then chase you around the Haga hub (src/designers.js).
-// shout = what they yell while running after you, pitch = what they say when they catch you,
+// They ALWAYS come as a group: Jocke, Katarina and Nikki. They take turns talking (one bubble at a time)
+// so there is time to read. shout = what they yell while running after you,
+// pitch = group conversations when they catch you (lines of [who, text]; 'me' is you),
 // giveUp = what they say when you have jumped over them too many times.
 export const DESIGNERS = {
-  chaseEvery: [16, 28], // seconds in the hub between chases (random in this range)
-  speed: 112,           // you walk at 95 px/s, so you have to jump over them
+  chaseEvery: [18, 30], // seconds in the hub between chases (random in this range)
+  speed: 104,           // you walk at 95 px/s, so you still have to jump over them
+  lineTime: 3.2,        // seconds each chase line stays up (and the gap until the next one)
+  pitchLine: 2.6,       // seconds per line in the group pitch
+  order: ['J', 'KA', 'NI'], // the order they run in: Jocke first
   people: [
-    {
-      who: 'KA', name: 'Katarina',
-      shout: [
-        'Har du fem sek?! Jag har 14 nya flöden!',
-        'Användarflödet är TRASIGT! Jag har en ny happy path!',
-        'Det är bara lo-fi! Men pixelperfekt!',
-        'Min prototyp har 312 frames! Kolla!',
-        'Användaren hittar inte knappen! Den måste bli mer... knappig!',
-      ],
-      pitch: [
-        'Se här: onboarding i 11 steg. Nej, 12!',
-        'Swipea här! Nej, inte där! Där är det en hover!',
-        'Det här är user journeyn. Den gråter i steg 4.',
-      ],
-    },
     {
       who: 'J', name: 'Jocke',
       shout: [
-        'Knappen ligger inte i 8-punktsgriden!',
-        'Jag har gjort om hela designsystemet. IGEN!',
-        'Hamburgermenyn är död! Leve kebabmenyn!',
+        'STOPP! Din padding är 7px! SJU! Det finns inte i 8-punktsgriden!',
+        'Vi måste få inUniform-ramverket IGÅR!',
+        'Någon har satt margin-left: 13px. Jag gråter. Jag GRÅTER.',
         'Ni har hårdkodat #333! Det heter grey-900-alpha-80!',
-        'Glassmorphism! Neumorphism! Allt-morphism!',
+        'Margin collapse är inte en feature! Det är ett SVEK!',
+        'Jag har gjort om hela designsystemet. IGEN! Med inUniform!',
+        'Vem centrerade det där med &nbsp;?! VEM?!',
       ],
-      pitch: [
-        'Auto layout! AUTO LAYOUT! Ser du?!',
-        'final_FINAL_v7_riktig_DENNA.fig',
-        'Och här öppnas en modal. I en modal. I en modal.',
+    },
+    {
+      who: 'KA', name: 'Katarina',
+      shout: [
+        'Whitespace är inte tomrum! Det är ANDNING!',
+        'inUniform-tokens! Har ni ens LÄST tokens-sidan?!',
+        'Rubriken har 2px för lite luft ovanför! Användarna KÄNNER det!',
+        'Det är bara lo-fi! Men pixelperfekt!',
+        'Användaren hittar inte knappen! Den behöver mer margin-bottom!',
+        'Varför är det negativ marginal på footern?! Varför?!',
       ],
     },
     {
       who: 'NI', name: 'Nikki',
       shout: [
-        'Jag pratade med EN användare och hon HATAR dropdowns!',
+        'Jag pratade med EN användare och hon HATAR 12px gutter!',
         'Kan vi flytta CTA:n tre pixlar? Strategiskt!',
-        'Dark mode! Varför finns inget dark mode?!',
-        'Jag har en persona! Han heter Kent! Kent är arg!',
-        'Det är inte en bugg, det är UX-skuld!',
-      ],
-      pitch: [
-        'Empatikartan säger att Kent vill ha konfetti.',
-        'Jag har taggat dig i 40 kommentarer i Figma!',
-        'Kan vi bara... A/B-testa hela appen? Idag?',
+        'Kent, vår persona, har ångest av ojämna marginaler!',
+        'inUniform skulle ha löst det här! Om vi hade det! IGÅR!',
+        'Det är inte en bugg, det är marginalskuld!',
+        'Line-height 1.2?! Är vi djur?!',
       ],
     },
   ],
-  // What you say when one of them catches you
-  stuck: ['Jag är backend...', 'Det ser... väldigt lila ut.', 'Kan du lägga det i Jira?', 'Snyggt! Absolut! Jag måste gå.', 'Är det där ens möjligt i CSS?'],
-  giveUp: ['Jag lägger länken i Slack!', 'Jag bokar en design-crit kl 03!', 'Vänta tills du ser v8!', 'Jag taggar dig i Figma då!'],
-  // Sometimes all three come at once
-  rush: 'UX-RUSH! Alla tre har Figma-länkar!',
+  // Lines when they skid past you and turn around
+  turn: [
+    'Vänta! Din margin-right sticker ut!',
+    'Bara EN frame till!',
+    'Hallå?! Spacing-feedback!',
+    'Du missade hover-staten!',
+    'Du hoppade med fel easing-kurva!',
+    'Det där hoppet var inte på griden!',
+  ],
+  // Group conversations when they catch you. 'me' = you.
+  pitch: [
+    [
+      ['J', 'Okej. Titta på den här knappen. Vad ser du?'],
+      ['me', 'En... knapp?'],
+      ['KA', 'FEL! Du ser 14px padding. Det ska vara 16!'],
+      ['NI', 'Kent såg det också. Kent grät.'],
+      ['J', 'Med inUniform hade det här varit en token. space-400.'],
+      ['me', 'Kan du lägga det i Jira?'],
+      ['KA', 'Det LIGGER i Jira. Med fel marginaler.'],
+    ],
+    [
+      ['KA', 'Vi har en fråga. Bara en. Snabb.'],
+      ['NI', 'Varför finns inte inUniform-ramverket i produktion?'],
+      ['J', 'Vi behövde det IGÅR. Förrgår, egentligen.'],
+      ['me', 'Det finns inte ens än...'],
+      ['J', 'Exakt! Det är DET som är problemet!'],
+      ['KA', 'Jag har 340 frames som förutsätter det.'],
+      ['NI', 'Och en persona som kräver det. Kent.'],
+    ],
+    [
+      ['NI', 'Kolla den här sidan. Ser du marginalerna?'],
+      ['J', 'Vänster: 24px. Höger: 23px. TJUGOTRE.'],
+      ['KA', 'Det är som att bära en strumpa ut och in.'],
+      ['me', 'Det ser... väldigt lila ut.'],
+      ['J', 'Lila är inte problemet. Lila är brand.'],
+      ['NI', 'Problemet är att DU använder margin. Vi använder gap.'],
+      ['KA', 'Och om vi hade inUniform hade det varit gap-300.'],
+    ],
+    [
+      ['J', 'Snabb design-crit. Tre minuter. Max fyrtio.'],
+      ['KA', 'Steg ett: ta bort allt som inte är whitespace.'],
+      ['NI', 'Steg två: lägg till mer whitespace.'],
+      ['me', 'Är det där ens möjligt i CSS?'],
+      ['J', 'Med inUniform-ramverket? Allt är möjligt.'],
+      ['KA', 'Ramverket som vi skulle haft IGÅR, påminner jag.'],
+      ['NI', 'Jag har bokat en workshop om det. Kl 03.'],
+    ],
+    [
+      ['KA', 'Vem har skrivit style="margin: 0 auto 0 -2px"?'],
+      ['me', 'Jag är backend...'],
+      ['J', 'Det är ingen ursäkt. Backend har också marginaler.'],
+      ['NI', 'Inre marginaler. Känslomässiga marginaler.'],
+      ['KA', 'inUniform har en token för det. inner-calm-200.'],
+      ['J', 'När vi får det. Vilket skulle varit IGÅR.'],
+    ],
+  ],
+  giveUp: ['Jag lägger länken i Slack!', 'Jag bokar en design-crit kl 03!', 'Vänta tills du ser v8!', 'Jag taggar dig i Figma då!', 'inUniform kommer! Någon gång! Förhoppningsvis igår!'],
+  leaveLine: ['Tack för feedbacken! Vi itererar!', 'Vi ses i nästa spacing-sync!', 'Jag skickar ett Loom om marginaler!'],
+  // Shown big when the group arrives
+  rush: ['UX-RUSH! Jocke, Katarina och Nikki har Figma-länkar!', 'UX-GÄNGET! Kolla dina marginaler!', 'DESIGN-CRIT PÅ LÖPANDE BAND!'],
 };
 
 export const HUB = {
