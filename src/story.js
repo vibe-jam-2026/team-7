@@ -123,6 +123,7 @@ export const DESIGNERS = {
     ],
   ],
   giveUp: ['Jag lägger länken i Slack!', 'Jag bokar en design-crit kl 03!', 'Vänta tills du ser v8!', 'Jag taggar dig i Figma då!', 'inUniform kommer! Någon gång! Förhoppningsvis igår!'],
+  walkedOff: ['Hallå?! Vi var inte klara!', 'Jag skickar resten som Loom!', 'Okej, vi tar det i Slack. Med 40 trådar.', 'Du gick?! Mitt i user journeyn!'],
   leaveLine: ['Tack för feedbacken! Vi itererar!', 'Vi ses i nästa spacing-sync!', 'Jag skickar ett Loom om marginaler!'],
   // Shown big when the group arrives
   rush: ['UX-RUSH! Jocke, Katarina och Nikki har Figma-länkar!', 'UX-GÄNGET! Kolla dina marginaler!', 'DESIGN-CRIT PÅ LÖPANDE BAND!'],
