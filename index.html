@@ -137,8 +137,26 @@
     .pu-text b { font-weight: normal; font-size: calc(var(--px) * 6.5); color: #fff; }
     .pu-text small { font-size: calc(var(--px) * 5); color: #a8b0d0; }
     .pu-bar { position: absolute; left: 0; bottom: 0; height: calc(var(--px) * .8); background: #ffb838; width: 0; }
-    .pu.active { opacity: 1; border-color: #ffb838; background: rgba(60, 40, 5, .8); animation: blink .35s infinite alternate; }
+    .pu.active { opacity: 1; border-color: #ffb838; background: rgba(60, 40, 5, .8); }
+    .pu.ending { animation: blink .25s infinite alternate; }
     .pu.active .pu-icon { filter: none; }
+    /* The power-up offer that flies in (src/powerups.js) */
+    #pu-offer { position: absolute; left: 50%; top: calc(var(--px) * 26); display: flex; align-items: center; max-width: 50%;
+                gap: calc(var(--px) * 3); padding: calc(var(--px) * 2) calc(var(--px) * 4) calc(var(--px) * 3);
+                background: rgba(10, 12, 30, .9); border: calc(var(--px) * .8) solid #ffb838; overflow: hidden;
+                box-shadow: 0 0 0 calc(var(--px) * .8) #000; pointer-events: none;
+                transform: translateX(calc(50vw + 100%)); opacity: 0; transition: transform .45s cubic-bezier(.2,1.4,.4,1), opacity .3s; }
+    #pu-offer.show { transform: translateX(-50%); opacity: 1; }
+    #pu-offer.show:not(.caught):not(.missed) .o-icon { animation: wobble .5s infinite alternate; }
+    #pu-offer.caught { border-color: #57d27a; background: rgba(10, 50, 25, .92); transform: translateX(-50%) scale(1.06); }
+    #pu-offer.missed { border-color: #777; opacity: 0; transform: translateX(-180%); transition: transform .9s ease-in .4s, opacity .9s ease-in .4s; }
+    #pu-offer .o-icon { font: calc(var(--px) * 12) system-ui, sans-serif; }
+    #pu-offer .o-text { display: grid; line-height: 1.05; }
+    #pu-offer b { font: calc(var(--px) * 5.5) 'Press Start 2P', monospace; color: #ffb838; line-height: 1.4; }
+    #pu-offer.caught b { color: #8ff0a8; }
+    #pu-offer small { font-size: calc(var(--px) * 7); color: #e6e8f4; margin-top: calc(var(--px) * 1.5); }
+    #pu-offer .o-bar { position: absolute; left: 0; bottom: 0; height: calc(var(--px) * 1.2); background: #ffb838; width: 100%; }
+    @keyframes wobble { from { transform: rotate(-12deg) scale(1); } to { transform: rotate(12deg) scale(1.15); } }
     .pu-heard { font-size: calc(var(--px) * 5.5); color: #9fd0ff; text-align: right; max-width: calc(var(--px) * 90);
                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #mikbtn { font: 13px system-ui, sans-serif; color: #c8cdf0; background: transparent; border: 1px solid #555a78;
