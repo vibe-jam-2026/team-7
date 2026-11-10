@@ -128,10 +128,20 @@ export function drawItem(ctx, sx, y, item, t) {
       break;
     }
     case 'postit': {
-      const c = item.bad ? '#ff5d73' : '#ffe66b';
-      r(ctx, x - 4, yy - 4, 8, 8, item.bad ? '#b8303f' : '#c9a93a');
-      r(ctx, x - 3, yy - 3, 6, 6, c);
-      r(ctx, x - 2, yy - 1, 4, 1, item.bad ? '#fff' : '#8a7a3a'); r(ctx, x - 2, yy + 1, 3, 1, item.bad ? '#fff' : '#8a7a3a');
+      // Yellow = idea, red (bad) = SYNERGI, gold = great idea, grey = "we'll take it offline"
+      const tone = item.bad ? 'red' : item.tone || 'yellow';
+      const [edge, fill, ink] = {
+        yellow: ['#c9a93a', '#ffe66b', '#8a7a3a'],
+        red: ['#b8303f', '#ff5d73', '#fff'],
+        gold: ['#a8700a', '#ffc21f', '#7a4a00'],
+        grey: ['#6f6f7a', '#c9c9d1', '#55555f'],
+      }[tone];
+      r(ctx, x - 4, yy - 4, 8, 8, edge);
+      r(ctx, x - 3, yy - 3, 6, 6, fill);
+      r(ctx, x - 2, yy - 1, 4, 1, ink); r(ctx, x - 2, yy + 1, 3, 1, ink);
+      if (tone === 'gold' && Math.sin(t * 12 + x) > 0.3) { // sparkle
+        r(ctx, x + 4, yy - 6, 1, 3, '#fff7b0'); r(ctx, x + 3, yy - 5, 3, 1, '#fff7b0');
+      }
       break;
     }
     case 'coffee': {
@@ -235,6 +245,18 @@ export function drawProp(ctx, sx, prop, t) {
     } else {
       r(ctx, x - 5, y - 2, 10, 2, '#6b4a30'); r(ctx, x - 3, y - 3, 6, 1, '#6b4a30');
       drawGrowingTree(ctx, x, prop.size, prop.seed);
+    }
+  }
+  if (prop.kind === 'flipchart') {
+    // Easel with a paper pad; the caught ideas stick to it as small notes
+    r(ctx, x - 12, y - 40, 2, 40, '#6b4a30'); r(ctx, x + 10, y - 40, 2, 40, '#6b4a30'); r(ctx, x - 1, y - 36, 2, 36, '#5a3a24');
+    r(ctx, x - 14, y - 44, 28, 32, OUTLINE); r(ctx, x - 13, y - 43, 26, 30, '#fbfbf6');
+    r(ctx, x - 11, y - 41, 14, 2, '#2e5fb8'); // "IDÉER" heading
+    const colors = ['#ffe66b', '#ffc21f', '#9fd8ff', '#ff9fb2', '#b5f0a0'];
+    const n = Math.min(prop.notes || 0, 20);
+    for (let i = 0; i < n; i++) {
+      const nx = x - 11 + (i % 5) * 5, ny = y - 37 + Math.floor(i / 5) * 6;
+      r(ctx, nx, ny, 4, 4, colors[i % colors.length]);
     }
   }
   if (prop.kind === 'projector') {

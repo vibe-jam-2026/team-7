@@ -190,7 +190,7 @@ export const STORY = [
       ['H', 'Och så var det lunch igen. Precis enligt agendan.'],
       ['H', 'Bra jobbat. Du överlevde lunch till lunch.'],
       ['D', 'Tack. Vad kom vi fram till?'],
-      ['H', 'Åtta idéer, sex träd och en demo. Och en ny tradition!'],
+      ['H', 'Tio idéer, sex träd och en demo. Och en ny tradition!'],
       ['H', 'Nästa år kör vi frukost till frukost.'],
       ['D', 'Jag tar bussen tillbaka. Det känns som att jag glömt något.'],
       ['H', 'Vänta! Agendapunkt 47. Den är vit. Det betyder: ingenting.'],
