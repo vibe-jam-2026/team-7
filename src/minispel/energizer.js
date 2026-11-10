@@ -14,6 +14,8 @@ const NEED = 8, MAX_MISSES = 4;
 
 export default {
   id: 'energizer',
+  powerups: ['slow'], // more time per command; moving does not help here
+  powerupText: { slow: 'Henrik ropar i slowmotion i 6 sekunder. Mer tid per kommando!' }, // what the power-ups mean here
   title: 'Morgon-energizer',
   tagline: 'Gör exakt som Henrik säger',
   station: { x: 895, label: 'Gräsmattan' },

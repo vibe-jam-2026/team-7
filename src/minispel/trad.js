@@ -21,6 +21,8 @@ const HENRIK_BARKS = [
 
 export default {
   id: 'trad',
+  powerups: ['speed', 'jump', 'shield', 'slow', 'quickwin'], // no magnet: saplings are picked up at the crate, not as items
+  powerupText: { shield: 'Folk som vill "förankra" studsar av i 10 sekunder.' }, // what the power-ups mean here
   title: 'Plantera träd',
   tagline: 'Den bästa tiden var för 20 år sedan. Den näst bästa är nu.',
   station: { x: 1048, label: 'Trädplantering' },
