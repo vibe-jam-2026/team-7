@@ -22,6 +22,7 @@ export default {
   station: { x: 300, label: 'Skylt' }, // var i Haga man går in (ta bort för att dölja)
   level: 'haga',                       // 'haga', 'kontoret' eller 'bussen'
   // lockPlayer: true,                // spelaren står still (tangenterna används till annat)
+  // devPhases: ['Fas 1', 'Fas 2'], devPhase(n) {},  // flera faser: egna rader i dev-menyn, devPhase(n) gör att nästa start börjar i fas n
   // powerups: ['speed', 'jump', 'shield', 'slow', 'magnet', 'quickwin'], // vilka power-ups som kan dyka upp ([] = inga)
   // powerupText: { shield: 'Vad skölden betyder just här' },
   // music: 'slott',                 // bakgrundsmusik: 'slott' (lugn), 'stress' (standard), 'panik', 'resa'

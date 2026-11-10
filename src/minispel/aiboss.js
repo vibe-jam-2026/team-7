@@ -1094,6 +1094,8 @@ const AIBOSS = {
   level: 'kontoret',
   station: { x: 220, label: 'AI-labbet' },
   lockPlayer: true,   // vi styr vår egen spelare i update()
+  devPhases: ['Fas 1 (2D)', 'Fas 2 (3D)', 'Fas 3 (slutspurten)'], // egna rader i dev-menyn
+  devPhase(n) { checkpoint = n; },  // nästa start börjar i fas n
   start: 100,         // håller kameran stilla (camX = 0)
   henrik: null,
   music: 'stress',

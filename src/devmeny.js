@@ -17,10 +17,19 @@ let items = [];
 
 function buildItems() {
   const inStory = new Set(STORY.map((b) => b.play).filter(Boolean));
-  items = STORY.map((b, i) => ({
-    label: `${String(i).padStart(2, ' ')}  ${b.clock}  ${b.play ? (MINIGAMES[b.play]?.title ?? b.play) : b.title}`,
-    go: (direct) => devJump(i, direct),
-  }));
+  items = [];
+  STORY.forEach((b, i) => {
+    const mg = MINIGAMES[b.play];
+    items.push({
+      label: `${String(i).padStart(2, ' ')}  ${b.clock}  ${b.play ? (mg?.title ?? b.play) : b.title}`,
+      go: (direct) => { mg?.devPhase?.(1); devJump(i, direct); },
+    });
+    // Minispel med flera faser (t.ex. AI-Göran) får en rad per fas, så att man kan hoppa direkt dit
+    (mg?.devPhases || []).forEach((name, k) => {
+      if (k === 0) return;
+      items.push({ label: `      ↳ ${name}`, go: () => { mg.devPhase(k + 1); devJump(i, true); } });
+    });
+  });
   for (const m of Object.values(MINIGAMES)) {
     if (!inStory.has(m.id)) items.push({ label: `--  utanför storyn  ${m.title}`, go: () => devPlay(m.id) });
   }
