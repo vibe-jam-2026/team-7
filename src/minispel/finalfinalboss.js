@@ -246,14 +246,14 @@ function word(f, x, y, ang, spd, text, style = 'w1', o = {}) {
 const mouth = (f) => [f.boss.x, f.boss.fy - 31];
 const aim = (f) => { const [mx, my] = mouth(f); return Math.atan2(f.pl.y - my, f.pl.x - mx); };
 function every(f, key, iv, dt) { f.timers[key] = (f.timers[key] || 0) + dt; let n = 0; while (f.timers[key] >= iv) { f.timers[key] -= iv; n++; } return n; }
-// Några få stora blobbar: en i taget, lite tätare och ibland två mot slutet
+// Några få stora, snabba blobbar: en i taget, lite tätare och ibland två mot slutet
 function PATTERN(g, f, dt, ph) {
-  const iv = 2.6 - ph * 0.12;
+  const iv = 2.3 - ph * 0.12;
   for (let i = every(f, 'a', iv, dt); i--;) {
     const text = Math.random() < 0.75 ? PHASES[ph].name : pick(PHASES).name;
     const a = aim(f) + rand(-0.3, 0.3);
-    blob(f, text, a, rand(34, 44));
-    if (ph >= 4 && Math.random() < 0.35) blob(f, pick(PHASES).name, a + pick([-0.6, 0.6]), rand(30, 38));
+    blob(f, text, a, rand(68, 82));
+    if (ph >= 4 && Math.random() < 0.35) blob(f, pick(PHASES).name, a + pick([-0.6, 0.6]), rand(60, 72));
     f.boss.point = 0.5;
   }
 }
