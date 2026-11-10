@@ -104,6 +104,7 @@ export const END_STATS = (s) => `
   Kerstins knappar du tryckte på: ${s.buttons ?? 0}<br>
   Figma-koncept du tvingades se: ${s.figma ?? 0}<br>
   UX-designers du hoppade över: ${s.uxDodged ?? 0}<br>
+  Keynote-slogans du duckade: ${s.slogans ?? 0}<br>
   Stress efter spat: 0 %<br>
   Omtag: ${s.retries}`;
 
@@ -185,12 +186,23 @@ export const STORY = [
     ],
   },
   {
-    clock: 'Dag 2 · 12:00', title: 'Lunch. Igen.',
+    clock: 'Dag 2 · 11:59', title: 'Agendapunkt 46,75',
+    play: 'finalfinalboss',
     before: [
-      ['H', 'Och så var det lunch igen. Precis enligt agendan.'],
+      ['H', 'En minut till lunch! Men först: punkt 46,75. Den är i platina.'],
+      ['D', 'Det finns ingen platina-penna.'],
+      ['H', 'Jag köpte en. Till keynoten! Vår inhyrda talare väntar i Hörsalen.'],
+      ['D', 'En keynote. En minut före lunch.'],
+      ['H', 'Den är på två minuter. Vi tar lunchen lite sent. In i Hörsalen!'],
+    ],
+  },
+  {
+    clock: 'Dag 2 · 12:01', title: 'Lunch. Igen.',
+    before: [
+      ['H', 'Och så var det lunch igen. Nästan enligt agendan.'],
       ['H', 'Bra jobbat. Du överlevde lunch till lunch.'],
       ['D', 'Tack. Vad kom vi fram till?'],
-      ['H', 'Tio idéer, sex träd och en demo. Och en ny tradition!'],
+      ['H', 'Tio idéer, sex träd, en demo och en keynote. Och en ny tradition!'],
       ['H', 'Nästa år kör vi frukost till frukost.'],
       ['D', 'Jag tar bussen tillbaka. Det känns som att jag glömt något.'],
       ['H', 'Vänta! Agendapunkt 47. Den är vit. Det betyder: ingenting.'],
