@@ -11,10 +11,10 @@ import { SPEAKERS, DESIGNERS } from './story.js';
 import { sfx } from './ljud.js';
 
 const CATCH_DIST = 8;
-const OVERSHOOT = 26;  // how far past you they run before skidding round
+const OVERSHOOT = 50;  // how far past you they run before skidding round (time to turn and get ready)
 const MAX_TURNS = 2;   // turnarounds before they give up
 const MAX_CHASE = 28;  // seconds (they are slow, so give them time)
-const SPACING = 26;    // px between them in the group
+const SPACING = 11;    // px between them: a tight pack, so one jump clears all three
 
 let cooldown = rand(6, 10); // the first chase comes quickly
 let shoutT = 0;
@@ -30,7 +30,7 @@ export function updateDesigners(g, dt) {
   }
   if (shoutT > 0 && (shoutT -= dt) <= 0) g.shout(null);
 
-  if (group) updateGroup(g, dt);
+  if (group) { updatePack(g, dt); updateGroup(g, dt); }
   for (const d of g.designers) update(g, d, dt);
   g.designers = g.designers.filter((d) => !(d.state === 'leave' && (d.x < g.camX - 60 || d.x > g.camX + WIDTH + 60)));
   if (g.designers.length === 0) group = null;
@@ -43,17 +43,47 @@ function startChase(g) {
   sfx.siren();
   sfx.kazoo();
   const byWho = Object.fromEntries(DESIGNERS.people.map((p) => [p.who, p]));
-  DESIGNERS.order.forEach((who, i) => spawn(g, byWho[who], side, i * SPACING));
-  group = { talkT: 0.8, next: 0, pitch: null };
+  // They move as one pack: `pack.x` is the leader, the others trail right behind.
+  const x = side > 0 ? g.camX + WIDTH + 16 : g.camX - 16;
+  const pack = { x, side: Math.sign(x - g.p.x) || side, dir: Math.sign(g.p.x - x) || -side, speed: DESIGNERS.speed, turns: 0, passed: false, age: 0 };
+  group = { talkT: 0.8, next: 0, pitch: null, pack };
+  DESIGNERS.order.forEach((who, rank) => g.designers.push({
+    person: byWho[who], look: SPEAKERS[who].look, rank, x: x - pack.dir * rank * SPACING, dir: pack.dir,
+    speed: pack.speed, state: 'chase', t: Math.random() * 5, slot: 0,
+  }));
 }
 
-function spawn(g, person, side, behind) {
-  const x = side > 0 ? g.camX + WIDTH + 16 + behind : g.camX - 16 - behind;
-  g.designers.push({
-    person, look: SPEAKERS[person.who].look, x, side: Math.sign(x - g.p.x) || side,
-    dir: Math.sign(g.p.x - x) || -side, speed: DESIGNERS.speed * rand(0.97, 1.03),
-    state: 'chase', age: 0, t: Math.random() * 5, turns: 0, passed: false, slot: 0,
-  });
+// The pack runs at you. Only the leader can catch you, so you never get stuck between them;
+// once the last one is past you, they all skid round together.
+function updatePack(g, dt) {
+  const k = group.pack, p = g.p;
+  const chasing = g.designers.filter((d) => d.state === 'chase');
+  if (!chasing.length || group.pitch) return;
+  k.age += dt;
+  k.x += k.dir * k.speed * dt;
+  for (const d of chasing) { d.x = k.x - k.dir * d.rank * SPACING; d.dir = k.dir; }
+  const lead = chasing.reduce((a, d) => (d.rank < a.rank ? d : a));
+  const tail = chasing.reduce((a, d) => (d.rank > a.rank ? d : a));
+
+  // Only while the leader is still in front of you: once it has run in under you, you are clear
+  const ahead = Math.sign(lead.x - p.x) === k.side;
+  if (!k.passed && ahead && Math.abs(lead.x - p.x) < CATCH_DIST && p.y > GROUND_Y - 22 && p.stun <= 0) { catchYou(g, lead); return; }
+
+  // The whole pack ran past you (you jumped over them): skid and turn round together
+  if (!k.passed && Math.sign(tail.x - p.x) !== k.side && Math.abs(tail.x - p.x) > 6) {
+    k.passed = true;
+    if (p.stun <= 0) { g.stats.uxDodged = (g.stats.uxDodged ?? 0) + 1; sfx.whoosh(); }
+  }
+  if (k.passed && Math.abs(tail.x - p.x) > OVERSHOOT) {
+    k.turns++;
+    if (k.turns > MAX_TURNS) { chasing.forEach((d, i) => leave(g, d, i === 0 ? pick(DESIGNERS.giveUp) : null)); return; }
+    // The last one becomes the leader, so nobody jumps on screen
+    const maxRank = Math.max(...chasing.map((d) => d.rank));
+    k.x = tail.x; k.dir = -k.dir; k.side = -k.side; k.passed = false; k.speed *= 0.96;
+    for (const d of chasing) d.rank = maxRank - d.rank;
+    if (Math.random() < 0.5) { g.say(pick(DESIGNERS.turn), tail, 'ux', 2.4); group.talkT = Math.max(group.talkT, 2.4); }
+  }
+  if (k.age > MAX_CHASE) chasing.forEach((d) => leave(g, d, null));
 }
 
 // One of them talks at a time, taking turns, so the bubbles can be read
@@ -69,28 +99,11 @@ function updateGroup(g, dt) {
 }
 
 function update(g, d, dt) {
-  d.age += dt; d.t += dt;
+  d.t += dt;
   const p = g.p;
-  const dist = Math.abs(d.x - p.x);
 
   if (d.state === 'chase') {
-    d.x += d.dir * d.speed * dt;
-
-    if (dist < CATCH_DIST && p.y > GROUND_Y - 22 && p.stun <= 0 && !group?.pitch) { catchYou(g, d); return; }
-
-    // Ran past you (you jumped over them): skid and turn round
-    if (!d.passed && Math.sign(d.x - p.x) !== d.side && dist > 6) {
-      d.passed = true;
-      if (p.stun <= 0) { g.stats.uxDodged = (g.stats.uxDodged ?? 0) + 1; sfx.whoosh(); }
-    }
-    if (d.passed && dist > OVERSHOOT) {
-      d.turns++;
-      if (d.turns > MAX_TURNS) { leave(g, d, pick(DESIGNERS.giveUp)); return; }
-      d.dir = -d.dir; d.side = -d.side; d.passed = false;
-      d.speed *= 0.96;
-      if (Math.random() < 0.5) { g.say(pick(DESIGNERS.turn), d, 'ux', 2.4); group.talkT = Math.max(group.talkT, 2.4); }
-    }
-    if (d.age > MAX_CHASE) leave(g, d, null);
+    // moved by updatePack
   } else if (d.state === 'pitch') {
     // Gather round you and hold the tablets up to your face
     const target = p.x + d.slot;
