@@ -125,6 +125,26 @@
     #ljudbtn:hover { border-color: #c8cdf0; }
     #ljudbtn.blocked { color: #fff; background: #d63a3a; border-color: #d63a3a; animation: blink .6s infinite alternate; }
     @keyframes blink { to { opacity: .55; } }
+    /* Power-ups in the top-right corner (src/powerups.js) */
+    #powerups { position: absolute; right: calc(var(--px) * 4); top: calc(var(--px) * 25); display: grid;
+                gap: calc(var(--px) * 1.2); pointer-events: none; }
+    .pu { position: relative; display: flex; align-items: center; gap: calc(var(--px) * 1.5); overflow: hidden;
+          background: rgba(10, 12, 30, .62); border: calc(var(--px) * .5) solid rgba(255,255,255,.18);
+          padding: calc(var(--px) * .6) calc(var(--px) * 2) calc(var(--px) * .9) calc(var(--px) * 1.2);
+          min-width: calc(var(--px) * 66); opacity: .72; }
+    .pu-icon { font: calc(var(--px) * 6) system-ui, sans-serif; filter: grayscale(.6); }
+    .pu-text { display: grid; line-height: 1; }
+    .pu-text b { font-weight: normal; font-size: calc(var(--px) * 6.5); color: #fff; }
+    .pu-text small { font-size: calc(var(--px) * 5); color: #a8b0d0; }
+    .pu-bar { position: absolute; left: 0; bottom: 0; height: calc(var(--px) * .8); background: #ffb838; width: 0; }
+    .pu.active { opacity: 1; border-color: #ffb838; background: rgba(60, 40, 5, .8); animation: blink .35s infinite alternate; }
+    .pu.active .pu-icon { filter: none; }
+    .pu-heard { font-size: calc(var(--px) * 5.5); color: #9fd0ff; text-align: right; max-width: calc(var(--px) * 90);
+                white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #mikbtn { font: 13px system-ui, sans-serif; color: #c8cdf0; background: transparent; border: 1px solid #555a78;
+              border-radius: 4px; padding: 2px 8px; cursor: pointer; pointer-events: auto; }
+    #mikbtn.on { color: #05060f; background: #57d27a; border-color: #57d27a; }
+    #mikbtn.bad { color: #fff; background: #d63a3a; border-color: #d63a3a; }
     #help { text-align: center; color: #8890b0;
             font: 14px system-ui, sans-serif; pointer-events: none; }
   </style>
@@ -149,7 +169,7 @@
     <button id="forbidden" type="button" tabindex="-1">TRYCK INTE</button>
     <div id="card" hidden><div id="cardTop"></div><div id="cardTitle"></div><div id="cardSub"></div><div id="cardHint"></div></div>
   </div>
-  <div id="help">← → gå · ↑ hoppa · mellanslag: prata / gå in · Ö: dev-meny · <button id="ljudbtn" type="button">🔊 Ljud</button> <button id="devbtn" type="button">DEV</button></div>
+  <div id="help">← → gå · ↑ hoppa · mellanslag: prata / gå in · Ö: dev-meny · <button id="ljudbtn" type="button">🔊 Ljud</button> <button id="mikbtn" type="button">🎤 Röststyrning</button> <button id="devbtn" type="button">DEV</button></div>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

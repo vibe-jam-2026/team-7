@@ -5,6 +5,7 @@ import { frame, startStory } from './game.js';
 import { setScale } from './ui.js';
 import { devMenuOpen } from './devmeny.js';
 import { toggleMute, audioStatus, soundButton } from './ljud.js';
+import { toggleVoice, onMicStatus } from './powerups.js';
 import './knappen.js';
 
 const canvas = document.getElementById('game');
@@ -44,6 +45,20 @@ ljudBtn.addEventListener('click', () => { soundButton(); setTimeout(showMute, 10
 addEventListener('keydown', (e) => { if (e.key === 'm' || e.key === 'M') toggleMute(); });
 setInterval(showMute, 400);
 showMute();
+
+// Voice control button: say "Effektivisera", "Högt i tak" or "Vi tar det offline" for power-ups
+const mikBtn = document.getElementById('mikbtn');
+const MIK_TEXT = {
+  off: '🎤 Slå på röststyrning', starting: '🎤 Startar…', on: '🎤 Lyssnar – säg en klyscha!',
+  denied: '🎤 Mikrofonen nekad – använd 1 2 3', unsupported: '🎤 Röst stöds inte här – använd 1 2 3',
+};
+onMicStatus((st) => {
+  mikBtn.textContent = MIK_TEXT[st] ?? MIK_TEXT.off;
+  mikBtn.classList.toggle('on', st === 'on');
+  mikBtn.classList.toggle('bad', st === 'denied' || st === 'unsupported');
+});
+mikBtn.addEventListener('mousedown', (e) => e.preventDefault()); // don't steal keyboard focus
+mikBtn.addEventListener('click', () => toggleVoice());
 
 let last = performance.now();
 function loop(now) {
