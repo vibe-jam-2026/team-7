@@ -199,19 +199,12 @@ export const STORY = [
     ],
   },
   {
-    clock: 'Dag 2 · 07:00', title: 'God morgon', tint: 'rgba(255,170,190,0.12)',
-    play: 'energizer',
-    before: [
-      ['H', 'GOOOOD MORGON HAGA! Har alla sovit gott?'],
-      ['D', 'Vänta, vad hände med middagen? Och natten?'],
-      ['H', 'Strukna ur agendan. Effektivisering! Vi sov stående i mingelkön.'],
-      ['H', 'Perfekt! Då är du redo för ENERGIZERN. Ut på gräsmattan!'],
-    ],
-  },
-  {
-    clock: 'Dag 2 · 09:30', title: 'Hållbarhetspunkten',
+    clock: 'Dag 2 · 09:30', title: 'God morgon', tint: 'rgba(255,170,190,0.12)',
     play: 'trad',
     before: [
+      ['H', 'GOOOOD MORGON HAGA! Har alla sovit gott?'],
+      ['D', 'Vänta, vad hände med middagen? Och natten? Och morgonens energizer?'],
+      ['H', 'Strukna ur agendan. Effektivisering! Vi sov stående i mingelkön.'],
       ['H', 'Agendapunkt 31! Den är grön. Det betyder hållbarhet. Eller att jag fick slut på de andra pennorna.'],
       ['D', 'Vad ska vi göra?'],
       ['H', 'Plantera träd! Ut i parken, vid trädplanteringen. Spaden är redan där.'],
