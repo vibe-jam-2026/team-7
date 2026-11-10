@@ -8,7 +8,8 @@ const OFFER_TIME = 6;        // seconds to say the phrase
 const FIRST_OFFER = 5;       // seconds before the first one shows up
 const BETWEEN = [9, 15];     // seconds between offers
 
-// timed: only offered in minigames with a clock. instant: no duration, happens at once.
+// Which power-ups show up where is decided per minigame (`powerups: [...]` in its file) and by
+// HUB_POWERUPS below for walking around Haga. instant: no duration, happens at once.
 export const POWERUPS = [
   { id: 'speed', icon: '⚡', phrase: 'Effektivisera', time: 10, match: /effektivi/,
     explain: 'Du springer nästan dubbelt så fort i 10 sekunder.' },
@@ -16,14 +17,20 @@ export const POWERUPS = [
     explain: 'Superhopp i 10 sekunder. Hoppa över allt och alla.' },
   { id: 'shield', icon: '🛡️', phrase: 'Vi tar det offline', time: 10, match: /off ?-?line|ofline|offlajn|of lajn/,
     explain: 'Sköld i 10 sekunder: möten, synergi och felrutor studsar av.' },
-  { id: 'slow', icon: '🐌', phrase: 'Vi parkerar det', time: 6, timed: true, match: /parker/,
+  { id: 'slow', icon: '🐌', phrase: 'Vi parkerar det', time: 6, match: /parker/,
     explain: 'Allt utom du går i slowmotion i 6 sekunder, och klockan står still.' },
   { id: 'magnet', icon: '🧲', phrase: 'Lågt hängande frukt', time: 10, match: /l[åa]gt? ?h[äa]ngande|h[äa]ngande frukt/,
     explain: 'Idéer, sladdar och kaffe dras till dig i 10 sekunder.' },
-  { id: 'quickwin', icon: '🏆', phrase: 'Quick win', instant: true, timed: true, match: /quick ?win|kvick ?vin|kwick|quickwin|kvikk/,
-    explain: '+6 sekunder på klockan!' },
+  { id: 'quickwin', icon: '🏆', phrase: 'Quick win', instant: true, match: /quick ?win|kvick ?vin|kwick|quickwin|kvikk/,
+    explain: '+6 sekunder på klockan!', explainSurvive: '6 sekunder mindre att överleva!' },
 ];
 const byId = Object.fromEntries(POWERUPS.map((p) => [p.id, p]));
+
+// Walking around Haga: only the ones that help when you move and dodge the UX designers
+export const HUB_POWERUPS = ['speed', 'jump', 'shield'];
+
+let survive = false; // the current minigame is "survive until the clock runs out"
+let texts = {};       // the current minigame's own explanations (powerupText)
 
 // Seconds left of each power-up; the player and the engine read these.
 export const power = Object.fromEntries(POWERUPS.filter((p) => !p.instant).map((p) => [p.id, 0]));
@@ -66,7 +73,7 @@ function resolve(caught) {
   if (caught) {
     card.className = 'show caught';
     cTitle.textContent = `${pu.phrase.toUpperCase()}!`;
-    cSmall.textContent = pu.explain;
+    cSmall.textContent = texts[pu.id] || (survive && pu.explainSurvive) || pu.explain;
     activate(pu);
   } else {
     card.className = 'show missed';
@@ -77,13 +84,17 @@ function resolve(caught) {
   nextOffer = BETWEEN[0] + Math.random() * (BETWEEN[1] - BETWEEN[0]);
 }
 
-// Called every frame. canOffer: the player can act right now. timed: the minigame has a clock.
-export function updatePowerUps(dt, { canOffer, timed }) {
+// Called every frame. allowed: the power-up ids that make sense right now ([] = none).
+// survive: the minigame is won by surviving until the clock runs out.
+export function updatePowerUps(dt, { allowed, survive: surviveNow = false, texts: textsNow = {} }) {
+  survive = surviveNow;
+  texts = textsNow;
+  const canOffer = allowed.length > 0;
   for (const k in power) power[k] = Math.max(0, power[k] - dt);
 
   if (showT > 0) { showT -= dt; if (showT <= 0) card.className = ''; }
   if (offer) {
-    if (!canOffer) { offer = null; card.className = ''; return; } // the scene changed; let it go quietly
+    if (!allowed.includes(offer.pu.id)) { offer = null; card.className = ''; return; } // the scene changed; let it go quietly
     offer.left -= dt;
     cBar.style.width = (offer.left / OFFER_TIME) * 100 + '%';
     if (offer.left <= 0) resolve(false);
@@ -92,7 +103,7 @@ export function updatePowerUps(dt, { canOffer, timed }) {
   if (!canOffer || showT > 0) return;
   nextOffer -= dt;
   if (nextOffer > 0) return;
-  const choices = POWERUPS.filter((p) => (!p.timed || timed) && !(power[p.id] > 0));
+  const choices = POWERUPS.filter((p) => allowed.includes(p.id) && !(power[p.id] > 0));
   if (choices.length) showOffer(choices[Math.floor(Math.random() * choices.length)]);
 }
 
@@ -177,6 +188,15 @@ export function toggleVoice() {
   if (wanted) { setStatus('starting'); try { rec.start(); } catch { /* already started */ } }
   else { try { rec.stop(); } catch { /* not started */ } }
 }
+
+// When entering a new minigame: power-ups that don't apply there stop at once
+export function keepOnly(allowed) {
+  for (const k in power) if (!allowed.includes(k)) power[k] = 0;
+}
+
+// For testing: the next offer comes right away, and what's on the card now
+export function debugNextOffer() { offer = null; showT = 0; nextOffer = 0; card.className = ''; }
+export function currentOffer() { return offer?.pu.id ?? null; }
 
 // For testing in the console: debugOffer('slow') shows that offer right away
 export function debugOffer(id) { if (byId[id]) { offer = null; showT = 0; showOffer(byId[id]); } }

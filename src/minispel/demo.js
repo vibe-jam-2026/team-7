@@ -10,6 +10,7 @@ const PROJECTOR_X = 700;
 
 export default {
   id: 'demo',
+  powerups: ['speed', 'jump', 'shield', 'slow', 'magnet', 'quickwin'], // all of them: cables to grab, pop-ups and a clock
   title: 'Demon: Projektorn',
   tagline: 'Ledningsgruppen väntar. Projektorn säger "Ingen signal".',
   station: { x: 700, label: 'Stora salen' },

@@ -7,6 +7,7 @@
 import { keys, wasPressed } from '../input.js';
 import { WIDTH as W, HEIGHT as H, pick, rand } from '../world.js';
 import { drawPerson, PLAYER } from '../sprites.js';
+import { power } from '../powerups.js';
 
 const TAU = Math.PI * 2, PI = Math.PI;
 const LIVES = 3, MUTES = 2, PHASE_LEN = 20, FIRE_STOP = 117.5;
@@ -274,6 +275,12 @@ function mute(g) {
 // ---- Minispelet -----------------------------------------------------------------------------
 export default {
   id: 'finalfinalboss',
+  powerups: ['speed', 'shield', 'slow', 'quickwin'], // no jump or magnet: you fly freely and dodge
+  powerupText: {
+    speed: 'Du flyger snabbare i 10 sekunder.',
+    shield: 'Johns slogans flyger rakt igenom dig i 10 sekunder.',
+    slow: 'Johns slogans går i slowmotion i 6 sekunder. Det gör inte du.',
+  }, // what the power-ups mean here
   title: 'FinalFinalBoss',
   tagline: 'Överlev John Vantages keynote i två minuter',
   level: 'kontoret',
@@ -305,7 +312,7 @@ export default {
     };
   },
 
-  update(g, dt) {
+  update(g, dt, realDt = dt) {
     const f = g.flags;
     const ph = Math.min(5, Math.floor(g.t / PHASE_LEN));
     if (ph !== f.phase) enterPhase(g, ph);
@@ -315,9 +322,10 @@ export default {
     const p = f.pl;
     let dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
     if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
-    const spd = shift ? 50 : 115;
-    p.x = clamp(p.x + dx * spd * dt, AREA.x0, AREA.x1);
-    p.y = clamp(p.y + dy * spd * dt, AREA.y0, AREA.y1);
+    const spd = (shift ? 50 : 115) * (power.speed > 0 ? 1.35 : 1); // "Effektivisera"
+    // realDt: in slow motion ("Vi parkerar det") the bullets slow down, but you don't
+    p.x = clamp(p.x + dx * spd * realDt, AREA.x0, AREA.x1);
+    p.y = clamp(p.y + dy * spd * realDt, AREA.y0, AREA.y1);
     p.moving = !!(dx || dy);
     if (dx) p.facing = Math.sign(dx);
     if (p.inv > 0) p.inv -= dt;
@@ -357,7 +365,7 @@ export default {
       if (b.x + ex < -40 || b.x - ex > W + 60 || b.y - ex > H + 4 || b.y < -60 || b.age > 18) {
         f.bullets[i] = f.bullets[f.bullets.length - 1]; f.bullets.pop(); continue;
       }
-      if (p.inv > 0) continue;
+      if (p.inv > 0 || power.shield > 0) continue; // "Vi tar det offline": bullets pass through
       let d;
       if (b.k) d = Math.hypot(Math.max(Math.abs(b.x - p.x) - b.hw, 0), Math.max(Math.abs(b.y - p.y) - b.hh, 0));
       else d = Math.hypot(b.x - p.x, b.y - p.y) - (b.r - 0.5);

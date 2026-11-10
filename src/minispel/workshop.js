@@ -28,6 +28,7 @@ const PHASES = [
 
 export default {
   id: 'workshop',
+  powerups: ['speed', 'jump', 'shield', 'slow', 'magnet', 'quickwin'], // all of them: moving, falling notes and a clock
   title: 'Workshop: Post-it-stormen',
   tagline: `Fånga ${NEED} idéer. Undvik synergi.`,
   station: { x: 432, label: 'Workshop' },
