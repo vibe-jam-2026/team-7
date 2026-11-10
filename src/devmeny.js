@@ -2,7 +2,7 @@
 // ↑ ↓ choose · Enter: straight into the minigame · → : play the chapter from its start (dialogue + Haga) · Ö / Esc: close
 import { STORY } from './story.js';
 import { MINIGAMES } from './minispel/index.js';
-import { devJump, devPlay } from './game.js';
+import { devJump, devPlay, debug } from './game.js';
 import { keys, clearPressed } from './input.js';
 
 const stage = document.getElementById('stage');
@@ -61,7 +61,10 @@ function choose(i, direct) {
 
 export function devMenuOpen() { return open; }
 
-const isToggle = (e) => ['ö', 'Ö', '§', '½'].includes(e.key) || e.code === 'Semicolon' || e.code === 'Backquote';
+// While you mash the keyboard in the office intro, Ö is just a letter (§ and the DEV button still work)
+const mashing = () => !open && debug.mode === 'play' && debug.minigame === 'kontoret';
+const isToggle = (e) => ['§', '½'].includes(e.key) || e.code === 'Backquote' ||
+  (!mashing() && (['ö', 'Ö'].includes(e.key) || e.code === 'Semicolon'));
 
 // Capture phase on window runs before the game's own key handling, so the menu can swallow keys.
 addEventListener('keydown', (e) => {

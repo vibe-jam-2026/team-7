@@ -470,6 +470,10 @@ function draw(ctx) {
     const y = who.y != null && !isPlayer ? who.y : (isPlayer ? g.p.y - 30 : GROUND_Y - 33);
     return { text: b.text, x: who.x, y, style: b.style };
   });
+  // Name tags under the UX designers so you can see who is chasing you
+  if (!mg) for (const d of g.designers || []) {
+    list.push({ text: SPEAKERS[d.person.who].name, x: d.x, y: GROUND_Y + 9, style: 'nametag' });
+  }
   if (mode === 'hub' || (mode !== 'play' && !mg && g.level === haga)) {
     const nextId = beat().play;
     for (const m of stations()) {

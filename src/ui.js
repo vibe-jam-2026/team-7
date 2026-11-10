@@ -113,7 +113,7 @@ export function bubbles(list, camX) {
     el.hidden = false;
     if (el.textContent !== b.text) el.textContent = b.text;
     el.className = 'bubble' + (b.style ? ' ' + b.style : '');
-    shown.push({ el, b, station: (b.style || '').startsWith('station') });
+    shown.push({ el, b, station: /^(station|nametag)/.test(b.style || '') });
   });
   // Fixed labels first, then speech bubbles in the order they were given.
   shown.sort((a, c) => c.station - a.station);
