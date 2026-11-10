@@ -1,6 +1,6 @@
 // The UX designers Jocke, Katarina and Nikki. Now and then, while you walk around the Haga hub,
 // all three come running from behind as a group with tablets full of Figma concepts.
-// They are faster than you, so jump over them! If one of them catches you, the whole gang
+// They jog slowly so you can read what they shout. If one of them catches you, the whole gang
 // gathers round and you are stuck listening to a group pitch about margins, spacing
 // and the inUniform framework they needed yesterday.
 // They take turns talking, one line at a time, so there is time to read.
@@ -13,7 +13,7 @@ import { sfx } from './ljud.js';
 const CATCH_DIST = 8;
 const OVERSHOOT = 26;  // how far past you they run before skidding round
 const MAX_TURNS = 2;   // turnarounds before they give up
-const MAX_CHASE = 18;  // seconds
+const MAX_CHASE = 28;  // seconds (they are slow, so give them time)
 const SPACING = 26;    // px between them in the group
 
 let cooldown = rand(6, 10); // the first chase comes quickly
