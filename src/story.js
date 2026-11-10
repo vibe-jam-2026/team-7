@@ -16,6 +16,9 @@ export const SPEAKERS = {
   NI: { name: 'Nikki', role: 'UX-designer', color: '#c9a2ff', look: NIKKI },
 };
 
+// Names on the name tags of the colleagues who walk up to you ("har du fem minuter?")
+export const COLLEAGUE_NAMES = ['Anders', 'Maria', 'Johan', 'Sara', 'Mikael', 'Emma', 'Peter', 'Linda', 'Fredrik', 'Åsa', 'Mats', 'Elin'];
+
 // The UX designers who now and then chase you around the Haga hub (src/designers.js).
 // shout = what they yell while running after you, pitch = what they say when they catch you,
 // giveUp = what they say when you have jumped over them too many times.

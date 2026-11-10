@@ -2,12 +2,14 @@
 // "Tryck inte på knappen", fast som metafor: tryck inte på Kerstins knappar.
 // Varje runda säger Kerstin något och du väljer ett svar med ← ↑ →. Fel svar (eller tystnad)
 // trycker in en av hennes tre röda knappar, som svävar ovanför huvudet. Tre intryckta: kaboom.
+// Tre lugna, korrekta svar räcker för att vinna. Det avgörande tredje svaret är alltid LAST.
 import { wasPressed } from '../input.js';
 import { pick } from '../world.js';
 import { KERSTIN } from '../sprites.js';
 
 const KERSTIN_X = 345;
-const ROUNDS_TOTAL = 8;
+const ROUNDS_TOTAL = 8;   // frågor som finns i högen (fler än som behövs)
+const CALM_NEEDED = 3;   // så många rätta svar krävs för att vinna
 const BUTTONS = 3;
 const KEYS = [['left', '←'], ['up', '↑'], ['right', '→']];
 
@@ -157,14 +159,15 @@ export default {
     ['K', 'Och rör INTE den röda knappen där uppe. Den går direkt till huvudboken.'],
     ['D', '(Svara med ← ↑ →. Lugnt. Korrekt. Med rätt kontonummer.)'],
   ],
-  goal: (g) => `Runda ${Math.min(g.flags.round + 1, ROUNDS_TOTAL)}/${ROUNDS_TOTAL} · Knappar intryckta: ${g.flags.pushed}/${BUTTONS}`,
+  goal: (g) => `Rätta svar: ${g.flags.calm}/${CALM_NEEDED} · Knappar intryckta: ${g.flags.pushed}/${BUTTONS}`,
 
   setup(g) {
     const f = g.flags;
-    f.rounds = [...FIRST, ...shuffle(MIDDLE).slice(0, ROUNDS_TOTAL - FIRST.length - 1), LAST];
+    f.rounds = [...FIRST, ...shuffle(MIDDLE).slice(0, ROUNDS_TOTAL - FIRST.length - 1)];
+    f.lastUsed = false;
     f.round = 0; f.pushed = 0; f.calm = 0; f.flash = 0;
     f.pressAnim = []; f.steam = []; f.steamT = 0;
-    f.kerstin = g.npc({ ...KERSTIN }, KERSTIN_X, { facing: -1 });
+    f.kerstin = g.npc({ ...KERSTIN }, KERSTIN_X, { facing: -1, name: 'Kerstin' });
     g.p.facing = 1;
     nextRound(g);
   },
@@ -203,8 +206,11 @@ export default {
       f.wait -= dt;
       if (f.wait <= 0) {
         if (f.pushed >= BUTTONS) return 'fail';
+        if (f.calm >= CALM_NEEDED) return 'win';
         f.round++;
-        if (f.round >= ROUNDS_TOTAL) return 'win';
+        // One right answer left: the next question is the big one (the whole chart of accounts)
+        if (f.calm === CALM_NEEDED - 1 && !f.lastUsed) { f.rounds.splice(f.round, 0, LAST); f.lastUsed = true; }
+        if (f.round >= f.rounds.length) f.rounds.push(pick(MIDDLE));
         nextRound(g);
       }
     }

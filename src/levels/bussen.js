@@ -23,8 +23,12 @@ function sign(ctx, x, label) {
   ctx.fillText(label, x + 3, ROAD_Y - 40);
 }
 
+const NAMES = { D: 'Du', N: 'Natalie', M: 'Markus', G: 'Gustav', H: 'Henrik' };
+
 export const bussen = {
   name: 'Bussen',
+  // Name tags for the people in the windows (screen x; feetY puts the tag just above the head)
+  labels() { return Object.entries(SEATS).map(([who, x]) => ({ text: NAMES[who], x, feetY: HEAD_Y + 24 })); },
   width: WIDTH,
   gravity: 520,
   jumpSpeed: 200,

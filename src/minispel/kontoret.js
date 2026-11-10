@@ -1,7 +1,7 @@
 // Intro: you are coding the 13.2 delivery while the project managers panic around you.
 // Mash the keys to code. New bugs push the progress back. At 99 % Henrik walks in.
 import { pick } from '../world.js';
-import { wasPressed } from '../input.js';
+import { wasPressed, typedCount } from '../input.js';
 import { NATALIE, MARKUS, GUSTAV } from '../sprites.js';
 
 const PANIC = {
@@ -22,7 +22,7 @@ export default {
   meter: '13.2',
   intro: [
     ['G', 'Hamra på tangenterna! Alla tangenter! Det är så man kodar!'],
-    ['N', 'Piltangenterna och mellanslag. FORT!'],
+    ['N', 'Bokstäver! Siffror! Vad som helst! FORT!'],
   ],
   goal: (g) => `Koda 13.2: ${Math.floor(g.meter)} % · hamra på tangenterna!`,
   setup(g) {
@@ -38,7 +38,8 @@ export default {
     g.flags.shoutT = 0.4; g.flags.who = 0; g.flags.bugT = 3.5; g.flags.bigT = 0;
   },
   update(g, dt) {
-    const presses = ['left', 'right', 'up', 'down', 'action'].filter((k) => wasPressed(k)).length;
+    // Letters and digits (and the arrows/space) all count as coding
+    const presses = typedCount() + ['left', 'right', 'up', 'down', 'action'].filter((k) => wasPressed(k)).length;
     if (presses) { g.meter = Math.min(99, g.meter + 2.6 * presses); g.flags.desk.lines += presses; g.sfx.type(); }
 
     // The project managers take turns shouting

@@ -8,7 +8,7 @@ import { bussen } from './levels/bussen.js';
 import { createPlayer, updatePlayer, drawPlayer } from './player.js';
 import { drawPerson, drawItem, drawProp, PLAYER, HENRIK, COLLEAGUES } from './sprites.js';
 import { MINIGAMES } from './minispel/index.js';
-import { STORY, SPEAKERS, HUB, STUCK_LINES, END_STATS, FORBIDDEN } from './story.js';
+import { STORY, SPEAKERS, HUB, STUCK_LINES, END_STATS, FORBIDDEN, COLLEAGUE_NAMES } from './story.js';
 import * as ui from './ui.js';
 import { sfx } from './ljud.js';
 import { setMusic, setMusicBoost } from './musik.js';
@@ -36,7 +36,7 @@ const g = {
     const x = o.x ?? (side > 0 ? g.camX + WIDTH + 16 : g.camX - 16);
     const w = {
       x, dir: Math.sign(g.p.x - x) || -side, speed: o.speed ?? rand(45, 65), look: o.look ?? pick(COLLEAGUES),
-      line: Array.isArray(lines) ? pick(lines) : lines, said: false, done: false,
+      line: Array.isArray(lines) ? pick(lines) : lines, said: false, done: false, name: o.name ?? pick(COLLEAGUE_NAMES),
       side: Math.sign(x - g.p.x), age: 0, t: Math.random() * 5,
     };
     g.walkers.push(w);
@@ -44,7 +44,7 @@ const g = {
   },
   // A named person who stands still (or paces between two points) and can talk.
   npc(look, x, o = {}) {
-    const n = { look, x, facing: o.facing ?? -1, patrol: o.patrol, speed: o.speed ?? 40, t: Math.random() * 5, walking: false };
+    const n = { look, x, facing: o.facing ?? -1, patrol: o.patrol, speed: o.speed ?? 40, t: Math.random() * 5, walking: false, name: o.name ?? nameOf(look) };
     g.npcs.push(n);
     return n;
   },
@@ -65,6 +65,28 @@ const PICKUP_SOUNDS = {
   coffee: sfx.coffee, bulle: sfx.mums, key: sfx.jingle,
   hdmi: sfx.gadget, dongle: sfx.gadget, charger: sfx.gadget, postit: sfx.paper,
 };
+
+// The name on someone's name tag: first name from SPEAKERS (matched by their look), 'Du' for you
+export function nameOf(look) {
+  const sp = Object.values(SPEAKERS).find((s) => s.look === look);
+  return sp ? sp.name.split(' ')[0] : '';
+}
+const TAG_Y = 28; // name tags sit just above the head (feet y minus this)
+
+// Name tags for everyone on screen, in world coordinates
+function nameTags() {
+  const tags = [];
+  const tag = (text, x, feetY) => { if (text) tags.push({ text, x, y: feetY - TAG_Y, style: 'nametag' }); };
+  if (mg?.labels) { // minigames that draw their own people say where they are
+    for (const l of mg.labels(g)) tag(l.text, l.x, l.feetY);
+  } else if (!g.p.hidden) tag('Du', g.p.x, g.p.y);
+  if (g.level.labels) for (const l of g.level.labels(g.time)) tag(l.text, l.x + g.camX, l.feetY);
+  for (const n of g.npcs) tag(n.name, n.x, GROUND_Y);
+  if (g.henrik) tag('Henrik', g.henrik.x, GROUND_Y);
+  for (const w of g.walkers) tag(w.name, w.x, GROUND_Y);
+  if (!mg) for (const d of g.designers || []) tag(SPEAKERS[d.person.who].name, d.x, GROUND_Y);
+  return tags;
+}
 
 function newStats() { return { coffee: 0, dodged: 0, meetings: 0, retries: 0, hits: 0, buttons: 0, figma: 0, uxDodged: 0 }; }
 
@@ -470,6 +492,7 @@ function draw(ctx) {
     const y = who.y != null && !isPlayer ? who.y : (isPlayer ? g.p.y - 30 : GROUND_Y - 33);
     return { text: b.text, x: who.x, y, style: b.style };
   });
+  if (mode !== 'card') list.push(...nameTags());
   if (mode === 'hub' || (mode !== 'play' && !mg && g.level === haga)) {
     const nextId = beat().play;
     for (const m of stations()) {
