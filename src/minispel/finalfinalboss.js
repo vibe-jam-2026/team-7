@@ -1,9 +1,12 @@
-// FinalFinalBoss: keynote med den inhyrda motivationstalaren John Vantage. Ett bullet hell.
-// John står på en saxlift till höger och skjuter företagsslogans. Du kan inte slå tillbaka:
-// överlev i 2:00. Piltangenterna styr fritt i alla riktningar, Shift = långsamt och visar
-// träffpunkten (pricken på bröstet), mellanslag = tysta John (rensar skärmen, 2 gånger).
-// Sex agendapunkter à 20 sekunder, var och en med egna mönster (se PATTERNS).
-// Näst sista kapitlet i berättelsen (src/story.js), före spat. Stationen är Hörsalen i Haga.
+// FinalFinalBoss: keynote med VD-coachen Segertoft i slottets konferensrum. Ett bullet hell.
+// Segertoft står på en saxlift till höger, framför en PowerPoint med Saab Gripen, och skjuter
+// klyschor: Lyft på tälten! Uppåt! Framåt! Plantera ett träd! Silos! Flip it, Fix it! Gripen spellista!
+// Du kan inte slå tillbaka: överlev i 2:00. Piltangenterna styr fritt, Shift = långsamt och visar
+// träffpunkten (pricken på bröstet), mellanslag = tysta Segertoft (rensar skärmen, 2 gånger).
+// Sex agendapunkter à 20 sekunder, var och en med egna mönster (se PATTERNS):
+// tält-lyft underifrån, uppåt/framåt-spiraler, frön som gror till träd, silo-väggar,
+// Fix it-kulor som fryser och låser på dig, och Gripen-plan som flyger tvärs över salen.
+// Näst sista kapitlet i berättelsen (src/story.js), före spat. Stationen är Konferensrummet i Haga.
 import { keys, wasPressed } from '../input.js';
 import { WIDTH as W, HEIGHT as H, pick, rand } from '../world.js';
 import { drawPerson, PLAYER } from '../sprites.js';
@@ -23,23 +26,27 @@ const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
 
 // ---- Texten ---------------------------------------------------------------------------------
-const SHORT = ['SYNERGI', 'DRIV', 'GNET', 'PIVOTERA', 'LINJERA', '10X', 'KPI', 'OKR', 'ROI', 'SKALA', 'WIN-WIN', 'DISRUPTA',
-  'KÖR!', 'ÄG DET', 'AGILT', 'IMPACT', 'PASSION', 'TILLVÄXT', 'ROCKSTJÄRNA', 'KROSSA', 'NINJA', 'HÄVSTÅNG'];
-const LONG = ['ÅTERKOPPLA', 'DJUPDYK', 'FLYTTA NÅLEN', 'BANDBREDD', 'TÄNK UTANFÖR BOXEN', 'LÅGT HÄNGANDE FRUKT', 'GE 110%',
-  'INGET JAG I LAG', 'MISSLYCKAS SNABBT', 'VAR FÖRÄNDRINGEN', 'UPP OCH GNETA', 'TA DET OFFLINE', 'PARADIGMSKIFTE',
-  'BÄSTA PRAXIS', 'VI ÄR EN FAMILJ', 'KOKA HAVET', 'VI STÄMMER AV', 'JOBBA HÅRT, LEK HÅRT', 'ENLIGT MITT SENASTE MEJL'];
-const BIG = ['DRIV!', 'GNETA!', '10X!', 'DRÖM STORT!', 'INGA URSÄKTER!', 'KROSSA!', 'KÖR KÖR KÖR!'];
-const WALL = ['DISRUPTA', 'PIVOT', 'SKALA', '10X'];
-const TAUNTS = ['Säg det med mig!', 'Misslyckande är bara data!', 'Skriver ni ner det här?', 'Jag vaknar 03:45!',
-  'Din komfortzon ringde!', 'Energicheck!', 'Var en svamp!', 'Ge grannen en high five!'];
-const HIT_LINES = ['+1 att göra-punkt', 'Bokad på avstämning 16:00', 'Kopia på mejltråd', 'Jour i helgen', 'Ny intressent', 'Svara alla-storm'];
+const SHORT = ['UPPÅT!', 'FRAMÅT!', 'SILOS!', 'FLIP IT!', 'FIX IT!', 'GRIPEN!', 'LYFT!', 'SYNERGI', 'DRIV', '10X', 'KPI',
+  'OKR', 'LEAN', 'AGILT', 'WIN-WIN', 'KÖR!', 'ÄG DET', 'IMPACT', 'SKALA', 'PIVOT', 'TRÄD!', 'SMART!'];
+const LONG = ['LYFT PÅ TÄLTEN!', 'PLANTERA ETT TRÄD!', 'JOBBA SMARTARE!', 'FLIP IT, FIX IT!', 'GRIPEN SPELLISTA!',
+  'RIV ALLA SILOS!', 'UPPÅT OCH FRAMÅT!', 'INTE HÅRDARE. SMARTARE!', 'HÖGT I TAK!', 'VI ÄR ETT LAG!', 'TÄNK UTANFÖR SILON',
+  'SMARTARE, INTE SNABBARE. OCH SNABBARE!', 'ETT TRÄD PER KPI!'];
+const BIG = ['UPPÅT!', 'FRAMÅT!', 'SILOS!', 'FLIP IT!', 'FIX IT!', 'LYFT!', 'GRIPEN!', 'SMARTARE!'];
+const LIFT = ['LYFT!', 'TÄLTET!', 'UPPÅT!', 'LYFT PÅ TÄLTEN!', 'HÖGRE!'];
+const WALL = ['SILO', 'SILO', 'SILOS!', 'SILO'];
+const PLAYLIST = ['DANGER ZONE', 'FINAL COUNTDOWN', 'EYE OF THE TIGER', 'WE ARE THE CHAMPIONS', 'THE BEST', 'JUMP!', 'GRIPEN SPELLISTA!'];
+const TAUNTS = ['Lyft på tälten, folk!', 'Uppåt! Framåt! Uppåt igen!', 'Har alla planterat sitt träd?', 'Jobba smartare! Inte hårdare! Fast också hårdare!',
+  'Jag ser silos! Jag ser SILOS!', 'Flip it! Fix it! Flip it igen!', 'Vem har Gripen-spellistan?!', 'Jag är inte chef. Jag är coach.',
+  'Det här är ingen presentation. Det är en RESA!', 'Högt i tak! Lågt till golv!', 'Nästa bild! Nej, den förra! Nej, Gripen!',
+  'Ni ser trötta ut! Det är bara svaghet som lämnar kroppen!', 'Tänk Gripen: snabb, smidig, svensk!'];
+const HIT_LINES = ['+1 action point', 'Inbjuden till styrgruppen', 'Ny OKR', 'Kickoff i helgen', 'Omorganiserad!', 'Flyttad till ny silo', 'Planterat 0 träd'];
 const PHASES = [
-  { name: 'TANKESÄTT', line: 'Nu blir vi motiverade!' },
-  { name: 'DRIV', line: 'Vem är hungrig på framgång?' },
-  { name: 'SYNERGI', line: 'Tillsammans är vi starka!' },
-  { name: 'DISRUPTION', line: 'Dags att disrupta dig själv!' },
-  { name: 'GNET', line: 'Sömn är för dem som ger upp!' },
-  { name: '10X ALLT', line: 'Nu 10X:ar vi allt!!' },
+  { name: 'LYFT PÅ TÄLTEN', line: 'Lyft på tälten! Allihop! LYFT!' },
+  { name: 'UPPÅT! FRAMÅT!', line: 'Vart ska vi? UPPÅT! Och sen? FRAMÅT!' },
+  { name: 'PLANTERA ETT TRÄD', line: 'Varje idé är ett frö. Plantera ett träd!' },
+  { name: 'RIV SILOS', line: 'Silos! Överallt silos! Riv dem!' },
+  { name: 'FLIP IT, FIX IT', line: 'Flip it! Fix it! Flip it, fix it!' },
+  { name: 'GRIPEN SPELLISTA', line: 'Skruva upp Gripen-spellistan!!' },
 ];
 
 // ---- 3×5-pixeltypsnitt för slogans på canvasen (Å Ä Ö ritas som A/O med märken ovanför) ------
@@ -92,9 +99,12 @@ const WS = {
   w3: { color: '#5ee0ff', plate: '#120f26', border: '#5ee0ff', pad: 2 },
   big: { color: '#120f26', plate: '#ffc23d', border: '#fff3c9', pad: 3, scale: 2 },
   banner: { color: '#f1ede0', plate: '#2a3a8c', border: '#f1ede0', pad: 2 },
+  green: { color: '#7dff8a', plate: '#0f2416', border: '#7dff8a', pad: 2 },
+  silo: { color: '#1b1b2a', plate: '#b8bcc8', border: '#eef0f6', pad: 2 },
+  song: { color: '#ffffff', plate: '#3a1a5c', border: '#e05cff', pad: 2 },
 };
 
-// ---- John Vantage (ritas i dubbel storlek) ------------------------------------------------
+// ---- Segertoft (ritas i dubbel storlek) ------------------------------------------------
 const BOSS_ROWS = [
   '........hhhhhh', '......hhHHHhhhhh', '.....hhHHhhhhhhhh', '.....hhhhhhhhhhhh', '.....hskksssskksh',
   '....gsswksssswkssg', '....gsssssSSsssssg', '....gsSssssssssSsg', '....gskTTTTTTTTks', '.....GkTmmmmmmTks',
@@ -110,7 +120,7 @@ function makeSprite(rows, pal, solid) {
   return c;
 }
 let sprBoss, sprBossFlash; // skapas först när minispelet startar
-const ORB_COL = { pink: '#ff5a86', cyan: '#5ee0ff', amber: '#ffc23d', blue: '#8aa4ff' };
+const ORB_COL = { pink: '#ff5a86', cyan: '#5ee0ff', amber: '#ffc23d', blue: '#8aa4ff', green: '#5fe06a', red: '#ff3b3b' };
 const ORBS = {};
 function makeOrb(r, col) {
   const s = r * 2 + 3, c = mk(s, s), x = c.getContext('2d'), cc = r + 1;
@@ -123,39 +133,84 @@ function makeOrb(r, col) {
   }
   return c;
 }
+// Saab Gripen från sidan, nosen åt höger (på bilden och som flygplan i sista agendapunkten)
+const GRIPEN_ROWS = [
+  '......ff............................',
+  '......fff...........................',
+  '......ffff..........................',
+  '......fffff...................cc....',
+  '....fffffffgggggggggggggggggggcccg..',
+  'rr.dggggggggggggggggggggggggggggggg.',
+  'rrrdgggggggggggggggggggggggggggggggg',
+  'rr.dddggggLLLLLLLLLLLgggggkkgggggg..',
+  '.......LLLLLLLLLLLLLL....kkk........',
+  '..........LLLLLLLL..................',
+];
+const GRIPEN_PAL = { f: '#7d8496', g: '#a9afbd', d: '#5a6070', c: '#5ee0ff', L: '#80879a', k: '#6a7184', r: '#ff9a3d' };
+let sprGripen, sprJet;
 function initSprites() {
   if (sprBoss) return;
+  sprGripen = makeSprite(GRIPEN_ROWS, GRIPEN_PAL);
+  // Flygplanet som bullet: dubbel storlek, nosen åt vänster
+  sprJet = mk(sprGripen.width * 2, sprGripen.height * 2);
+  { const x = sprJet.getContext('2d'); x.imageSmoothingEnabled = false; x.translate(sprJet.width, 0); x.scale(-2, 2); x.drawImage(sprGripen, 0, 0); }
   sprBoss = makeSprite(BOSS_ROWS, BOSS_PAL);
   sprBossFlash = makeSprite(BOSS_ROWS, BOSS_PAL, '#f1ede0');
   for (const k in ORB_COL) ORBS[k] = { 2: makeOrb(2, ORB_COL[k]), 3: makeOrb(3, ORB_COL[k]) };
 }
 
-// ---- Bakgrund: hörsal med projektorduk, ritas om när agendapunkten byts --------------------
+// ---- Bakgrund: slottets konferensrum, nedsläckt för PowerPoint. Ritas om varje agendapunkt ----
 function buildBG(phase) {
   const c = mk(W, H), x = c.getContext('2d');
   const r = (a, b, w, h, col) => { x.fillStyle = col; x.fillRect(a, b, w, h); };
-  r(0, 0, W, H, '#120f26');
-  r(0, 0, W, 120, '#17133a');
-  // strålkastare snett uppifrån mot scenen, rastrerad
-  x.fillStyle = '#231d52';
-  for (let y = 0; y < FLOOR; y++) {
-    const a0 = 300 - y * 0.55, a1 = 314 - y * 0.05;
-    for (let xx = Math.max(0, Math.floor(a0 - y * 0.3)); xx < Math.min(W, a1); xx++) if (((xx + y) & 1) === 0) x.fillRect(xx, y, 1, 1);
-  }
-  // projektorduk
-  r(41, 31, 182, 72, '#0a0818'); r(40, 29, 182, 72, '#3d3678'); r(41, 30, 180, 70, '#221d4a');
-  const dim = '#3f3a80', muted = '#5b54a6';
-  drawTo(x, 'VÄCK DIN INRE 10X - JOHN VANTAGE', 131, 35, { color: dim }, 'center');
-  drawTo(x, PHASES[phase].name, 131, 50, { color: muted, scale: 3 }, 'center');
-  drawTo(x, `AGENDAPUNKT ${phase + 1}/6`, 46, 92, { color: dim });
-  for (let i = 0; i < 5; i++) { const h = 4 + i * 5 + (i === 4 ? 8 : 0); r(184 + i * 7, 96 - h, 5, h, dim); }
-  // scen till höger och publikens stolsrader längst ner
-  r(244, FLOOR, W - 244, H - FLOOR, '#2b2250'); r(244, FLOOR, W - 244, 1, '#5a4520');
-  r(0, FLOOR + 1, 244, H - FLOOR, '#0d0b1d');
-  x.fillStyle = '#1a1638';
-  for (let xx = 4; xx < 236; xx += 16) { r(xx, 160, 11, 1, '#1a1638'); r(xx - 1, 161, 13, 7, '#1a1638'); r(xx, 168, 2, 4, '#1a1638'); r(xx + 9, 168, 2, 4, '#1a1638'); }
-  // UTGÅNG-skyltar som man aldrig når
-  r(6, 112, 27, 9, '#0d2a1c'); drawTo(x, 'UTGÅNG', 8, 113, { color: '#3ddc84' });
+  // Tapet med ränder och medaljonger, takgesims med tandsnitt
+  r(0, 0, W, H, '#241c33');
+  for (let xx = 0; xx < W; xx += 8) r(xx, 10, 3, 104, '#2a2140');
+  for (let xx = 4; xx < W; xx += 16) for (let yy = 20; yy < 110; yy += 18) { r(xx, yy + 1, 3, 1, '#3a2d4c'); r(xx + 1, yy, 1, 3, '#3a2d4c'); }
+  r(0, 0, W, 7, '#1a1426'); r(0, 7, W, 2, '#6b5526'); r(0, 9, W, 1, '#3a2d1a');
+  for (let xx = 1; xx < W; xx += 4) r(xx, 5, 2, 2, '#4a3b1c');
+  // Boaserad panel nedtill
+  r(0, 114, W, FLOOR - 114, '#2e2236'); r(0, 114, W, 1, '#6b5526');
+  for (let xx = 4; xx < W; xx += 26) { r(xx, 119, 20, 1, '#46354e'); r(xx, 119, 1, 40, '#46354e'); r(xx + 19, 119, 1, 40, '#1d1626'); r(xx, 158, 20, 1, '#1d1626'); }
+  // Högt spröjsat fönster med Mälaren i skymning
+  r(5, 18, 30, 86, '#6b5526'); r(7, 20, 26, 82, '#1b2b48');
+  r(7, 70, 26, 12, '#24406a'); r(7, 82, 26, 20, '#16324e');
+  for (let i = 0; i < 6; i++) r(9 + i * 4, 84 + (i % 2) * 3, 2, 1, '#5d7fa8');
+  r(7, 64, 26, 6, '#183020'); r(19, 20, 2, 82, '#6b5526'); r(7, 44, 26, 2, '#6b5526'); r(7, 72, 26, 2, '#6b5526');
+  r(3, 102, 34, 3, '#7a6230');
+  // Kristallkrona och sammetsdraperi vid scenen
+  r(236, 0, 1, 14, '#6b5526'); r(228, 14, 17, 2, '#c9a24a'); r(230, 16, 13, 3, '#8a6f2a');
+  for (let i = 0; i < 5; i++) { r(229 + i * 4, 11, 1, 3, '#fff3c9'); r(230 + i * 3, 19 + (i % 2), 1, 2, '#e8f4ff'); }
+  r(302, 9, W - 302, FLOOR - 9, '#5a1a2a');
+  for (let yy = 9; yy < FLOOR; yy++) { r(305 + Math.round(Math.sin(yy * 0.2) * 1.5), yy, 1, 1, '#7a2a3a'); r(312 + Math.round(Math.cos(yy * 0.2) * 1.5), yy, 1, 1, '#3a0f1a'); }
+  r(300, 9, W - 300, 5, '#c9a24a');
+  // Projektorduken med PowerPoint
+  r(41, 31, 182, 74, '#0a0818'); r(40, 29, 182, 74, '#c9c6d6'); r(42, 31, 178, 70, '#f4f4fa');
+  r(42, 31, 178, 10, '#1b3c8c'); r(42, 41, 178, 1, '#ffc23d');
+  drawTo(x, 'SEGERTOFT - UPPÅT! FRAMÅT! 2027', 131, 33, { color: '#ffffff' }, 'center');
+  drawTo(x, PHASES[phase].name, 131, 45, { color: '#1b3c8c', scale: 2 }, 'center');
+  // Saab Gripen i full fart, med fartstreck
+  x.drawImage(sprGripen, 52, 64, sprGripen.width * 2, sprGripen.height * 2);
+  for (let i = 0; i < 4; i++) r(44, 70 + i * 3, 6 - i, 1, '#b8bcc8');
+  drawTo(x, 'SNABB. SMIDIG. SVENSK.', 92, 86, { color: '#5a6070' }, 'center');
+  // "Uppåt!"-graf med pil
+  for (let i = 0; i < 5; i++) { const h = 4 + i * 5 + (i === 4 ? 6 : 0); r(160 + i * 9, 96 - h, 6, h, i === 4 ? '#3ddc84' : '#8aa4ff'); }
+  for (let i = 0; i < 40; i++) r(158 + i, 80 - Math.round(i * 0.55), 2, 1, '#ff5a86');
+  r(197, 56, 4, 1, '#ff5a86'); r(199, 57, 1, 3, '#ff5a86');
+  drawTo(x, `BILD ${phase + 1}/6`, 46, 95, { color: '#9aa0b4' });
+  drawTo(x, 'KONFIDENTIELLT', 216, 95, { color: '#ff5a86' }, 'right');
+  // Projektor på ett bord, med en svag ljuskägla mot duken
+  x.fillStyle = 'rgba(255,250,220,0.05)';
+  x.beginPath(); x.moveTo(128, 148); x.lineTo(42, 31); x.lineTo(220, 31); x.closePath(); x.fill();
+  r(110, 150, 40, 3, '#5a3a24'); r(114, 153, 3, 19, '#3a2416'); r(143, 153, 3, 19, '#3a2416');
+  r(121, 143, 16, 7, '#3a3f4a'); r(122, 144, 14, 1, '#5a6070'); r(124, 145, 4, 4, '#1a1426'); r(125, 146, 2, 2, '#fffbe8');
+  // Parkett, stolsrygg-silhuetter och scenen till höger
+  r(0, FLOOR, W, H - FLOOR, '#3a2416');
+  for (let xx = 0; xx < W; xx += 6) r(xx, FLOOR + 2 + ((xx / 6) % 2) * 3, 5, 1, '#4e3220');
+  for (let xx = 8; xx < 236; xx += 22) { if (xx > 100 && xx < 150) continue; r(xx, 158, 12, 2, '#1d1626'); r(xx + 1, 160, 10, 8, '#1d1626'); r(xx + 1, 168, 2, 4, '#1d1626'); r(xx + 9, 168, 2, 4, '#1d1626'); }
+  r(244, FLOOR, W - 244, H - FLOOR, '#4a2a3a'); r(244, FLOOR, W - 244, 1, '#c9a24a');
+  // UTGÅNG-skylt som man aldrig når
+  r(6, 107, 27, 9, '#0d2a1c'); drawTo(x, 'UTGÅNG', 8, 108, { color: '#3ddc84' });
   return c;
 }
 function drawTo(x, str, px, py, o, align = 'left') {
@@ -185,43 +240,63 @@ function wall(f) { // en kolumn ord som glider in från höger, med en lucka nå
   const gy = rand(AREA.y0 + 14, AREA.y1 - 14), gh = 34;
   for (let y = 24; y < H; y += 12) if (Math.abs(y - gy) > gh / 2 + 5) word(f, W + 20, y, PI, 40, pick(WALL), 'w2');
 }
-function banner(f) { word(f, rand(30, 220), -8, PI / 2, 32, pick(LONG), 'banner'); }
+function banner(f, list = LONG, style = 'banner', spd = 36) { word(f, rand(30, 220), -8, PI / 2, spd, pick(list), style); }
+function lift(f) { // Lyft på tälten: ord som stiger upp från golvet
+  const b = word(f, rand(16, 232), H + 2, -PI / 2, rand(34, 52), pick(LIFT), pick(['w1', 'w3']));
+  b.wob = rand(6, 14); b.wf = rand(1.5, 3); b.wp = rand(0, TAU);
+}
+function seed(f) { // ett frö faller och gror till ett träd när det når marken
+  orb(f, rand(14, 236), -4, PI / 2 + rand(-0.15, 0.15), rand(48, 66), 'green', 3, { seed: rand(110, 158) });
+}
+function sprout(f, b) {
+  for (let k = 0; k < 5; k++) orb(f, b.x, b.y, -PI / 2 + (k - 2) * 0.32, 46 + Math.abs(k - 2) * 6, 'green', 2);
+  for (let i = 0; i < 8; i++) part(f, b.x, b.y, rand(-25, 25), rand(-40, -10), rand(0.3, 0.6), pick(['#5fe06a', '#2d8a3a', '#a86a3a']));
+}
+function fixRing(f, n, col) { // Fix it: kulor som saktar in, fryser, och sen låser på dig
+  const [mx, my] = mouth(f), off = rand(0, TAU);
+  for (let k = 0; k < n; k++) orb(f, mx, my, off + k * TAU / n, 78, col, 2, { acc: -70, fix: 1.25 });
+}
+function jet(g, f) { // varning, sen flyger ett Gripen-plan tvärs över salen på din höjd
+  const y = clamp(f.pl.y + rand(-10, 10), AREA.y0, AREA.y1);
+  f.warns.push({ y, t: 0.95 });
+  g.sfx.siren?.();
+}
 
 const PATTERNS = [
-  (f, dt) => { // TANKESÄTT: siktade ord i solfjäder + ringar
+  (g, f, dt) => { // LYFT PÅ TÄLTEN: siktade ord i solfjäder, ringar, och ord som lyfter från golvet
     const [mx, my] = mouth(f);
-    for (let i = every(f, 'a', 1.0, dt); i--;) { const a = aim(f); [-0.3, 0, 0.3].forEach((o) => word(f, mx, my, a + o, 52, pick(SHORT), pick(['w1', 'w2', 'w3']))); f.boss.point = 0.4; }
-    for (let i = every(f, 'b', 2.6, dt); i--;) ring(f, 16, 42, 'pink', 2, rand(0, TAU));
+    for (let i = every(f, 'a', 0.85, dt); i--;) { const a = aim(f); [-0.4, -0.2, 0, 0.2, 0.4].forEach((o) => word(f, mx, my, a + o, 58, pick(SHORT), pick(['w1', 'w2', 'w3']))); f.boss.point = 0.4; }
+    for (let i = every(f, 'b', 2.3, dt); i--;) ring(f, 18, 46, 'pink', 2, rand(0, TAU));
+    for (let i = every(f, 'c', 0.55, dt); i--;) lift(f);
   },
-  (f, dt) => { // DRIV: dubbelspiral + stora ord
+  (g, f, dt) => { // UPPÅT! FRAMÅT!: dubbelspiral, UPPÅT! från golvet, FRAMÅT! tvärs över
     const [mx, my] = mouth(f);
-    for (let i = every(f, 'a', 0.07, dt); i--;) { f.spin += 0.21; orb(f, mx, my, f.spin, 56, 'cyan', 2); orb(f, mx, my, f.spin + PI, 56, 'cyan', 2); }
-    for (let i = every(f, 'b', 1.7, dt); i--;) { word(f, mx, my, aim(f), 70, pick(BIG), 'big'); f.boss.point = 0.4; }
+    for (let i = every(f, 'a', 0.06, dt); i--;) { f.spin += 0.21; orb(f, mx, my, f.spin, 62, 'cyan', 2); orb(f, mx, my, f.spin + PI, 62, 'cyan', 2); }
+    for (let i = every(f, 'b', 1.4, dt); i--;) { word(f, mx, my, aim(f), 78, pick(['UPPÅT!', 'FRAMÅT!']), 'big'); f.boss.point = 0.4; }
+    for (let i = every(f, 'c', 1.1, dt); i--;) word(f, rand(20, 230), H + 2, -PI / 2, 70, 'UPPÅT!', 'w1');
   },
-  (f, dt) => { // SYNERGI: ord regnar från taket + två spiraler som korsar varandra
-    for (let i = every(f, 'a', 0.42, dt); i--;) rainWord(f, 34, 56);
-    for (let i = every(f, 'b', 2.0, dt); i--;) {
-      const off = rand(0, TAU);
-      ring(f, 12, 40, 'amber', 2, off, { dang: 0.45 });
-      ring(f, 12, 40, 'blue', 2, off, { dang: -0.45 });
-    }
+  (g, f, dt) => { // PLANTERA ETT TRÄD: frön som gror till träd + klyschbanderoller + spiraler
+    for (let i = every(f, 'a', 0.38, dt); i--;) seed(f);
+    for (let i = every(f, 'b', 2.0, dt); i--;) { const off = rand(0, TAU); ring(f, 12, 44, 'amber', 2, off, { dang: 0.5 }); ring(f, 12, 44, 'blue', 2, off, { dang: -0.5 }); }
+    for (let i = every(f, 'c', 2.4, dt); i--;) banner(f, ['PLANTERA ETT TRÄD!', 'ETT TRÄD PER KPI!', 'JOBBA SMARTARE!'], 'green', 40);
   },
-  (f, dt) => { // DISRUPTION: ordväggar med en lucka + siktade kulor
+  (g, f, dt) => { // RIV SILOS: silo-väggar med en lucka + siktade kulor
     const [mx, my] = mouth(f);
-    for (let i = every(f, 'a', 2.3, dt); i--;) wall(f);
-    for (let i = every(f, 'b', 0.85, dt); i--;) { const a = aim(f); [-0.2, 0, 0.2].forEach((o) => orb(f, mx, my, a + o, 72, 'pink', 3)); f.boss.point = 0.4; }
+    for (let i = every(f, 'a', 1.9, dt); i--;) wall(f);
+    for (let i = every(f, 'b', 0.75, dt); i--;) { const a = aim(f); [-0.22, 0, 0.22].forEach((o) => orb(f, mx, my, a + o, 80, 'pink', 3)); f.boss.point = 0.4; }
   },
-  (f, dt) => { // GNET: femarmad blomma som accelererar + långa banderoller från taket
+  (g, f, dt) => { // FLIP IT, FIX IT: blomma som byter håll, och Fix it-ringar som låser på dig
     const [mx, my] = mouth(f);
-    if (every(f, 'flip', 3.2, dt)) f.spinDir *= -1;
-    for (let i = every(f, 'a', 0.14, dt); i--;) { f.spin += 0.19 * f.spinDir; for (let k = 0; k < 5; k++) orb(f, mx, my, f.spin + k * TAU / 5, 22, 'amber', 3, { acc: 40, max: 82 }); }
-    for (let i = every(f, 'b', 2.6, dt); i--;) banner(f);
+    if (every(f, 'flip', 2.6, dt)) { f.spinDir *= -1; word(f, mx, my, aim(f), 74, 'FLIP IT!', 'big'); f.boss.point = 0.4; }
+    for (let i = every(f, 'a', 0.15, dt); i--;) { f.spin += 0.19 * f.spinDir; for (let k = 0; k < 5; k++) orb(f, mx, my, f.spin + k * TAU / 5, 24, 'amber', 3, { acc: 44, max: 88 }); }
+    for (let i = every(f, 'b', 3.0, dt); i--;) { fixRing(f, 10, 'red'); johnSay(g, 'FIX IT!', 1.2); }
   },
-  (f, dt) => { // 10X ALLT: lite av allt
+  (g, f, dt) => { // GRIPEN SPELLISTA: Gripen-plan, spiral, spellistan regnar ner, stora ord
     const [mx, my] = mouth(f);
-    for (let i = every(f, 'a', 0.1, dt); i--;) { f.spin += 0.27; for (let k = 0; k < 3; k++) orb(f, mx, my, f.spin + k * TAU / 3, 54, 'pink', 2); }
-    for (let i = every(f, 'b', 1.5, dt); i--;) { word(f, mx, my, aim(f), 68, pick(BIG), 'big'); f.boss.point = 0.4; }
-    for (let i = every(f, 'c', 0.85, dt); i--;) rainWord(f, 38, 56);
+    for (let i = every(f, 'a', 0.11, dt); i--;) { f.spin += 0.27; for (let k = 0; k < 3; k++) orb(f, mx, my, f.spin + k * TAU / 3, 56, 'pink', 2); }
+    for (let i = every(f, 'b', 2.8, dt); i--;) jet(g, f);
+    for (let i = every(f, 'c', 1.7, dt); i--;) banner(f, PLAYLIST, 'song', 42);
+    for (let i = every(f, 'd', 1.9, dt); i--;) { word(f, mx, my, aim(f), 74, pick(BIG), 'big'); f.boss.point = 0.4; }
   },
 ];
 
@@ -231,7 +306,7 @@ function clearBullets(f) {
   for (const b of f.bullets) part(f, b.x, b.y, rand(-10, 10), rand(-30, -10), rand(0.3, 0.6), b.col);
   f.bullets.length = 0;
 }
-function johnSay(g, text, ttl = 2.2) {
+function johnSay(g, text, ttl = 2.6) {
   const f = g.flags;
   g.say(text, f.john, '', ttl);
 }
@@ -244,7 +319,7 @@ function enterPhase(g, ph) {
   g.shout(`${ph + 1}/6 ${PHASES[ph].name}`);
   f.shoutT = 1.4;
   johnSay(g, PHASES[ph].line, 2.4);
-  f.tauntT = rand(7, 10);
+  f.tauntT = rand(4, 6);
 }
 
 function hit(g) {
@@ -268,16 +343,16 @@ function mute(g) {
   f.pl.inv = Math.max(f.pl.inv, 1);
   f.flash = 0.6;
   g.sfx.whoosh(); g.sfx.nope();
-  johnSay(g, 'Hallå? Hörs jag?', 1.6);
+  johnSay(g, pick(['Hallå? Hörs jag?', 'Vem drog ur HDMI:n?!', 'Min Gripen! Min SLIDE!']), 1.8);
 }
 
 // ---- Minispelet -----------------------------------------------------------------------------
 export default {
   id: 'finalfinalboss',
   title: 'FinalFinalBoss',
-  tagline: 'Överlev John Vantages keynote i två minuter',
+  tagline: 'Överlev Segertofts keynote i slottets konferensrum. Uppåt! Framåt!',
   level: 'kontoret',
-  station: { x: 600, label: 'Hörsalen' },
+  station: { x: 600, label: 'Konferensrummet' },
   lockPlayer: true,   // vi styr vår egen spelare i update()
   start: 100,         // håller kameran stilla (camX = 0)
   henrik: null,
@@ -285,12 +360,13 @@ export default {
   timeoutWins: true,
 
   intro: [
-    ['H', 'Och nu, vår inhyrda keynote-talare: JOHN VANTAGE! Han kostade mer än hela kaffebudgeten.'],
-    ['D', 'Varför står han på en saxlift?'],
-    ['H', 'Han skjuter slogans i två minuter. Ducka med piltangenterna, Shift för att smyga.'],
+    ['H', 'Och nu, i slottets finaste konferensrum: SEGERTOFT! Han kostade mer än hela kaffebudgeten.'],
+    ['D', 'Varför står han på en saxlift? Och varför är det ett stridsflygplan på första bilden?'],
+    ['H', 'Gripen är en metafor. För allt. Han skjuter klyschor i två minuter. Ducka med piltangenterna, Shift för att smyga.'],
+    ['H', 'Se upp för röda varningar: då kommer ett Gripen-plan. Och röda kulor som stannar: de låser på dig. Fix it!'],
     ['H', 'Blir det för mycket: mellanslag tystar honom. Två gånger. Sen är det tekniska problem.'],
   ],
-  goal: (g) => `Semesterdagar: ${g.flags.lives} · Tysta John (mellanslag): ${g.flags.mutes} · Duckat: ${g.flags.dodges}`,
+  goal: (g) => `Semesterdagar: ${g.flags.lives} · Tysta Segertoft (mellanslag): ${g.flags.mutes} · Duckat: ${g.flags.dodges}`,
 
   setup(g) {
     initSprites();
@@ -299,7 +375,7 @@ export default {
       bullets: [], parts: [], shake: 0, flash: 0, shoutT: 0, tauntT: 8, wrapSaid: false, won: false,
       pl: { x: 70, y: 100, inv: 0, moving: false, facing: 1 },
       boss: { x: 280, fy: 120, tx: 280, tfy: 120, t: 2, point: 0, mutedUntil: -1 },
-      john: { x: 270, y: 60 },
+      john: { x: 270, y: 60 }, warns: [],
       bg: buildBG(0),
       lastGraze: 0,
     };
@@ -323,7 +399,7 @@ export default {
     if (p.inv > 0) p.inv -= dt;
     if (wasPressed('action') && g.t > 0.4) mute(g); // inte samma tryck som stängde introt
 
-    // John på saxliften
+    // Segertoft på saxliften
     const B = f.boss;
     B.t -= dt;
     if (B.t <= 0) {
@@ -338,17 +414,30 @@ export default {
     f.john.x = B.x; f.john.y = B.fy - 54;
 
     const muted = g.t < B.mutedUntil;
-    if (pt > 1.2 && g.t < FIRE_STOP && !muted) PATTERNS[ph](f, dt);
-    if (g.t >= FIRE_STOP && !f.wrapSaid) { f.wrapSaid = true; johnSay(g, 'Och det var allt!', 2); }
+    if (pt > 1.0 && g.t < FIRE_STOP && !muted) PATTERNS[ph](g, f, dt);
+    // Varningar för Gripen-plan: när de löpt ut kommer planet
+    for (let i = f.warns.length - 1; i >= 0; i--) {
+      const w = f.warns[i];
+      if ((w.t -= dt) > 0) continue;
+      f.warns.splice(i, 1);
+      if (g.t >= FIRE_STOP) continue;
+      push(f, { k: 1, x: W + 40, y: w.y, ang: PI, spd: 300, spr: sprJet, hw: 30, hh: 4, col: '#a9afbd', acc: 0, dang: 0, max: 999, age: 0, jet: 1 });
+      g.sfx.whoosh(); f.shake = Math.max(f.shake, 2);
+    }
+    if (g.t >= FIRE_STOP && !f.wrapSaid) { f.wrapSaid = true; johnSay(g, 'Och kom ihåg: UPPÅT! FRAMÅT!', 2.5); }
     f.tauntT -= dt;
-    if (f.tauntT <= 0 && !muted && g.t < FIRE_STOP) { johnSay(g, pick(TAUNTS), 1.8); f.tauntT = rand(7, 10); }
+    if (f.tauntT <= 0 && !muted && g.t < FIRE_STOP) { johnSay(g, pick(TAUNTS), 2.6); f.tauntT = rand(4, 6); }
     if (f.shoutT > 0) { f.shoutT -= dt; if (f.shoutT <= 0) g.shout(null); }
 
     // Skotten
     for (let i = f.bullets.length - 1; i >= 0; i--) {
       const b = f.bullets[i];
       b.age += dt;
-      if (b.acc) b.spd = Math.min(b.max, b.spd + b.acc * dt);
+      if (b.acc) b.spd = clamp(b.spd + b.acc * dt, 0, b.max);
+      if (b.fix != null && !b.locked && b.age >= b.fix) { // Fix it: lås på spelaren
+        b.locked = 1; b.ang = Math.atan2(p.y - b.y, p.x - b.x); b.spd = 12; b.acc = 150; b.max = 120;
+      }
+      if (b.seed && b.y >= b.seed) { sprout(f, b); f.bullets[i] = f.bullets[f.bullets.length - 1]; f.bullets.pop(); continue; }
       if (b.dang) b.ang += b.dang * dt;
       b.x += Math.cos(b.ang) * b.spd * dt;
       b.y += Math.sin(b.ang) * b.spd * dt;
@@ -387,11 +476,11 @@ export default {
     for (let i = 0; i < 120; i++) part(f, rand(0, W), rand(-40, 0), rand(-20, 20), rand(20, 70), rand(2, 4), pick(['#ffc23d', '#ff5a86', '#5ee0ff', '#f1ede0']), 2, 20);
   },
 
-  // Name tags: John on his scissor lift, and you
+  // Name tags: Segertoft on his scissor lift, and you
   labels(g) {
     const f = g.flags;
     if (!f.boss) return [];
-    return [{ text: 'John Vantage', x: f.boss.x + g.camX, feetY: f.boss.fy - 24 }, { text: 'Du', x: f.pl.x + g.camX, feetY: f.pl.y + 15 }];
+    return [{ text: 'Segertoft', x: f.boss.x + g.camX, feetY: f.boss.fy - 24 }, { text: 'Du', x: f.pl.x + g.camX, feetY: f.pl.y + 15 }];
   },
   draw(g, ctx) {
     const f = g.flags, t = g.time;
@@ -412,7 +501,7 @@ export default {
     }
     ctx.fillStyle = '#3a3f4a'; ctx.fillRect(bx - 22, FLOOR - 4, 44, 4);
 
-    // John
+    // Segertoft
     const bob = Math.round(Math.sin(t * 3));
     const jitter = !f.won && f.phase === 5 && g.t > 0 ? (Math.random() < 0.5 ? -1 : 1) : 0;
     const ox = bx - 22 + jitter, oy = fy - 50 + bob * 2;
@@ -441,6 +530,10 @@ export default {
       ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(p.x) - 1, Math.round(p.y) - 1, 2, 2);
     }
 
+    for (const w of f.warns) if (((t * 10) | 0) % 2) {
+      ctx.fillStyle = 'rgba(255,59,59,0.28)'; ctx.fillRect(0, Math.round(w.y) - 5, W, 10);
+      ctx.fillStyle = '#ff3b3b'; ctx.fillRect(W - 10, Math.round(w.y) - 4, 3, 6); ctx.fillRect(W - 10, Math.round(w.y) + 3, 3, 2);
+    }
     for (const b of f.bullets) ctx.drawImage(b.spr, Math.round(b.x - b.spr.width / 2), Math.round(b.y - b.spr.height / 2));
     for (const q of f.parts) {
       if (q.life < q.max * 0.3 && ((t * 20) | 0) % 2) continue;
@@ -462,11 +555,11 @@ export default {
 
   win: [
     ['H', 'Stående ovationer! Eller, du stod upp. Det räknas.'],
-    ['D', 'Jag har "flytta nålen" inbränt på näthinnan.'],
-    ['H', 'John har lovat att mejla ut sina slides. Det kommer han aldrig att göra.'],
+    ['D', 'Jag har "lyft på tälten" inbränt på näthinnan. Och en Gripen.'],
+    ['H', 'Segertoft har lovat att mejla ut sina slides. Och spellistan. Det kommer han aldrig att göra.'],
   ],
   fail: [
     ['H', 'Slut på semesterdagar! Du har fått en åtgärdsplan.'],
-    ['H', 'Goda nyheter: John leder workshoppen. Från början!'],
+    ['H', 'Goda nyheter: Segertoft tar det från början. Uppåt! Framåt! Bakåt!'],
   ],
 };
