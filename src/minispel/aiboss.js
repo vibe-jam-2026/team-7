@@ -195,6 +195,33 @@ function clearBullets(f, near) {
 }
 const goranSay = (g, text, ttl = 2.2) => g.say(text, g.flags.goran, '', ttl);
 
+// ---- Odödlighetsknappen ----------------------------------------------------------------
+// En knapp (och tangenten I) som bara syns under AI-Göran. När den är på går Görans slogans
+// rakt igenom dig: bra när man vill visa alla tre faserna utan att dö. Valet sitter kvar tills
+// man stänger av det igen.
+let immortal = false;
+let shownAt = -1;
+const immortalBtn = document.createElement('button');
+immortalBtn.id = 'ododlig';
+immortalBtn.type = 'button';
+immortalBtn.hidden = true;
+document.getElementById('stage').appendChild(immortalBtn);
+function renderImmortal() { immortalBtn.textContent = immortal ? '🛡 Odödlig: PÅ (I)' : '🛡 Odödlig: AV (I)'; immortalBtn.classList.toggle('on', immortal); }
+function toggleImmortal(g) {
+  immortal = !immortal;
+  renderImmortal();
+  g?.sfx?.[immortal ? 'powerUp' : 'nope']();
+}
+let lastG = null;
+immortalBtn.addEventListener('mousedown', (e) => e.preventDefault()); // ta inte tangentbordsfokus
+immortalBtn.addEventListener('click', () => toggleImmortal(lastG));
+addEventListener('keydown', (e) => {
+  if ((e.key === 'i' || e.key === 'I') && !immortalBtn.hidden && !e.repeat) toggleImmortal(lastG);
+});
+// Göm knappen så fort man lämnar AI-Göran (update() slutar då att anropas)
+setInterval(() => { if (performance.now() - shownAt > 250) immortalBtn.hidden = true; }, 100);
+renderImmortal();
+
 function hit(g) {
   const f = g.flags, p = f.pl;
   f.lives--;
@@ -250,7 +277,7 @@ function moveBullets2D(g, dt) {
     if (b.x + b.hw < -30 || b.x - b.hw > W + 30 || b.y - b.hh > H + 4 || b.y < -40 || b.age > 15) {
       f.bullets[i] = f.bullets[f.bullets.length - 1]; f.bullets.pop(); f.dodged++; continue;
     }
-    if (p.inv > 0 || f.dying > 0 || f.sleep > 0) continue;
+    if (p.inv > 0 || f.dying > 0 || f.sleep > 0 || immortal) continue;
     // träffytan är kroppen, lite mindre än figuren
     if (Math.abs(b.x - p.x) < b.hw + 3 && b.y + b.hh > p.y - 9 && b.y - b.hh < p.y + 10) {
       hit(g);
@@ -521,7 +548,7 @@ function update3D(g, dt) {
       if (b.y < -2) { const [sx, sy] = proj(b.x, 0, b.z); for (let k = 0; k < 4; k++) part(f, sx, sy, rand(-25, 25), rand(-35, -10), 0.35, b.col, 1, 80); }
       f.bullets[i] = f.bullets[f.bullets.length - 1]; f.bullets.pop(); f.dodged++; continue;
     }
-    if (p.inv > 0 || f.dying > 0) continue;
+    if (p.inv > 0 || f.dying > 0 || immortal) continue;
     if (Math.abs(b.x - p.x) < b.hw + 3 && Math.abs(b.z - p.z) < 4 && b.y - b.hh < p.y + 13 && b.y + b.hh > p.y + 1) {
       hit3D(g);
       if (f.lives <= 0) return 'fail';
@@ -1087,6 +1114,18 @@ function draw2D(g, ctx) {
 }
 
 // ---- Minispelet -----------------------------------------------------------------------------
+function goalText(g) {
+  const f = g.flags, z = f.zone;
+  if (f.stage === 'morph') return 'Fas 2 laddar... AI-Göran genererar en dimension';
+  if (f.stage === 'collapse') return 'Verkligheten kraschar...';
+  const life = '♥'.repeat(Math.max(0, f.lives)) + '♡'.repeat(LIVES - Math.max(0, f.lives));
+  if (f.stage === 3) {
+    const bat = '▮'.repeat(Math.max(0, 3 - f.cleared)) + '▯'.repeat(Math.min(3, f.cleared));
+    return `Fas 3 · ${life} · Görans batteri ${bat}` + (z ? ` · Sladd ${z.left.toFixed(1)} s` : '');
+  }
+  return (f.stage === 2 ? 'Fas 2 (3D) · ' : 'Fas 1 · ') + `${life} · Kluster ${f.cleared}/3` + (z ? ` · Sladd ${z.left.toFixed(1)} s` : '');
+}
+
 const AIBOSS = {
   id: 'aiboss',
   title: 'AI-Göran',
@@ -1105,17 +1144,7 @@ const AIBOSS = {
     ['D', 'Hur stoppar man honom?'],
     ['H', 'Han drivs av tre GPU-kluster. Stå i den gröna rutan tills sladden är urdragen. Tre gånger.'],
   ],
-  goal: (g) => {
-    const f = g.flags, z = f.zone;
-    if (f.stage === 'morph') return 'Fas 2 laddar... AI-Göran genererar en dimension';
-    if (f.stage === 'collapse') return 'Verkligheten kraschar...';
-    const life = '♥'.repeat(Math.max(0, f.lives)) + '♡'.repeat(LIVES - Math.max(0, f.lives));
-    if (f.stage === 3) {
-      const bat = '▮'.repeat(Math.max(0, 3 - f.cleared)) + '▯'.repeat(Math.min(3, f.cleared));
-      return `Fas 3 · ${life} · Görans batteri ${bat}` + (z ? ` · Sladd ${z.left.toFixed(1)} s` : '');
-    }
-    return (f.stage === 2 ? 'Fas 2 (3D) · ' : 'Fas 1 · ') + `${life} · Kluster ${f.cleared}/3` + (z ? ` · Sladd ${z.left.toFixed(1)} s` : '');
-  },
+  goal: (g) => (immortal ? '🛡 ODÖDLIG · ' : '') + goalText(g),
 
   setup(g) {
     initSprites();
@@ -1152,6 +1181,8 @@ const AIBOSS = {
   },
 
   update(g, dt) {
+    // Visa odödlighetsknappen så länge AI-Göran pågår
+    lastG = g; shownAt = performance.now(); immortalBtn.hidden = false;
     const f = g.flags, p = f.pl;
     if (f.stage === 'morph') return updateMorph(g, dt);
     if (f.stage === 2) return update3D(g, dt);
