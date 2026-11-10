@@ -9,7 +9,8 @@ import talt from './talt.js';
 import spa from './spa.js';
 import kontrakt from './kontrakt.js';
 import finalfinalboss from './finalfinalboss.js';
+import siloescape from './siloescape.js';
 
 export const MINIGAMES = Object.fromEntries(
-  [kontoret, bussen, workshop, kontrakt, energizer, trad, demo, talt, spa, finalfinalboss].map((m) => [m.id, m]),
+  [kontoret, bussen, workshop, kontrakt, energizer, trad, demo, talt, spa, finalfinalboss, siloescape].map((m) => [m.id, m]),
 );
