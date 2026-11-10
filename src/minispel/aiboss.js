@@ -1,4 +1,4 @@
-// AI-Göran: en AI-evangelist med gråsprängt skägg och grå hästsvans (inga glasögon) täcker hela
+// AI-Göran: en AI-evangelist med svart skägg med en grå fläck under munnen och grå hästsvans (inga glasögon) täcker hela
 // övre delen av skärmen som en klassisk pixelboss. Han står still bakom sitt podium och skjuter
 // AI-slogans mot dig. Du kan inte slå tillbaka. I stället drar du ur sladden till hans GPU-kluster:
 // stå i den markerade rutan på golvet tills nedräkningen når noll. Nedräkningen går bara medan du
@@ -50,16 +50,17 @@ const WS = {
 
 // ---- AI-Göran (huvud i 3x storlek). Vänster halva ritas, höger halva speglas. --------------
 // k kontur, d mörkt hår (det som är kvar), h grått hår, H ljusgrått, s hud, S skugga, D ögonbryn,
-// w ögonvita, e iris (lyser när han laddar), b skägg grått, B skägg vitt, m mun, t tänder
+// w ögonvita, e iris (lyser när han laddar), b skägg svart, B skäggets ljusare strån,
+// g G den grå fläcken under munnen, m mun, t tänder
 const HEAD_HALF = [
   '..........kkkkk', '........kkdhhhh', '.......kdhhHhhh', '......kdhhhhHhh', '.....kdhhHhhhhh', '.....kdhhhhhhhh',
   '.....kdhSSSSSSS', '....kSdssssssss', '....kSsDDDDssss', '....kSswekwssss', '....kSsssssssSs', '....kssssssssSs',
   '.....kbsssssSSS', '.....kbbssssbbb', '.....kbbbbbBbbb', '.....kbbbBbmmmm', '.....kbbBbbmttt', '.....kbbbbBbmmm',
-  '......kbBbbbbBb', '.......kbbDbbbB', '........kbbbBbb', '.........kkbbbb', '...........kkkk',
+  '......kbBbbbgGg', '.......kbbDbggG', '........kbbbgGg', '.........kkbbgg', '...........kkkk',
 ];
 const MOUTH_SHUT = { 15: '.....kbbbBbbkkk', 16: '.....kbbBbbbbbb', 17: '.....kbbbbBbbbb' };
 const PAL = { k: '#1a1418', d: '#5e5a56', h: '#9d9a95', H: '#cfccc6', s: '#e3a982', S: '#c0815c', D: '#6d6862',
-  w: '#ffffff', e: '#3a6fa0', b: '#a9a49d', B: '#e6e2db', m: '#4a1418', t: '#f4efe6' };
+  w: '#ffffff', e: '#3a6fa0', b: '#2a2521', B: '#4d463f', g: '#9d9a95', G: '#cfccc6', m: '#4a1418', t: '#f4efe6' };
 const SCALE = 3;
 function headRows(open) {
   return HEAD_HALF.map((r, i) => {
