@@ -55,7 +55,7 @@ export default {
   id: 'talt',
   powerups: ['slow'], // slower shuffling; you only pick a tent
   powerupText: { slow: 'Tälten blandas i slowmotion i 6 sekunder. Håll ögonen på samarbetet!' }, // what the power-ups mean here
-  title: 'BOSS: Koppartälten',
+  title: 'BOSS: Lyft på tälten',
   tagline: 'Lyft på rätt tält och hitta samarbetet!',
   station: { x: 790, label: 'Koppartälten' },
   start: 700,
@@ -63,7 +63,7 @@ export default {
   lockPlayer: true,
   meter: 'Henrik',
   intro: [
-    ['H', 'Agendapunkt 46,5: "Vi behöver lyfta på tältet." Det stod i medarbetarundersökningen.'],
+    ['H', 'Agendapunkt 2: "Vi behöver lyfta på tältet." Det stod i medarbetarundersökningen.'],
     ['D', 'Jag tror det stod "lyfta på taket".'],
     ['H', 'Tält! Och jag har tagit det bokstavligt. Under ett av Koppartälten ligger samarbetet.'],
     ['H', 'Jag lyfter på tältet, sen skyfflar jag runt dem. Välj tält med ← → och lyft med mellanslag.'],
@@ -175,7 +175,7 @@ export default {
     ['H', 'Fantastiskt! Det här ska in i årsredovisningen: "Vi lyfte på tältet."'],
     ['H', 'Nästa år lyfter vi på hela Haga slott.'],
     ['D', 'Det är inget tält.'],
-    ['H', 'Inte med den inställningen. Nu: LUNCH!'],
+    ['H', 'Inte med den inställningen. Nu: mingel på terrassen!'],
   ],
   fail: [
     ['H', 'Tre fel tält! Du har lyft på allt utom samarbetet.'],

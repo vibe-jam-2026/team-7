@@ -356,8 +356,8 @@ export default {
     shield: 'Johns slogans flyger rakt igenom dig i 10 sekunder.',
     slow: 'Johns slogans går i slowmotion i 6 sekunder. Det gör inte du.',
   }, // what the power-ups mean here
-  title: 'FinalFinalBoss',
-  tagline: 'Överlev Segertofts keynote i slottets konferensrum. Uppåt! Framåt!',
+  title: 'FINAL BOSS: MUG',
+  tagline: 'Medarbetarundersökningen, live. Överlev Segertoft. Uppåt! Framåt!',
   level: 'kontoret',
   station: { x: 600, label: 'Konferensrummet' },
   lockPlayer: true,   // vi styr vår egen spelare i update()

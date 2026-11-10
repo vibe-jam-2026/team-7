@@ -1,7 +1,6 @@
 // All minigames. To add one: copy _mall.js to a new file, then import it here.
 import kontoret from './kontoret.js';
 import bussen from './bussen.js';
-import workshop from './workshop.js';
 import trad from './trad.js';
 import demo from './demo.js';
 import talt from './talt.js';
@@ -11,5 +10,5 @@ import finalfinalboss from './finalfinalboss.js';
 import siloescape from './siloescape.js';
 
 export const MINIGAMES = Object.fromEntries(
-  [kontoret, bussen, workshop, kontrakt, trad, demo, talt, spa, finalfinalboss, siloescape].map((m) => [m.id, m]),
+  [kontoret, bussen, kontrakt, trad, demo, talt, spa, finalfinalboss, siloescape].map((m) => [m.id, m]),
 );
