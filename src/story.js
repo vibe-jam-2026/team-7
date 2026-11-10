@@ -243,9 +243,9 @@ export const STORY = [
     before: [
       ['H', 'En minut till lunch! Men först: punkt 46,75. Den är i platina.'],
       ['D', 'Det finns ingen platina-penna.'],
-      ['H', 'Jag köpte en. Till keynoten! Vår inhyrda talare väntar i Hörsalen.'],
+      ['H', 'Jag köpte en. Till keynoten! Segertoft väntar i slottets konferensrum.'],
       ['D', 'En keynote. En minut före lunch.'],
-      ['H', 'Den är på två minuter. Vi tar lunchen lite sent. In i Hörsalen!'],
+      ['H', 'Den är på två minuter. Han har en Gripen-spellista. In i konferensrummet!'],
     ],
   },
   {
