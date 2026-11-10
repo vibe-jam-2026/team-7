@@ -46,7 +46,7 @@ addEventListener('keydown', (e) => { if (e.key === 'm' || e.key === 'M') toggleM
 setInterval(showMute, 400);
 showMute();
 
-// Voice control button: say "Effektivisera", "Högt i tak" or "Vi tar det offline" for power-ups
+// Voice control button: say "Effektivisera", "Högt i tak" or "Uppåt, framåt!" for power-ups
 const mikBtn = document.getElementById('mikbtn');
 const MIK_TEXT = {
   off: '🎤 Slå på röststyrning', starting: '🎤 Startar…', on: '🎤 Lyssnar – säg en klyscha!',

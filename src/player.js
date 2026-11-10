@@ -18,7 +18,7 @@ export function createPlayer(x) {
 export function updatePlayer(p, dt, level, frozen = false) {
   p.time += dt;
   p.stun = Math.max(0, p.stun - dt);
-  if (power.shield > 0) p.stun = 0; // "Vi tar det offline": nothing gets you stuck
+  if (power.shield > 0) p.stun = 0; // "Uppåt, framåt!": nothing gets you stuck
   const control = !frozen && p.stun <= 0;
   const dir = control ? (keys.right ? 1 : 0) - (keys.left ? 1 : 0) : 0;
 
@@ -88,7 +88,7 @@ export function drawPlayer(ctx, p, camX, dustColor = '#9a9aa8') {
     for (let i = 0; i < 3; i++) ctx.fillRect(sx - 4 + (i % 2), sy - 1 + i, 8, 1);
   }
   drawPerson(ctx, sx, sy, PLAYER, p.facing, p.walkTime * 0.9, walking);
-  if (power.shield > 0) { // a blue "offline" bubble around you
+  if (power.shield > 0) { // a blue shield bubble around you
     ctx.strokeStyle = `rgba(110,190,255,${0.55 + Math.sin(p.time * 8) * 0.2})`;
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.ellipse(sx + 0.5, sy - 14, 11, 17, 0, 0, Math.PI * 2); ctx.stroke();

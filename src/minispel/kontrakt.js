@@ -131,10 +131,10 @@ function react(g, text, good) {
   f.phase = 'react'; f.wait = good ? 1.3 : 2.1;
   f.cur.q = text; f.mood = good ? 'calm' : 'angry';
   if (good) { f.calm++; g.sfx.ding(); return; }
-  if (power.shield > 0) { // "Vi tar det offline": this wrong answer doesn't count, but it uses up the shield
+  if (power.shield > 0) { // "Uppåt, framåt!" shield: this wrong answer doesn't count, but it uses up the shield
     power.shield = 0;
     f.mood = 'calm';
-    f.cur.q = 'Jaha. Vi tar det offline, då. Men jag har antecknat det.';
+    f.cur.q = 'Uppåt, framåt? Jaha. Vi går vidare, då. Men jag har antecknat det.';
     g.sfx.whoosh();
     return;
   }
@@ -222,7 +222,7 @@ export default {
   powerups: ['slow', 'shield'], // more time to answer; the shield saves you from one wrong answer
   powerupText: {
     slow: 'Kerstin pratar i slowmotion i 6 sekunder. Mer betänketid!',
-    shield: 'Ditt nästa felsvar räknas inte. Kerstin tar det offline.',
+    shield: 'Ditt nästa felsvar räknas inte. Kerstin går uppåt, framåt.',
   }, // what the power-ups mean here
   title: 'Tryck inte på knapparna',
   tagline: 'Kerstin från Kontrakt vill prata kontohantering.',
