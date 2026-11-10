@@ -13,7 +13,7 @@ export default {
   powerups: ['speed', 'jump', 'shield', 'slow', 'magnet', 'quickwin'], // all of them: cables to grab, pop-ups and a clock
   title: 'Demon: Projektorn',
   tagline: 'Ledningsgruppen väntar. Projektorn säger "Ingen signal".',
-  station: { x: 700, label: 'Stora salen' },
+  // Not in the story right now (reach it with the dev menu). Add `station: { x: 700, label: 'Stora salen' }` to bring it back.
   start: 660,
   henrik: 735,
   time: 35,

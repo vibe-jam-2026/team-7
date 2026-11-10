@@ -30,7 +30,7 @@ export default {
   henrik: 1010,
   time: 45,
   intro: [
-    ['H', 'Agendapunkt 31: hållbarhet. Vi ska plantera en lund här i parken.'],
+    ['H', 'Agendapunkt 1: hållbarhet. Vi ska plantera en lund här i parken.'],
     ['H', 'Ett kinesiskt ordspråk säger: den bästa tiden att plantera ett träd var för 20 år sedan.'],
     ['D', 'För 20 år sedan hade jag inte ens skrivit min första bugg.'],
     ['H', 'Precis! Därför: den näst bästa tiden är NU. Sex plantor. Lådan står här.'],
@@ -119,8 +119,8 @@ export default {
     ['H', 'Titta. En hel lund. Vi döper den till Agendalunden.'],
     ['D', 'Vänta... de växte väldigt fort?'],
     ['H', 'Det är så det känns om 20 år. Då står någon här i skuggan och tänker: tur att de planterade då.'],
-    ['D', 'Den bästa tiden var för 20 år sedan. Den näst bästa var i dag. Klockan 09:30.'],
-    ['H', 'Enligt agendan! Nu: demon.'],
+    ['D', 'Den bästa tiden var för 20 år sedan. Den näst bästa var i dag. Klockan tolv.'],
+    ['H', 'Enligt agendan! Nu: tälten.'],
   ],
   fail: [['H', 'Tiden tog slut. Men vet du vad? Den näst bästa tiden är fortfarande nu. Igen!']],
 };
