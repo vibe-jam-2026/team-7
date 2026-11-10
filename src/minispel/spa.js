@@ -1,8 +1,8 @@
 // Finale: after lunch to lunch you finally get to relax in the spa at Haga slott.
 // A short film (like the bus ride): the evening falls over the castle, you walk out in a bathrobe,
 // slip into the hot tub and ignore your phone. Press space to skip.
-// In the background Erik comes out of the sauna, slips on the wet deck and hits his elbow;
-// two paramedics come and carry him off on a stretcher.
+// In the background Erik comes out of the sauna, steps on a bar of soap, flips and hits his elbow;
+// two paramedics come (one slips on the same soap) and carry him off on a stretcher.
 import { WIDTH, hash } from '../world.js';
 import { drawPerson, drawItem, PLAYER } from '../sprites.js';
 import { drawCastle } from '../levels/haga.js';
@@ -12,79 +12,142 @@ const ROBE = { jacket: '#f6f2ea', shirt: '#ddd6c8', pants: '#f6f2ea', shoes: '#f
 const ERIK = { jacket: '#f1c9a5', shirt: '#f1c9a5', pants: '#d64545', shoes: '#f1c9a5', hair: '#c9a46a', skin: '#f1c9a5', beard: true };
 const MEDIC = { jacket: '#2f8f4e', shirt: '#f6c623', pants: '#24303a', shoes: '#222', hair: '#3a2a20', skin: '#e2b08c' };
 
-// Erik's timeline (seconds): out of the sauna, walk, slip, lie there, stretcher comes, carried away
-const ERIK_T = { out: 6.4, slip: 8.2, down: 8.55, medics: 9.6, load: 12.8, away: 13.3 };
-const ERIK_FEET = 127, ERIK_SLIP_X = 112;
+// Erik's slapstick, in seconds. Out of the sauna and posing, steps on a bar of soap, slides with
+// windmilling arms, does a full flip and lands on his back. The paramedics come, the first one
+// slips on the same soap, and then they carry him off on a stretcher.
+const E = {
+  out: 6.0, walk: 6.8, slip: 7.6, fly: 8.8, land: 9.4,                // Erik
+  medics: 10.8, wobble: 12.74, wobbleEnd: 13.24, load: 13.95, away: 14.45, // paramedics
+};
+const ERIK_FEET = 127, SOAP_X = 96, SLIDE_TO = 150, LAND_X = 158, SOAP_REST = 185;
 const STRETCHER_GAP = 34; // between the two paramedics
+const REST_C = LAND_X - 13; // middle of the stretcher when Erik is loaded
 
-// Where everyone is at time t. c = middle of the stretcher.
-function erikScene(t) {
-  if (t < ERIK_T.out) return null;
-  if (t < ERIK_T.slip) {
-    const k = (t - ERIK_T.out) / (ERIK_T.slip - ERIK_T.out);
-    return { erik: 'walk', x: 22 + k * (ERIK_SLIP_X - 22) };
-  }
-  if (t < ERIK_T.down) return { erik: 'slip', x: ERIK_SLIP_X, k: (t - ERIK_T.slip) / (ERIK_T.down - ERIK_T.slip) };
-  const lying = { erik: 'down', x: ERIK_SLIP_X };
-  if (t < ERIK_T.medics) return lying;
-  const restC = ERIK_SLIP_X - 13;
-  if (t < ERIK_T.load) return { ...lying, c: Math.max(restC, 357 - 80 * (t - ERIK_T.medics)), dir: -1, walking: true };
-  if (t < ERIK_T.away) return { erik: 'stretcher', c: restC, dir: 1 };
-  return { erik: 'stretcher', c: restC + 75 * (t - ERIK_T.away), dir: 1, walking: true };
+// The bar of soap: on the deck, then kicked away when Erik steps on it
+function soapAt(t) {
+  if (t < E.slip) return { x: SOAP_X, y: ERIK_FEET - 1 };
+  const k = Math.min(1, (t - E.slip) / 0.8);
+  return { x: SOAP_X + k * (SOAP_REST - SOAP_X), y: ERIK_FEET - 1 - Math.sin(Math.PI * k) * 14 };
 }
 
-// Erik's lines: [seconds, text]. The paramedic's line is marked with 'M'.
+// The paramedics: c = middle of the stretcher, dir = which way they face
+function medicsAt(t) {
+  if (t < E.medics) return null;
+  const at = (c, dir, walking, extra = {}) => ({ c, dir, walking, ...extra });
+  if (t < E.wobble) return at(357 - 80 * (t - E.medics), -1, true);
+  if (t < E.wobbleEnd) return at(202, -1, false, { wobble: Math.sin(t * 30) * 0.35 });
+  if (t < E.load) return at(Math.max(REST_C, 202 - 80 * (t - E.wobbleEnd)), -1, true);
+  if (t < E.away) return at(REST_C, 1, false);
+  return at(REST_C + 75 * (t - E.away), 1, true);
+}
+
+// Erik: m = pose, x = where his feet are, a = rotation, lift = how high he is in the air
+function erikScene(t) {
+  if (t < E.out) return null;
+  const med = medicsAt(t);
+  if (t < E.walk) return { m: 'pose', x: 22, a: 0, lift: 0, med };
+  if (t < E.slip) return { m: 'walk', x: 22 + (SOAP_X - 22) * (t - E.walk) / (E.slip - E.walk), a: 0, lift: 0, med };
+  if (t < E.fly) {
+    const k = (t - E.slip) / (E.fly - E.slip);
+    return { m: 'slide', x: SOAP_X + (SLIDE_TO - SOAP_X) * Math.sqrt(k), a: Math.sin(t * 22) * 0.35, lift: 0, med };
+  }
+  if (t < E.land) {
+    const k = (t - E.fly) / (E.land - E.fly);
+    return { m: 'flip', x: SLIDE_TO + (LAND_X - SLIDE_TO) * k, a: -k * Math.PI * 2.5, lift: Math.sin(Math.PI * k) * 22, med };
+  }
+  if (med && t >= (E.load + E.away) / 2) return { m: 'stretcher', x: med.c, med };
+  return { m: 'down', x: LAND_X, a: -Math.PI / 2, lift: 0, med };
+}
+
+// [seconds, who, line, sound]. who: E = Erik, M = the first paramedic, H = Henrik in the sauna
 const ERIK_SCRIPT = [
-  [8.6, 'E', 'AJ! ARMBÅGEN!'],
-  [10.2, 'E', 'Det var halt. Det var SÅ halt.'],
-  [12.9, 'M', 'Lugn. Vi tar det offline.'],
-  [14.5, 'E', 'Lägg inte upp det på intranätet!'],
+  [6.1, 'E', '95 grader! Jag känner mig som en ny release!', 'powerUp'],
+  [7.7, 'E', 'WOOOAAAH!', 'kazoo'],
+  [8.8, 'E', '', 'jump'],
+  [9.4, 'E', '', 'bonk'],
+  [9.6, 'E', 'AJ! ARMBÅGEN!'],
+  [10.5, 'H', 'Erik! Glöm inte incidentrapporten!'],
+  [11.0, 'E', 'Hur ska jag nu kunna trycka Ctrl+Z?!'],
+  [12.9, 'M', 'Hoppsan! Vem har tappat tvålen?!', 'whoosh'],
+  [14.0, 'M', 'Lugn. Vi tar det offline.', 'siren'],
+  [16.0, 'E', 'Ge mig fem stjärnor i MUG:en!'],
+  [17.8, 'E', 'Och skriv INTE i Slack!'],
 ];
 
+const star = (ctx, x, y, c) => { r(ctx, x, y - 1, 1, 3, c); r(ctx, x - 1, y, 3, 1, c); };
+
 function drawErik(ctx, t, time) {
+  // The soap is there from the start, waiting
+  const so = soapAt(t);
+  r(ctx, so.x - 2, so.y - 2, 5, 2, '#f6efd2'); r(ctx, so.x - 2, so.y - 2, 5, 1, '#fffbe8');
+  if (Math.sin(time * 5) > 0.6) r(ctx, so.x + 2, so.y - 5, 1, 1, '#e8f4ff'); // a soap bubble
+
   const s = erikScene(t);
   if (!s) return;
-  if (s.erik === 'walk') drawPerson(ctx, s.x, ERIK_FEET, ERIK, 1, time, true);
-  if (s.erik === 'slip' || s.erik === 'down') {
-    // Feet fly forward and he tips over backwards, then lies flat with the head to the left
-    const k = s.erik === 'slip' ? s.k : 1;
+  const med = s.med;
+  const medicFront = med && med.c + (med.dir < 0 ? -STRETCHER_GAP / 2 : STRETCHER_GAP / 2);
+  const medicBack = med && med.c - (med.dir < 0 ? -STRETCHER_GAP / 2 : STRETCHER_GAP / 2);
+  if (med) drawPerson(ctx, medicBack, ERIK_FEET, MEDIC, med.dir, time, med.walking);
+
+  if (s.m === 'pose' || s.m === 'walk') {
+    drawPerson(ctx, s.x, ERIK_FEET, ERIK, 1, time, s.m === 'walk');
+    if (s.m === 'pose') { // flexing, with a sparkle
+      r(ctx, s.x + 3, ERIK_FEET - 20, 4, 3, ERIK.skin); r(ctx, s.x - 7, ERIK_FEET - 20, 4, 3, ERIK.skin);
+      if (Math.sin(time * 10) > 0) star(ctx, s.x + 8, ERIK_FEET - 28, '#fff7b0');
+    }
+  } else if (s.m === 'slide' || s.m === 'flip' || s.m === 'down') {
+    // Rotate around the middle of his body so the flip looks like a flip
     ctx.save();
-    ctx.translate(Math.round(s.x), ERIK_FEET - 4 * Math.sin(Math.PI * k));
-    ctx.rotate(-k * Math.PI / 2);
-    drawPerson(ctx, 0, 0, ERIK, 1, time, false);
+    ctx.translate(Math.round(s.x), ERIK_FEET - 13 - s.lift);
+    ctx.rotate(s.a);
+    drawPerson(ctx, 0, 13, ERIK, 1, time, false);
+    if (s.m === 'slide') { // windmilling arms
+      const w = Math.sin(time * 24) * 6;
+      r(ctx, -9, -8 + w * 0.5, 4, 2, ERIK.skin); r(ctx, 5, -8 - w * 0.5, 4, 2, ERIK.skin);
+    }
     ctx.restore();
-    if (s.erik === 'down' && Math.sin(time * 9) > 0.2) { // a sore elbow: little stars
-      r(ctx, s.x - 14, ERIK_FEET - 11, 1, 3, '#ffe66b'); r(ctx, s.x - 15, ERIK_FEET - 10, 3, 1, '#ffe66b');
+    if (s.m === 'slide') for (let i = 0; i < 3; i++) r(ctx, s.x - 8 - i * 5, ERIK_FEET - 1 - (i % 2), 3, 1, '#e8f4ff'); // splashes
+  }
+  // Cartoon stars circling his head while he's hurt
+  if ((s.m === 'down' || s.m === 'stretcher') && t < 16) {
+    const hx = (s.m === 'down' ? s.x - 22 : s.x - 9), hy = ERIK_FEET - (s.m === 'down' ? 13 : 20);
+    for (let i = 0; i < 3; i++) {
+      const a = time * 5 + i * 2.1;
+      star(ctx, Math.round(hx + Math.cos(a) * 7), Math.round(hy - 6 + Math.sin(a) * 2), i === 1 ? '#ffb838' : '#ffe66b');
     }
   }
-  if (s.c != null) {
-    const front = s.c + (s.dir < 0 ? -STRETCHER_GAP / 2 : STRETCHER_GAP / 2);
-    const back = s.c - (s.dir < 0 ? -STRETCHER_GAP / 2 : STRETCHER_GAP / 2);
-    drawPerson(ctx, back, ERIK_FEET, MEDIC, s.dir, time, !!s.walking);
-    // The stretcher at hand height, with Erik on it once he's loaded
+
+  if (med) {
     const y = ERIK_FEET - 11;
-    r(ctx, s.c - 16, y, 32, 2, '#d8d8de'); r(ctx, s.c - 16, y + 2, 32, 1, '#9aa0a8');
-    r(ctx, s.c - 19, y + 1, 3, 1, '#6b4a30'); r(ctx, s.c + 16, y + 1, 3, 1, '#6b4a30');
-    if (s.erik === 'stretcher') {
+    r(ctx, med.c - 16, y, 32, 2, '#d8d8de'); r(ctx, med.c - 16, y + 2, 32, 1, '#9aa0a8');
+    r(ctx, med.c - 19, y + 1, 3, 1, '#6b4a30'); r(ctx, med.c + 16, y + 1, 3, 1, '#6b4a30');
+    if (s.m === 'stretcher') {
       ctx.save();
-      ctx.translate(Math.round(s.c + 13), y);
+      ctx.translate(Math.round(med.c + 13), y);
       ctx.rotate(-Math.PI / 2);
       drawPerson(ctx, 0, 0, ERIK, 1, time, false);
       ctx.restore();
-      r(ctx, s.c - 6, y - 4, 14, 3, '#f6f2ea'); // a blanket
+      r(ctx, med.c - 6, y - 4, 14, 3, '#f6f2ea'); // blanket
+      if (t > 15.9) { r(ctx, med.c - 10, y - 9, 2, 4, ERIK.skin); r(ctx, med.c - 11, y - 10, 2, 2, ERIK.skin); } // thumbs up
     }
-    drawPerson(ctx, front, ERIK_FEET, MEDIC, s.dir, time, !!s.walking);
+    // The front paramedic, wobbling when he steps on the soap
+    ctx.save();
+    ctx.translate(Math.round(medicFront), ERIK_FEET - 13);
+    ctx.rotate(med.wobble || 0);
+    drawPerson(ctx, 0, 13, MEDIC, med.dir, time, med.walking);
+    ctx.restore();
   }
 }
 
-// Where to put a speech bubble for Erik or the front paramedic
+// Where to put a speech bubble for Erik, the paramedic or Henrik
 function erikHead(t, who) {
+  if (who === 'H') return { x: 58, y: 90 };
   const s = erikScene(t);
   if (!s) return { x: 40, y: 92 };
-  if (who === 'M' && s.c != null) return { x: s.c + (s.dir < 0 ? -STRETCHER_GAP / 2 : STRETCHER_GAP / 2), y: ERIK_FEET - 31 };
-  if (s.erik === 'stretcher') return { x: s.c, y: ERIK_FEET - 22 };
-  if (s.erik === 'down' || s.erik === 'slip') return { x: s.x - 14, y: ERIK_FEET - 10 };
-  return { x: s.x, y: ERIK_FEET - 31 };
+  if (who === 'M' && s.med) return { x: s.med.c + (s.med.dir < 0 ? -STRETCHER_GAP / 2 : STRETCHER_GAP / 2), y: ERIK_FEET - 31 };
+  if (s.m === 'stretcher') return { x: s.x, y: ERIK_FEET - 24 };
+  if (s.m === 'down') return { x: s.x - 20, y: ERIK_FEET - 14 };
+  return { x: s.x, y: ERIK_FEET - 31 - (s.lift || 0) };
 }
 
 const SWIM = { jacket: PLAYER.skin, shirt: PLAYER.skin, pants: '#2f7fc1', shoes: PLAYER.skin, hair: PLAYER.hair, skin: PLAYER.skin };
@@ -115,6 +178,7 @@ const CAPTIONS = [
   [8, 'Notiser: ignoreras'],
   [12, 'Möten kvar: 0'],
   [14, 'Klockan: vem bryr sig?'],
+  [16.5, 'Incidentrapporter: 1'],
 ];
 
 const r = (ctx, x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); };
@@ -238,7 +302,7 @@ export default {
   cinematic: true,
   music: 'slott', // calm at last
   stayAfterWin: true, // the story ends here, in the spa, not back in the hub
-  time: 17,
+  time: 19.5,
   timeoutWins: true,
   meter: 'Lugn',
   intro: [],
@@ -250,11 +314,11 @@ export default {
     const f = g.flags;
     if (f.e > 0) Object.assign(f.erikBubble, erikHead(g.t, ERIK_SCRIPT[f.e - 1][1]));
     while (f.e < ERIK_SCRIPT.length && g.t >= ERIK_SCRIPT[f.e][0]) {
-      const [, who, text] = ERIK_SCRIPT[f.e++];
+      const [, who, text, sound] = ERIK_SCRIPT[f.e++];
+      if (sound) g.sfx[sound]();
+      if (!text) continue;
       f.erikBubble = { ...erikHead(g.t, who) };
-      g.say(text, f.erikBubble, '', who === 'E' ? 2.2 : 1.8);
-      if (f.e === 1) { g.sfx.bonk(); g.sfx.whoosh(); }   // the slip
-      if (who === 'M') g.sfx.siren();                    // ambulance on the way
+      g.say(text, f.erikBubble, who === 'H' ? 'henrik' : '', who === 'H' ? 2.2 : 1.9);
     }
     while (g.flags.i < SCRIPT.length && g.t >= SCRIPT[g.flags.i][0]) {
       const [, who, text] = SCRIPT[g.flags.i++];
@@ -268,7 +332,7 @@ export default {
     const p = pose(g.t);
     const tags = [{ text: 'Du', x: p.x + g.camX, feetY: p.y }];
     const e = erikScene(g.t);
-    if (e && (e.erik === 'walk')) tags.push({ text: 'Erik', x: e.x + g.camX, feetY: ERIK_FEET });
+    if (e && (e.m === 'pose' || e.m === 'walk')) tags.push({ text: 'Erik', x: e.x + g.camX, feetY: ERIK_FEET });
     return tags;
   },
   draw(g, ctx) {
