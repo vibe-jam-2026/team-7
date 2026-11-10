@@ -99,14 +99,11 @@ export const HUB = {
 export const STUCK_LINES = ['...javisst, 5 minuter.', 'Fastnade i ett möte!', 'Kan vi ta det på mejl?', 'Mm. Mm. Spännande.'];
 
 export const END_STATS = (s) => `
-  Kaffekoppar: ${s.coffee}<br>
   Möten du hoppade över: ${s.dodged}<br>
   Möten du fastnade i: ${s.meetings}<br>
   Kerstins knappar du tryckte på: ${s.buttons ?? 0}<br>
   Figma-koncept du tvingades se: ${s.figma ?? 0}<br>
   UX-designers du hoppade över: ${s.uxDodged ?? 0}<br>
-  Kanelbullar ätna: 0<br>
-  Slides i Henriks tal: 83<br>
   Stress efter spat: 0 %<br>
   Omtag: ${s.retries}`;
 
@@ -128,31 +125,13 @@ export const STORY = [
   },
   {
     clock: 'Dag 1 · 12:00', title: 'Ankomst Haga slott',
-    play: 'buffe',
+    play: 'workshop',
     before: [
       ['H', 'Välkomna till Haga slott! Lunch till lunch: 24 timmar ren effektivitet.'],
       ['D', 'Lunch till lunch. Det låter som... mest lunch?'],
-      ['H', 'Två luncher. Däremellan: workshop, fika, middag, tal, natt och energizer klockan sju.'],
       ['H', 'Agendan har 47 punkter. Jag har färgkodat dem. Ingen vet vad färgerna betyder.'],
-      ['H', 'Punkt 1: lunch. Följ pilen till buffén. Spring!'],
-    ],
-  },
-  {
-    clock: 'Dag 1 · 13:00', title: 'Eftermiddagspasset',
-    play: 'workshop',
-    before: [
-      ['H', 'Mätta? Bra. Nu: workshop i flygeln. Vi ska ta fram framtiden.'],
-      ['D', 'Hela framtiden? Före fika?'],
-      ['H', 'Vi har en timme. Jag har köpt 4 000 post-its.'],
-    ],
-  },
-  {
-    clock: 'Dag 1 · 15:00', title: 'Fika',
-    play: 'fika',
-    before: [
-      ['H', 'FIKA! Nere vid bryggan. Det finns kaffe och EN kanelbulle kvar.'],
-      ['D', 'En bulle? Till hela teamet?'],
-      ['H', 'Jag kallar det resursoptimering.'],
+      ['H', 'Lunchen har jag strukit. Och fikan. Vi tar igen det imorgon. Kanske.'],
+      ['H', 'Punkt 1: workshop i flygeln. Vi ska ta fram framtiden. Jag har köpt 4 000 post-its.'],
     ],
   },
   {
@@ -167,30 +146,12 @@ export const STORY = [
     ],
   },
   {
-    clock: 'Dag 1 · 19:00', title: 'Middag', tint: 'rgba(255,120,40,0.16)',
-    play: 'middag',
-    before: [
-      ['H', 'Middag i stora salen! Trerätters, och mellan varje rätt: mitt tal.'],
-      ['D', 'Hur långt är talet?'],
-      ['H', 'Kort! 83 slides. Ett par av dem har video. En har en egen agenda.'],
-    ],
-  },
-  {
-    clock: 'Dag 1 · 23:47', title: 'Natten', tint: 'rgba(10,20,70,0.35)', dark: true,
-    play: 'natt',
-    before: [
-      ['D', 'Talet tog slut. Jag tror jag åldrades. Nu: sängen.'],
-      ['D', '...där rumsnyckeln borde ha legat. Den är borta.'],
-      ['H', '(från bastun) ALLSÅNGEN BÖRJAR OM FEM MINUTER! ALLA SKA MED!'],
-      ['D', 'Jag letar i parken. Med mobilens ficklampa. 4 % batteri.'],
-    ],
-  },
-  {
     clock: 'Dag 2 · 07:00', title: 'God morgon', tint: 'rgba(255,170,190,0.12)',
     play: 'energizer',
     before: [
       ['H', 'GOOOOD MORGON HAGA! Har alla sovit gott?'],
-      ['D', 'Jag sov fyra timmar. Två av dem i en allsång.'],
+      ['D', 'Vänta, vad hände med middagen? Och natten?'],
+      ['H', 'Strukna ur agendan. Effektivisering! Vi sov stående i mingelkön.'],
       ['H', 'Perfekt! Då är du redo för ENERGIZERN. Ut på gräsmattan!'],
     ],
   },
@@ -229,7 +190,7 @@ export const STORY = [
       ['H', 'Och så var det lunch igen. Precis enligt agendan.'],
       ['H', 'Bra jobbat. Du överlevde lunch till lunch.'],
       ['D', 'Tack. Vad kom vi fram till?'],
-      ['H', 'Åtta idéer, sex träd, noll kanelbullar och en demo. Och en ny tradition!'],
+      ['H', 'Åtta idéer, sex träd och en demo. Och en ny tradition!'],
       ['H', 'Nästa år kör vi frukost till frukost.'],
       ['D', 'Jag tar bussen tillbaka. Det känns som att jag glömt något.'],
       ['H', 'Vänta! Agendapunkt 47. Den är vit. Det betyder: ingenting.'],
