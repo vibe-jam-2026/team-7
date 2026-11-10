@@ -3,6 +3,7 @@ import { keys } from './input.js';
 import { GROUND_Y } from './world.js';
 import { drawPerson, PLAYER } from './sprites.js';
 import { sfx } from './ljud.js';
+import { power } from './powerups.js';
 
 const WALK_SPEED = 95;   // px/s
 const ACCEL = 500;       // px/s²
@@ -17,12 +18,14 @@ export function createPlayer(x) {
 export function updatePlayer(p, dt, level, frozen = false) {
   p.time += dt;
   p.stun = Math.max(0, p.stun - dt);
+  if (power.shield > 0) p.stun = 0; // "Vi tar det offline": nothing gets you stuck
   const control = !frozen && p.stun <= 0;
   const dir = control ? (keys.right ? 1 : 0) - (keys.left ? 1 : 0) : 0;
 
+  const fast = power.speed > 0 ? 1.75 : 1; // "Effektivisera"
   if (dir !== 0) {
-    p.vx += dir * ACCEL * dt;
-    p.vx = Math.max(-WALK_SPEED, Math.min(WALK_SPEED, p.vx));
+    p.vx += dir * ACCEL * fast * dt;
+    p.vx = Math.max(-WALK_SPEED * fast, Math.min(WALK_SPEED * fast, p.vx));
     p.facing = dir;
   } else {
     const slow = Math.min(Math.abs(p.vx), FRICTION * dt);
@@ -30,7 +33,7 @@ export function updatePlayer(p, dt, level, frozen = false) {
   }
 
   if (control && keys.up && p.onGround) {
-    p.vy = -level.jumpSpeed;
+    p.vy = -level.jumpSpeed * (power.jump > 0 ? 1.45 : 1); // "Högt i tak"
     sfx.jump();
     p.onGround = false;
   }
@@ -75,5 +78,19 @@ export function drawPlayer(ctx, p, camX, dustColor = '#9a9aa8') {
   if (p.hidden) return;
   if (p.stun > 0 && Math.floor(p.time * 16) % 2) return; // blink while stuck in a meeting
   const walking = p.onGround && p.walkTime > 0;
-  drawPerson(ctx, p.x - camX, p.y, PLAYER, p.facing, p.walkTime * 0.9, walking);
+  const sx = Math.round(p.x - camX), sy = Math.round(p.y);
+  if (power.speed > 0 && Math.abs(p.vx) > 20) { // speed lines behind you
+    ctx.fillStyle = 'rgba(255,214,90,0.8)';
+    for (let i = 0; i < 4; i++) ctx.fillRect(sx - p.facing * (8 + (i % 2) * 4) - (p.facing > 0 ? 8 : 0), sy - 22 + i * 5, 8, 1);
+  }
+  if (power.jump > 0) { // springs under the shoes
+    ctx.fillStyle = '#9aa0a8';
+    for (let i = 0; i < 3; i++) ctx.fillRect(sx - 4 + (i % 2), sy - 1 + i, 8, 1);
+  }
+  drawPerson(ctx, sx, sy, PLAYER, p.facing, p.walkTime * 0.9, walking);
+  if (power.shield > 0) { // a blue "offline" bubble around you
+    ctx.strokeStyle = `rgba(110,190,255,${0.55 + Math.sin(p.time * 8) * 0.2})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(sx + 0.5, sy - 14, 11, 17, 0, 0, Math.PI * 2); ctx.stroke();
+  }
 }

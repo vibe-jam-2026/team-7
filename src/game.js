@@ -12,6 +12,7 @@ import { STORY, SPEAKERS, HUB, STUCK_LINES, END_STATS, FORBIDDEN, COLLEAGUE_NAME
 import * as ui from './ui.js';
 import { sfx } from './ljud.js';
 import { setMusic, setMusicBoost } from './musik.js';
+import { power, updatePowerUps, render as renderPowerUps, onPowerUp, setPanelVisible, blockPowerKeys } from './powerups.js';
 import { updateDesigners, drawDesigners } from './designers.js';
 
 const LEVELS = { haga, kontoret, bussen };
@@ -87,6 +88,9 @@ function nameTags() {
   if (!mg) for (const d of g.designers || []) tag(SPEAKERS[d.person.who].name, d.x, GROUND_Y);
   return tags;
 }
+
+// Shout the phrase when a power-up starts
+onPowerUp((pu) => g.say(`${pu.phrase.toUpperCase()}! ${pu.icon}`, g.p, 'me', 1.6));
 
 function newStats() { return { coffee: 0, dodged: 0, meetings: 0, retries: 0, hits: 0, buttons: 0, figma: 0, uxDodged: 0 }; }
 
@@ -339,7 +343,10 @@ function updatePlay(dt) {
     f.y += f.vy * dt;
     if (!f.gone && near(f.x, f.y, 9, 14)) {
       f.gone = true;
-      if (f.bad) {
+      if (f.bad && power.shield > 0) { // the shield bounces it off
+        sfx.whoosh();
+        g.say('Offline! 🛡', g.p, 'me', 1);
+      } else if (f.bad) {
         g.p.stun = Math.max(g.p.stun, f.stun ?? 0.9);
         g.stats.hits++;
         (f.kind === 'postit' ? sfx.kazoo : f.kind === 'popup' ? sfx.error : sfx.bonk)();
@@ -360,7 +367,12 @@ function updatePlay(dt) {
     const dist = Math.abs(w.x - g.p.x);
     if (!w.said && dist < 95) { w.said = true; g.say(w.line, w, '', 2.4); }
     if (!w.done) {
-      if (dist < 8 && g.p.y > GROUND_Y - 22 && g.p.stun <= 0) {
+      if (dist < 8 && g.p.y > GROUND_Y - 22 && power.shield > 0) { // shield: the meeting bounces off
+        w.done = true; w.dir = -w.dir; w.speed *= 1.8;
+        g.stats.dodged++; g.dodgedHere++;
+        sfx.whoosh();
+        g.say('Vi tar det offline!', g.p, 'me', 1.2);
+      } else if (dist < 8 && g.p.y > GROUND_Y - 22 && g.p.stun <= 0) {
         w.done = true;
         g.p.stun = 1.2;
         g.stats.meetings++;
@@ -417,6 +429,12 @@ export function frame(ctx, dt) {
   else if (mode === 'play') updatePlay(dt);
   else if (mode === 'lost') updateLost(dt);
   else if (mode === 'end' && wasPressed('action')) { ui.card(false); startStory(); }
+
+  // Power-ups run down while you play, and the panel in the corner shows them
+  if (mode === 'hub' || mode === 'play') updatePowerUps(dt);
+  renderPowerUps(dt);
+  setPanelVisible(mode === 'hub' || mode === 'play' || mode === 'dialog');
+  blockPowerKeys(mg?.id === 'kontoret'); // digits are for mashing there
 
   // Background music follows the situation: calm at the castle, stressful in minigames
   setMusic(pickMusic());
