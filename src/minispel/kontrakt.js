@@ -4,7 +4,7 @@
 // trycker in en av hennes tre röda knappar, som svävar ovanför huvudet. Tre intryckta: kaboom.
 // Tre lugna, korrekta svar räcker för att vinna. Det avgörande tredje svaret är alltid LAST.
 import { wasPressed } from '../input.js';
-import { pick } from '../world.js';
+import { pick, rand, WIDTH as W, HEIGHT as H } from '../world.js';
 import { KERSTIN } from '../sprites.js';
 import { power } from '../powerups.js';
 
@@ -13,6 +13,13 @@ const ROUNDS_TOTAL = 8;   // frågor som finns i högen (fler än som behövs)
 const CALM_NEEDED = 3;   // så många rätta svar krävs för att vinna
 const BUTTONS = 3;
 const KEYS = [['left', '←'], ['up', '↑'], ['right', '→']];
+// When you answer wrong: the camera zooms in on Kerstin, the screen shakes and she thinks "TRIGGERED"
+const ZOOM = 2.5;          // how far in we zoom
+const HEAD_Y = 129;        // Kerstin's face (world y) ...
+const FOCUS = [118, 112];  // ... ends up here on screen, with room for the thought bubble to the right
+const TRIG_WORDS = ['TRIGGERED', 'TRIGGERED!!', 'TRIGGERED!!!'];
+const ease = (k) => 1 - (1 - k) ** 3;
+let zoomCanvas = null;     // a copy of the frame, scaled up
 
 // good: det lugna, korrekta svaret. bad: [svar, Kerstins reaktion].
 const FIRST = [
@@ -124,17 +131,19 @@ function react(g, text, good) {
   f.phase = 'react'; f.wait = good ? 1.3 : 2.1;
   f.cur.q = text; f.mood = good ? 'calm' : 'angry';
   if (good) { f.calm++; g.sfx.ding(); return; }
-  if (power.shield > 0) { // "Vi tar det offline": this wrong answer doesn't count, but it uses up the shield
+  if (power.shield > 0) { // "Uppåt, framåt!" shield: this wrong answer doesn't count, but it uses up the shield
     power.shield = 0;
     f.mood = 'calm';
-    f.cur.q = 'Jaha. Vi tar det offline, då. Men jag har antecknat det.';
+    f.cur.q = 'Uppåt, framåt? Jaha. Vi går vidare, då. Men jag har antecknat det.';
     g.sfx.whoosh();
     return;
   }
   f.pushed++;
   g.stats.buttons = (g.stats.buttons ?? 0) + 1;
   f.flash = 1; f.pressAnim[f.pushed - 1] = 0;
-  g.sfx.buzzer(); g.sfx.error();
+  f.wait += 0.4; // a little longer, so the zoom gets to shine
+  f.trig = { t: 0, dur: f.wait, word: TRIG_WORDS[Math.min(f.pushed, TRIG_WORDS.length) - 1], lines: [] };
+  g.sfx.buzzer(); g.sfx.error(); g.sfx.siren();
   if (g.henrik && Math.random() < 0.6) g.henrikSay(pick(HENRIK_PUSH), 1.8);
 }
 
@@ -152,12 +161,68 @@ function mix(a, b, k) {
   return '#' + [0, 1, 2].map((i) => Math.round(p(a, i) + (p(b, i) - p(a, i)) * k).toString(16).padStart(2, '0')).join('');
 }
 
+// Zoom in on Kerstin, shake everything, speed lines, and a thought bubble: TRIGGERED
+function drawTriggered(g, ctx, f) {
+  const T = f.trig.t, d = f.trig.dur;
+  const k = ease(Math.min(1, T / 0.14)) * Math.min(1, (d - T) / 0.3);
+  const z = 1 + (ZOOM - 1) * k + Math.sin(T * 40) * 0.04 * k;
+  const fx = f.kerstin.x - g.camX;
+  const sx = Math.max(0, Math.min(W - W / z, fx - FOCUS[0] / z));
+  const sy = Math.max(0, Math.min(H - H / z, HEAD_Y - FOCUS[1] / z));
+  const amp = (T < 0.5 ? 7 : 3.5) * k + 1;
+  const ox = Math.round(rand(-amp, amp)), oy = Math.round(rand(-amp, amp));
+  zoomCanvas ??= Object.assign(document.createElement('canvas'), { width: W, height: H });
+  const zc = zoomCanvas.getContext('2d');
+  zc.drawImage(ctx.canvas, 0, 0, W, H, 0, 0, W, H);
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(zoomCanvas, sx, sy, W / z, H / z, ox, oy, W, H);
+  // Where her head is on screen now
+  const hx = (fx - sx) * z + ox, hy = (HEAD_Y - sy) * z + oy;
+  // Red pulse and speed lines rushing in towards her
+  const pulse = 0.18 + 0.12 * Math.sin(T * 30);
+  const grad = ctx.createRadialGradient(hx, hy, 20, hx, hy, 220);
+  grad.addColorStop(0, 'rgba(255,0,0,0)'); grad.addColorStop(1, `rgba(200,0,0,${(pulse + 0.25) * k})`);
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = `rgba(255,255,255,${0.55 * k})`; ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = 0; i < 28; i++) {
+    const a = rand(0, Math.PI * 2), r0 = rand(60, 110), r1 = r0 + rand(40, 120);
+    ctx.moveTo(hx + Math.cos(a) * r0, hy + Math.sin(a) * r0);
+    ctx.lineTo(hx + Math.cos(a) * r1, hy + Math.sin(a) * r1);
+  }
+  ctx.stroke();
+  // Thought bubble to the right of her head: three little puffs, then the cloud
+  if (T > 0.1) {
+    const pop = Math.min(1, (T - 0.1) / 0.12);
+    const bx = Math.round(hx + 92 + rand(-1.5, 1.5)), by = Math.round(hy - 6 + rand(-1.5, 1.5));
+    const cloud = (x, y, r) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); };
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#1e1b22'; ctx.lineWidth = 2;
+    [[22, -6, 3], [34, -10, 4.5], [48, -12, 6]].forEach(([dx, dy, r]) => cloud(hx + dx, hy + dy, r * pop));
+    const puffs = [[-40, 0, 13], [-24, -10, 15], [-4, -12, 16], [18, -10, 15], [36, -2, 13], [24, 9, 13], [0, 11, 14], [-24, 9, 13]];
+    for (const [dx, dy, r] of puffs) cloud(bx + dx * pop, by + dy * pop, r * pop);
+    ctx.lineWidth = 0;
+    for (const [dx, dy, r] of puffs) { ctx.beginPath(); ctx.arc(bx + dx * pop, by + dy * pop, (r - 1.5) * pop, 0, Math.PI * 2); ctx.fill(); }
+    // The word, wobbling and flashing red
+    const big = 1 + 0.12 * Math.sin(T * 26);
+    ctx.font = `${Math.round(9 * big * pop)}px 'Press Start 2P', monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const word = f.trig.word;
+    ctx.fillStyle = '#1e1b22'; ctx.fillText(word, bx + 1 + rand(-1, 1), by + 2 + rand(-1, 1));
+    ctx.fillStyle = Math.floor(T * 12) % 2 ? '#ff2a2a' : '#c40000';
+    ctx.fillText(word, bx + rand(-1, 1), by + 1 + rand(-1, 1));
+  }
+  ctx.restore();
+}
+
 export default {
   id: 'kontrakt',
   powerups: ['slow', 'shield'], // more time to answer; the shield saves you from one wrong answer
   powerupText: {
     slow: 'Kerstin pratar i slowmotion i 6 sekunder. Mer betänketid!',
-    shield: 'Ditt nästa felsvar räknas inte. Kerstin tar det offline.',
+    shield: 'Ditt nästa felsvar räknas inte. Kerstin går uppåt, framåt.',
   }, // what the power-ups mean here
   title: 'Tryck inte på knapparna',
   tagline: 'Kerstin från Kontrakt vill prata kontohantering.',
@@ -179,7 +244,7 @@ export default {
     f.rounds = [...FIRST, ...shuffle(MIDDLE).slice(0, ROUNDS_TOTAL - FIRST.length - 1)];
     f.lastUsed = false;
     f.round = 0; f.pushed = 0; f.calm = 0; f.flash = 0;
-    f.pressAnim = []; f.steam = []; f.steamT = 0;
+    f.pressAnim = []; f.steam = []; f.steamT = 0; f.trig = null;
     f.kerstin = g.npc({ ...KERSTIN }, KERSTIN_X, { facing: -1, name: 'Kerstin' });
     g.p.facing = 1;
     nextRound(g);
@@ -188,6 +253,10 @@ export default {
   update(g, dt) {
     const f = g.flags;
     f.flash = Math.max(0, f.flash - dt * 1.8);
+    if (f.trig && (f.trig.t += dt) >= f.trig.dur) f.trig = null;
+    if (f.trig) { // extra steam bursting out while triggered
+      if (Math.random() < 0.35) f.steam.push({ x: f.kerstin.x + (Math.random() < 0.5 ? -5 : 6), y: 118, age: 0.3 });
+    }
     f.pressAnim = f.pressAnim.map((a) => a + dt);
     f.kerstin.look.skin = mix(KERSTIN.skin, '#e04a3a', Math.min(1, f.pushed / BUTTONS + f.flash * 0.3));
 
@@ -278,7 +347,11 @@ export default {
       ctx.fillRect(Math.round(s.x - g.camX - w / 2), Math.round(s.y), w, w);
     }
     if (f.flash > 0) { ctx.fillStyle = `rgba(220,20,20,${f.flash * 0.3})`; ctx.fillRect(0, 0, 320, 180); }
+    if (f.trig) drawTriggered(g, ctx, f);
   },
+
+  // While Kerstin is triggered the camera is zoomed in, so the HTML name tags would end up in the wrong place
+  hideTags: (g) => !!g.flags.trig,
 
   win: [
     ['K', '...Rätt konto. Rätt kostnadsställe. Rätt projektnummer.'],

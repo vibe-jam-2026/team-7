@@ -5,8 +5,7 @@
 //   Kaffemuggar: extra högt hopp       OMORG-lådor: rasar när du landar
 //   Mötesdrönare med en kalenderinbjudan kl. 08.00: hoppa på dem ovanifrån, rör dem inte från sidan.
 // Silon ritas som ett schakt mitt i bilden (X0–X1), med marken i genomskärning och en djupmätare på sidorna.
-// Ingår inte i berättelsen än: nås via dev-menyn (Ö). Lägg till ett steg med play: 'siloescape'
-// i src/story.js och en `station` nedan för att ta med det.
+// Kvällens kapitel i berättelsen (src/story.js), mellan Kerstin och MUG. Stationen är Silon i Haga.
 import { keys } from '../input.js';
 import { WIDTH as W, HEIGHT as H, hash, pick, rand } from '../world.js';
 import { drawPerson, PLAYER } from '../sprites.js';
@@ -407,13 +406,14 @@ export default {
   title: 'SiloEscape',
   tagline: 'Studsa 800 m upp ur silon innan kvartalsfyrverkeriet hinner ikapp',
   level: 'haga',
+  station: { x: 450, label: 'Silon' },
   lockPlayer: true,   // ← → styr din egen klättrare i stället för gubben i Haga
   music: 'panik',
   henrik: null,
   start: 160,
 
   intro: [
-    ['H', 'Genväg till spat: rakt upp genom silon. 800 meter, det är ingenting!'],
+    ['H', 'Kvällens teambuilding: rakt upp genom silon. 800 meter, det är ingenting!'],
     ['H', 'Kvartalsfyrverkeriet har redan börjat där nere, så studsa på. ← → styr.'],
     ['H', 'Kaffemuggar ger extra skjuts. OMORG-lådor håller inte. Hoppa på mötesdrönarna, men rör dem inte från sidan!'],
     ['D', 'Är det här verkligen en genväg?'],

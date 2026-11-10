@@ -352,7 +352,7 @@ function near(x, y, rx = 9, ry = 15) {
 }
 
 function updatePlay(realDt) {
-  // "Vi parkerar det": everything except you runs in slow motion, and the clock stops
+  // "Jobba smartare": everything except you runs in slow motion, and the clock stops
   const slow = power.slow > 0;
   const dt = slow ? realDt * 0.3 : realDt;
   g.t += dt;
@@ -384,7 +384,7 @@ function updatePlay(realDt) {
       f.gone = true;
       if (f.bad && power.shield > 0) { // the shield bounces it off
         sfx.whoosh();
-        g.say('Offline! 🛡', g.p, 'me', 1);
+        g.say('Uppåt! 🛡', g.p, 'me', 1);
       } else if (f.bad) {
         g.p.stun = Math.max(g.p.stun, f.stun ?? 0.9);
         g.stats.hits++;
@@ -410,7 +410,7 @@ function updatePlay(realDt) {
         w.done = true; w.dir = -w.dir; w.speed *= 1.8;
         g.stats.dodged++; g.dodgedHere++;
         sfx.whoosh();
-        g.say('Vi tar det offline!', g.p, 'me', 1.2);
+        g.say('Uppåt, framåt!', g.p, 'me', 1.2);
       } else if (dist < 8 && g.p.y > GROUND_Y - 22 && g.p.stun <= 0) {
         w.done = true;
         g.p.stun = 1.2;
@@ -525,6 +525,7 @@ function draw(ctx) {
   for (const f of g.fallers) drawItem(ctx, f.x - camX, f.y, f, t);
   g.p.hidden = !!mg?.cinematic;
   drawPlayer(ctx, g.p, camX, g.level.dustColor);
+  if (mode === 'hub') drawGuideArrow(ctx);
   for (const pr of g.props) if (pr.front) drawProp(ctx, pr.x - camX, pr, t);
 
   const tint = mg?.tint ?? beat().tint;
@@ -549,7 +550,8 @@ function draw(ctx) {
     const y = who.y != null && !isPlayer ? who.y : (isPlayer ? g.p.y - 30 : GROUND_Y - 33);
     return { text: b.text, x: who.x, y, style: b.style };
   });
-  if (mode !== 'card') list.push(...nameTags());
+  if (mg?.hideTags?.(g)) list.length = 0; // e.g. while a minigame zooms the camera
+  else if (mode !== 'card') list.push(...nameTags());
   if (mode === 'hub' || (mode !== 'play' && !mg && g.level === haga)) {
     const nextId = beat().play;
     for (const m of stations()) {
@@ -570,6 +572,33 @@ function draw(ctx) {
 }
 
 // 'next' = open now, 'done' = already played, 'locked' = not yet on the agenda
+// A bobbing arrow next to you that points towards the next open station.
+// When you are close, it turns into an arrow pointing down at the sign instead.
+function drawGuideArrow(ctx) {
+  const next = stations().find((m) => stationState(m) === 'next');
+  if (!next) return;
+  const dx = next.station.x - g.p.x, dir = Math.sign(dx) || 1, t = g.time;
+  const px = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); };
+  if (Math.abs(dx) < 26) { // down at the sign
+    const x = next.station.x - g.camX, y = GROUND_Y - 62 + Math.round(Math.abs(Math.sin(t * 5)) * -4);
+    px(x - 4, y - 1, 9, 9, '#1b1b2a');
+    px(x - 1, y, 3, 4, '#ffd25e'); px(x - 3, y + 4, 7, 1, '#ffd25e'); px(x - 2, y + 5, 5, 1, '#ffd25e'); px(x - 1, y + 6, 3, 1, '#ffd25e');
+    return;
+  }
+  const bob = Math.round(Math.sin(t * 8) * 2) * dir;
+  const x = g.p.x - g.camX + dir * 13 + bob, y = g.p.y - 22;
+  // Arrow pointing right (flipped for left): a shaft and a head, with a dark outline
+  const shape = [[0, 2, 6, 3], [6, 0, 1, 7], [7, 1, 1, 5], [8, 2, 1, 3], [9, 3, 1, 1]];
+  for (const [ax, ay, w, h] of shape) {
+    const sx = dir > 0 ? x + ax - 4 : x - ax - w + 4;
+    px(sx - 1, y + ay - 1, w + 2, h + 2, '#1b1b2a');
+  }
+  for (const [ax, ay, w, h] of shape) {
+    const sx = dir > 0 ? x + ax - 4 : x - ax - w + 4;
+    px(sx, y + ay, w, h, Math.floor(t * 4) % 2 ? '#ffd25e' : '#ffb838');
+  }
+}
+
 function stationState(m) {
   if (m.id === beat().play) return 'next';
   if (g.done.has(m.id)) return 'done';
