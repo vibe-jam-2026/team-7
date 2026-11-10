@@ -219,6 +219,15 @@ function updateLost(dt) {
 // For testing: lets the console and scripts look at the game state.
 export const debug = { g, get mode() { return mode; }, get minigame() { return mg?.id; } };
 
+// Dev shortcut: Q completes the minigame you are playing right now (as if you won it).
+// Not while mashing the keyboard in the office intro, where Q is just a letter.
+addEventListener('keydown', (e) => {
+  if (e.repeat || (e.key !== 'q' && e.key !== 'Q') || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (mode !== 'play' || !mg || mg.id === 'kontoret') return;
+  e.preventDefault();
+  winMinigame();
+});
+
 function startBeat(i) {
   beatIndex = i;
   const b = beat();
